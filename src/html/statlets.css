@@ -1,0 +1,11 @@
+.largeLabel {font-size : 150%;
+   		     font-weight : bold; 
+   		     color : blue;
+   		     }
+.inputTable, th, td {border-bottom : 1px solid black;
+					 border-collapse : collapse;
+	 				 text-align : center; 
+	 				 padding : 15px;
+			}
+			 
+			
