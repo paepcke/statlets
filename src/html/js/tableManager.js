@@ -1,4 +1,4 @@
-TableManager = function(headerArr, dataArr) {
+TableManager = function(dataArr, headerArr) {
 	
 	var headerArr = headerArr;
 	var dataArr   = dataArr;
@@ -7,22 +7,25 @@ TableManager = function(headerArr, dataArr) {
 	var constructor = function() {
 		tableEl = document.createElement('TABLE');
 		
-		let headerRow = tableEl.insertRow(0);
+		let dataIndx = 0;
+		
+		if (typeof(headerArr) !== 'undefined') {
+			let headerRow = tableEl.insertRow(0);
 
-		for (let headerColIndx in headerArr) {
-			let cell = headerRow.insertCell(headerColIndx);
-			cell.innerHTML = headerArr[headerColIndx];
-		}
-		for (let dataIndx in dataArr) {
+			for (let headerColIndx in headerArr) {
+				let cell = headerRow.insertCell(headerColIndx);
+				cell.innerHTML = headerArr[headerColIndx];
+			}
+			dataIndx = 1;
+		}		
+		for (let dataItemArr of dataArr) {
 			
-			let intDataIndx = parseInt(dataIndx);
-			let row  = tableEl.insertRow(intDataIndx + 1);  // +1: account for header row.
-			let data = dataArr[intDataIndx];
-			
-			for (let dataItemIndx in data) {
-				let intDataItemIndx = parseInt(dataItemIndx); 
-				let cell = row.insertCell(intDataItemIndx);
-				cell.innerHTML = data[intDataItemIndx];
+			let row  = tableEl.insertRow(dataIndx++);
+
+			let dataItemIndx = 0;
+			for (let dataItem of dataItemArr) {
+				let cell = row.insertCell(dataItemIndx++);
+				cell.innerHTML = dataItem;
 			}
 		}
 		
@@ -31,6 +34,8 @@ TableManager = function(headerArr, dataArr) {
 				setCell : setCell,
 				setRow  : setRow,
 				numRows : numRows,
+				value   : value,
+				classed : classed,
 			   };
 	}
 
@@ -106,13 +111,96 @@ TableManager = function(headerArr, dataArr) {
 		return tbl.rows.length;
 	}
 	
+	var value = function() {
+		return tableEl;
+	}
+	
+	var classed = function(classingDict) {
+		/*
+		 * If rowNum is undefined for row classing,
+		 * then all rows are classed className.
+		 * In cell: rowNum is undefined then all
+		 * rows are classed className in the colNum
+		 * column. If colNum is undefined, all cells
+		 * in affected row(s) are classed className.
+		 *  
+		 * Dict:
+		 * 	  { table : <classNameTbl>,
+		 *        row : [<classNameRow>, rowNum] // rowNum optional
+		 *       cell : [<classNameCol>, rowNum, colNum]  
+		 */
+		
+		// Classing table as a whole:
+		if (typeof(classingDict.table) !== 'undefined') {
+			tableEl.className = classingDict.table;
+		}
+		
+		// Classing one of more row elements:
+		if (typeof(classingDict.row) !== 'undefined') {
+			let clName = classingDict.row[0];
+			let rowNum = classingDict.row[1];
+
+			// Only one row's columns to change?
+			if (typeof(rowNum) === 'number') {
+				tableEl.rows[rowNum].className = clName;
+			} else {				
+				// Change class of all rows:				
+				for (let trEl of tableEl.rows) {
+					trEl.className = clName;
+				}
+			}
+		}
+		
+		if (typeof(classingDict.cell) !== 'undefined') {
+			let clName  = classingDict.cell[0];
+			let rowNum  = classingDict.cell[1];
+			let colNum = classingDict.cell[2];
+			
+			// Only in one row?
+			if (typeof(rowNum) === 'number') {
+				// Just one row affected:
+				let row = tableEl.rows[rowNum];
+				// All cells in one row, or just one?
+				if (typeof(colNum) === 'number') {
+					// Only one cell in one row affected:
+					row.cells[colNum].className = clName;
+					return;
+				} else {
+					// All cells in one row affected:
+					classCellsInOneRow(clName, row);
+					return;
+				}
+			} else {
+				// Multiple rows affected:
+				for (let rowEl of tableEl.rows) {
+					// Only one cell in each row?
+					if (typeof(colNum) === 'number') {
+						// Only one cell in each row:
+						rowEl.cells[colNum].className = clName;
+						continue; // next row.
+					}  else {
+						// All cells in all rows:
+						classCellsInOneRow(clName, rowEl);
+					}
+				}
+			}
+		}
+	}
+	
+	var classCellsInOneRow = function(className, rowEl) {
+		for (let cellEl of rowEl.cells) {
+			cellEl.className = className;
+		}
+	}
+
 	return constructor();
 }
-tbl = TableManager(['H1', 'H2'], [[10, 20], [30,40]])
-
 
 /*
+
 // Test getRow():
+
+tbl = TableManager([[10, 20], [30,40]], ['H1', 'H2'] )
 
 alert(tbl.getRow(0)) // ['H1', 'H2']
 alert(tbl.getRow(1)) // [10,20]
@@ -130,4 +218,25 @@ tbl.setRow(1, ['Foo', 'Bar'])
 alert(tbl.getRow(1)); // ['Foo','Bar']
 
 tbl.setRow(3, ['Foo', 'Bar']) // ERROR: Row 3 does not exist in table
+
+tbl1 = TableManager([['blue', 'pink']]);
+
+alert(tbl1.getRow(0)) // ['blue', 'pink']
+alert(tbl1.getCell(0,1)) // 'pink'
+
+tbl = TableManager([[10, 20], [30,40]], ['H1', 'H2'] )
+divEl = document.getElementById("tstTable");
+divEl.appendChild(tbl.value())
+
+//tbl.classed({table : "testClass"}) // Whole tbl turns red.
+
+//tbl.classed({row : ['testClass', 0]}) // first row turns 0
+//tbl.classed({row : ['testClass', 2]}) // last row turns 0
+//tbl.classed({row : ['testClass']}) // all rows turn 0
+
+//tbl.classed({cell : ['testClass', 0,1]}) // H2 turns red
+//tbl.classed({cell : ['testClass', 0]}) // H1 and H2 turn red
+//tbl.classed({cell : ['testClass']}) // All cells turn red
+
 */
+
