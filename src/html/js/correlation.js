@@ -4,7 +4,8 @@ CorrelationViz = function(width, height) {
 	var height = height;
 	var svg    = null;	
 	var scale  = null;
-	var drag   = null;	
+	var drag   = null;
+	var tblObj = null;
 	
 	var constructor = function() {
 		
@@ -37,6 +38,11 @@ CorrelationViz = function(width, height) {
         drag = d3.behavior.drag()
         .on("drag", dragmove);
 		
+        tblObj = createTable();
+        tblObj.classed({table: 'inputTable'});
+        document.getElementById('tableDiv').appendChild(tblObj.value());
+        
+        
 		return {width  : width,
 				height : height
 			}
@@ -63,6 +69,19 @@ CorrelationViz = function(width, height) {
 		var x = d3.event.x;
 		var y = d3.event.y;
 		d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
+	}
+	
+	var createTable = function() {
+		let headerRow = ['Spender', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
+		                 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+		let data      = [['Monica', 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+		                 ['Daniel', 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
+						]
+		tblObj = TableManager(data, headerRow);
+		tblObj.classed({table : 'inputTable',
+						 cell : ['largeLabel', undefined, 0]
+						});
+		return tblObj;
 	}
 
 	constructor(width, height)

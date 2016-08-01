@@ -36,6 +36,7 @@ TableManager = function(dataArr, headerArr) {
 				numRows : numRows,
 				value   : value,
 				classed : classed,
+				IDed    : IDed,
 			   };
 	}
 
@@ -187,11 +188,91 @@ TableManager = function(dataArr, headerArr) {
 		}
 	}
 	
+	
+	var IDed = function(IDingDict) {
+		/*
+		 * If rowNum is undefined for row classing,
+		 * then all rows are classed className.
+		 * In cell: rowNum is undefined then all
+		 * rows are classed className in the colNum
+		 * column. If colNum is undefined, all cells
+		 * in affected row(s) are classed className.
+		 *  
+		 * Dict:
+		 * 	  { table : <classNameTbl>,
+		 *        row : [<classNameRow>, rowNum] // rowNum optional
+		 *       cell : [<classNameCol>, rowNum, colNum]  
+		 */
+		
+		// Classing table as a whole:
+		if (typeof(IDingDict.table) !== 'undefined') {
+			tableEl.id = IDingDict.table;
+		}
+		
+		// Classing one of more row elements:
+		if (typeof(IDingDict.row) !== 'undefined') {
+			let IDName = IDingDict.row[0];
+			let rowNum = IDingDict.row[1];
+
+			// Only one row's columns to change?
+			if (typeof(rowNum) === 'number') {
+				tableEl.rows[rowNum].id = IDName;
+			} else {				
+				// Change class of all rows:				
+				for (let trEl of tableEl.rows) {
+					trEl.id = IDName;
+				}
+			}
+		}
+		
+		if (typeof(IDingDict.cell) !== 'undefined') {
+			let IDName  = IDingDict.cell[0];
+			let rowNum  = IDingDict.cell[1];
+			let colNum = IDingDict.cell[2];
+			
+			// Only in one row?
+			if (typeof(rowNum) === 'number') {
+				// Just one row affected:
+				let row = tableEl.rows[rowNum];
+				// All cells in one row, or just one?
+				if (typeof(colNum) === 'number') {
+					// Only one cell in one row affected:
+					row.cells[colNum].id = IDName;
+					return;
+				} else {
+					// All cells in one row affected:
+					classCellsInOneRow(IDName, row);
+					return;
+				}
+			} else {
+				// Multiple rows affected:
+				for (let rowEl of tableEl.rows) {
+					// Only one cell in each row?
+					if (typeof(colNum) === 'number') {
+						// Only one cell in each row:
+						rowEl.cells[colNum].id = IDName;
+						continue; // next row.
+					}  else {
+						// All cells in all rows:
+						classCellsInOneRow(IDName, rowEl);
+					}
+				}
+			}
+		}
+	}	
+	
 	var classCellsInOneRow = function(className, rowEl) {
 		for (let cellEl of rowEl.cells) {
 			cellEl.className = className;
 		}
 	}
+	
+	var idCellsInOneRow = function(IDName, rowEl) {
+		for (let cellEl of rowEl.cells) {
+			cellEl.id = IDName;
+		}
+	}
+	
 
 	return constructor();
 }
