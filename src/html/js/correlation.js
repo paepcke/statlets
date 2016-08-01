@@ -2,8 +2,9 @@ CorrelationViz = function(width, height) {
 
 	var width  = width;
 	var height = height;
-	var svg    = null;
-	var drag   = null;
+	var svg    = null;	
+	var scale  = null;
+	var drag   = null;	
 	
 	var constructor = function() {
 		
@@ -25,7 +26,14 @@ CorrelationViz = function(width, height) {
 		.style("stroke", "#999999")
 		.style("fill", "#F6F6F6")
 		
-        // Define drag behavior
+		// Make the visual coordinate system:
+		scale = d3.scale.linear()
+						.domain([0,150]) // expenditures between $0 and $150
+						.range([0, height]);
+		
+		
+		
+		// Define drag behavior
         drag = d3.behavior.drag()
         .on("drag", dragmove);
 		
