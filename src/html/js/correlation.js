@@ -1,16 +1,17 @@
 CorrelationViz = function(width, height) {
 
-	var width  = null;
-	var height = null;
+	var width  = width;
+	var height = height;
 	var svg    = null;
 	var drag   = null;
 	
-	var constructor = function(vizWidth, vizHeight) {
+	var constructor = function() {
 		
-		width  = vizWidth;
-		height = vizHeight;
-		
-		svg = d3.select("#vizDiv").append("svg")
+		let chartDiv = document.getElementById('chartDiv');
+		chartDiv.style.width  = `${width}px`;
+		chartDiv.style.height = `${height}px`;
+
+		svg = d3.select("#chartDiv").append("svg")
 		.attr("width", width)
 		.attr("height", height)
 		.attr("id", "chart")
@@ -58,4 +59,4 @@ CorrelationViz = function(width, height) {
 
 	constructor(width, height)
 }
-var corrViz = CorrelationViz(500, 600);
+var corrViz = CorrelationViz(700, 400);
