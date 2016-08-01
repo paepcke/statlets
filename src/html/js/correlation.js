@@ -1,11 +1,26 @@
 CorrelationViz = function(width, height) {
 
+	// Instance variables:
+	
 	var width  = width;
 	var height = height;
 	var svg    = null;	
-	var scale  = null;
+	var xScale = null;
+	var yScale = null;	
+	var xAxis  = null;
+	var yAxis  = null;
 	var drag   = null;
 	var tblObj = null;
+	
+	// Constants:
+	
+	var X_AXIS_LEFT_PADDING      = 40; // X axis distance left SVG edge
+	var X_AXIS_BOTTOM_PADDING    = 50; // X axis distance bottom SVG edge
+	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
+	
+	var Y_AXIS_BOTTOM_PADDING    = 60; // Y axis distance from SVG bottom
+	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
+	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
 	
 	var constructor = function() {
 		
@@ -17,23 +32,18 @@ CorrelationViz = function(width, height) {
 		.attr("width", width)
 		.attr("height", height)
 		.attr("id", "chart")
-		.style("border", "1px solid black")
+		.attr("class", "chartSVG")
 		.on("click", click);
 		
         // Add a background
 		svg.append("rect")
-		.attr("width", width)
+		.attr("width", width) //****
 		.attr("height", height)
-		.style("stroke", "#999999")
+		.attr("class", "chartSVG")
 		.style("fill", "#F6F6F6")
 		
-		// Make the visual coordinate system:
-		scale = d3.scale.linear()
-						.domain([0,150]) // expenditures between $0 and $150
-						.range([0, height]);
-		
-		
-		
+		makeCoordSys();
+
 		// Define drag behavior
         drag = d3.behavior.drag()
         .on("drag", dragmove);
@@ -82,6 +92,45 @@ CorrelationViz = function(width, height) {
 						 cell : ['largeLabel', undefined, 0]
 						});
 		return tblObj;
+	}
+	
+	var makeCoordSys = function() {
+		
+		/* ---------------------------- X AXIS ---------------------------- */		
+		
+		// Make the visual coordinate system:
+		xScale = d3.scale.linear()
+			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
+						 .range([0, width - X_AXIS_RIGHT_PADDING]);
+		
+		xAxis = d3.svg.axis()
+				      .scale(xScale)
+				      .orient("bottom");
+		
+		// Create a group, and call the xAxis function to create the axis:
+		svg.append("g")
+			 .attr("class", "axis")
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+		     .call(xAxis);
+		
+		/* ---------------------------- Y AXIS ---------------------------- */		
+		yScale = d3.scale.linear()
+			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
+						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
+		
+		yAxis = d3.svg.axis()
+				      .scale(yScale)
+				      .orient("left");
+		
+		// Create a group, and call the xAxis function to create the axis:
+		svg.append("g")
+			 .attr("class", "axis")
+			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
+			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
+		     .call(yAxis);
+		
+		
+		
 	}
 
 	constructor(width, height)

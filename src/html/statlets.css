@@ -14,11 +14,23 @@
 			  margin : auto; 
 			}
 
-			
-			
+.chartSVG  {
+			  border-stroke : 10px;
+			  border-color  : red;
+			  border-style  : solid;
+			}			
 
 #tableDiv    { padding-top : 30px;
 			   margin : auto;
 			 }   		     
+			 
+.axis path,
+.axis line   { fill : none;
+			   stroke : black;
+			   shape-rendering : crispEdges; 
+			 }			 
 
+.axis text   { font-family : sans-serif;
+               font-size   : 11pt
+             }
 			
