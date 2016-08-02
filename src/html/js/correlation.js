@@ -22,6 +22,11 @@ CorrelationViz = function(width, height) {
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
 	
+	
+	/*---------------------------
+	| contructor 
+	-----------------*/
+	
 	var constructor = function() {
 		
 		let chartDiv = document.getElementById('chartDiv');
@@ -77,6 +82,10 @@ CorrelationViz = function(width, height) {
 			}
 	}
 
+	/*---------------------------
+	| click 
+	-----------------*/
+	
 	var click = function (){
 		// Ignore the click event if it was suppressed
 		if (d3.event.defaultPrevented) return;
@@ -94,11 +103,32 @@ CorrelationViz = function(width, height) {
 		.call(drag);
 	}
 
+	/*---------------------------
+	| dragmove 
+	-----------------*/
+
 	var dragmove = function(d) {
 		var x = d3.event.x;
 		var y = d3.event.y;
 		d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
 	}
+	
+	/*---------------------------
+	| createDot 
+	-----------------*/
+
+	var createDot = function(x, y, className) {
+		svg.append("circle")
+		.attr("transform", "translate(" + p.x + "," + p.y + ")")
+		.attr("r", "5")
+		.attr("class", "dot")
+		.style("cursor", "pointer")
+		.call(drag);
+	}
+	
+	/*---------------------------
+	| createTable 
+	-----------------*/
 	
 	var createTable = function() {
 		let headerRow = ['Spender', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
@@ -112,6 +142,10 @@ CorrelationViz = function(width, height) {
 						});
 		return tblObj;
 	}
+	
+	/*---------------------------
+	| makeCoordSys 
+	-----------------*/
 	
 	var makeCoordSys = function(extentDict) {
 		
