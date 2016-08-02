@@ -171,6 +171,18 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| placeCorrelationValue 
+	-----------------*/
+	
+	var placeCorrelationValue = function() {
+		
+		let pers1Data = tblObj.getRow(0);
+		let pers2Data = tblObj.getRow(1);
+		let corr      = ss.sampleCorrelation(pers1Data, pers2Data);
+		
+	}
+	
+	/*---------------------------
 	| makeCoordSys 
 	-----------------*/
 	
