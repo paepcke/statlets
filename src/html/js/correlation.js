@@ -12,6 +12,7 @@ CorrelationViz = function(width, height) {
 	var drag   = null;
 	var tblObj = null;
 	var corrTxtEl = null;
+	var dragClickHandler = null;
 	
 	// Constants:
 	
@@ -35,7 +36,9 @@ CorrelationViz = function(width, height) {
 	
 	var constructor = function() {
 		
+		dragClickHandler = StatsDragClickHandler();
 		let chartDiv = document.getElementById('chartDiv');
+		
 		chartDiv.style.width  = `${width}px`;
 		chartDiv.style.height = `${height}px`;
 
@@ -44,7 +47,7 @@ CorrelationViz = function(width, height) {
 		.attr("height", height)
 		.attr("id", "chart")
 		.attr("class", "chartSVG")
-		.on("click", click);
+		.on("click", dragClickHandler.click);
 		
         // Add a background
 		svg.append("rect")
@@ -55,7 +58,7 @@ CorrelationViz = function(width, height) {
 		
 		// Define drag behavior
         drag = d3.behavior.drag()
-        .on("drag", dragmove);
+        .on("drag", dragClickHandler.dragmove);
 		
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
@@ -90,32 +93,6 @@ CorrelationViz = function(width, height) {
 			}
 	}
 
-	/*---------------------------
-	| click 
-	-----------------*/
-	
-	var click = function (){
-		// Ignore the click event if it was suppressed
-		if (d3.event.defaultPrevented) return;
-
-		// Extract the click location\    
-		var point = d3.mouse(this)
-		var     p = {x: point[0], y: point[1] };
-
-		// Append a new point
-		createDot(p.x, p.y, 'dot')
-	}
-
-	/*---------------------------
-	| dragmove 
-	-----------------*/
-
-	var dragmove = function(d) {
-		var x = d3.event.x;
-		var y = d3.event.y;
-		d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
-	}
-	
 	/*---------------------------
 	| createDot 
 	-----------------*/
