@@ -3,7 +3,13 @@ TableManager = function(dataArr, headerArr) {
 	var headerArr = headerArr;
 	var dataArr   = dataArr;
 	var tableEl   = null;
+
+	/* ------------------------------------- Constructor ------------------- */
 	
+	/*---------------------------
+	| constructor
+	-----------------*/
+
 	var constructor = function() {
 		tableEl = document.createElement('TABLE');
 		
@@ -29,17 +35,55 @@ TableManager = function(dataArr, headerArr) {
 			}
 		}
 		
-		return {getRow  : getRow,
-				getCell : getCell,
-				setCell : setCell,
-				setRow  : setRow,
-				numRows : numRows,
-				value   : value,
-				classed : classed,
-				IDed    : IDed,
+		return {getHeader : getHeader,
+				getData   : getData,
+				getRow    : getRow,
+				getCell   : getCell,
+				setCell   : setCell,
+				setRow    : setRow,
+				numRows   : numRows,
+				value     : value,
+				classed   : classed,
+				IDed      : IDed,
 			   };
 	}
 
+	/* ------------------------------------- Public Methods ------------------- */	
+	
+	/*---------------------------
+	| getHeader
+	-----------------*/
+	
+	/*
+	 * Return header row, if it exists. This is 
+	 * the value passed in to the instance creation
+	 * call. If left out there, the return value here
+	 * will be undefined.
+	 */
+	
+	var getHeader = function() {
+		return headerArr;
+	}
+	
+	/*---------------------------
+	| getData
+	-----------------*/
+
+	/*
+	 * Return the array-of-array data values of the table.
+	 * This value is what was passed in during table creation.
+	 * Contrast this with the value() method, which returns
+	 * the TABLE DOM element.
+	 */
+	
+	var getData = function() {
+		return dataArr;
+	}
+	
+	/*---------------------------
+	| getRow
+	-----------------*/
+	
 	var getRow = function(rowNum) {
 		/*
 		 * Get array of row values. rowNum is zero-based.
@@ -64,6 +108,10 @@ TableManager = function(dataArr, headerArr) {
 		return resArr;
 	}
 	
+	/*---------------------------
+	| getCell
+	-----------------*/
+
 	var getCell = function(rowNum, colNum) {
 		if (typeof(colNum) === 'undefined') {
 			throw "Must pass a column number.";
@@ -77,6 +125,10 @@ TableManager = function(dataArr, headerArr) {
 		return rowVals[colNum];
 	}
 	
+	/*---------------------------
+	| setCell
+	-----------------*/
+
 	var setCell = function(rowNum, colNum, newVal) {
 		let rowEl  = null;
 		let cellEl = null;
@@ -94,6 +146,10 @@ TableManager = function(dataArr, headerArr) {
 		return newVal;
 	}
 	
+	/*---------------------------
+	| setRow
+	-----------------*/
+
 	var setRow = function(rowNum, dataArr) {
 		let rowEl = null;
 
@@ -108,13 +164,27 @@ TableManager = function(dataArr, headerArr) {
 		return dataArr;
 	}
 	
+
+	/*---------------------------
+	| numRows
+	-----------------*/
+	
 	var numRows = function() {
 		return tbl.rows.length;
 	}
 	
+
+	/*---------------------------
+	| value
+	-----------------*/
+	
 	var value = function() {
 		return tableEl;
 	}
+	
+	/*---------------------------
+	| classed
+	-----------------*/
 	
 	var classed = function(classingDict) {
 		/*
@@ -124,8 +194,11 @@ TableManager = function(dataArr, headerArr) {
 		 * rows are classed className in the colNum
 		 * column. If colNum is undefined, all cells
 		 * in affected row(s) are classed className.
+		 *
+		 * All elements in the argument dict are optional.
+		 * But if none is present the method does nothing. 
 		 *  
-		 * Dict:
+		 * classingDict:
 		 * 	  { table : <classNameTbl>,
 		 *        row : [<classNameRow>, rowNum] // rowNum optional
 		 *       cell : [<classNameCol>, rowNum, colNum]  
@@ -188,20 +261,36 @@ TableManager = function(dataArr, headerArr) {
 		}
 	}
 	
+	/*---------------------------
+	| IDed
+	-----------------*/
+
+	/*
+	 * Like the classed() method, but sets ID of table
+	 * as a whole, of individual, or all rows, and of
+	 * individual or all cells.
+	 */
 	
 	var IDed = function(IDingDict) {
 		/*
-		 * If rowNum is undefined for row classing,
-		 * then all rows are classed className.
-		 * In cell: rowNum is undefined then all
-		 * rows are classed className in the colNum
-		 * column. If colNum is undefined, all cells
-		 * in affected row(s) are classed className.
+		 * If rowNum is undefined for row ID-setting,
+		 * then all rows receive the given ID (generally 
+		 * undesirable, but I'm not paternalistic).
+		 *
+		 * In cell: if rowNum is undefined then all
+		 * rows receive the specified ID in the colNum
+		 * column. 
+		 * 
+		 * If colNum is undefined, all cells
+		 * in affected row(s) receive the specified ID.
+		 * 
+		 * All elements in the argument dict are optional.
+		 * But if none is present the method does nothing. 
 		 *  
-		 * Dict:
-		 * 	  { table : <classNameTbl>,
-		 *        row : [<classNameRow>, rowNum] // rowNum optional
-		 *       cell : [<classNameCol>, rowNum, colNum]  
+		 * IDingDict:
+		 * 	  { table : <IDTable>,
+		 *        row : [<IDRow>, rowNum] // rowNum optional
+		 *       cell : [<IDCol>, rowNum, colNum]  
 		 */
 		
 		// Classing table as a whole:
@@ -261,12 +350,22 @@ TableManager = function(dataArr, headerArr) {
 		}
 	}	
 	
+	/* ------------------------------------- Private Methods ------------------- */
+
+	/*---------------------------
+	| classCelssInOneRow
+	-----------------*/
+	
 	var classCellsInOneRow = function(className, rowEl) {
 		for (let cellEl of rowEl.cells) {
 			cellEl.className = className;
 		}
 	}
-	
+
+	/*---------------------------
+	| idCellseInOneRow
+	-----------------*/
+		
 	var idCellsInOneRow = function(IDName, rowEl) {
 		for (let cellEl of rowEl.cells) {
 			cellEl.id = IDName;

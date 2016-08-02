@@ -42,8 +42,6 @@ CorrelationViz = function(width, height) {
 		.attr("class", "chartSVG")
 		.style("fill", "#F6F6F6")
 		
-		makeCoordSys();
-
 		// Define drag behavior
         drag = d3.behavior.drag()
         .on("drag", dragmove);
@@ -52,6 +50,27 @@ CorrelationViz = function(width, height) {
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
         
+        // From the (y-) data of the table, get 
+        // the maximum dollar amount:
+        let nestedData  = tblObj.getData();
+        let flatData    = [].concat.apply([], nestedData);
+        // Exclude the col-0 names of people:
+        let numericData = flatData.filter(function(item) {return typeof(item) === 'number'});
+        let yDomain     = [0, Math.max(numericData)];
+        
+        // X axis is months without the col-0 header 'Spender':
+        let xDomain     = tblObj.getHeader().slice(1);
+        
+        // Argument for makeCoordSys:
+        let extentDict  = {x: {scaleType : 'ordinal',
+        					      domain : xDomain
+            				  },
+            			   y: {scaleType : 'linear',
+            				      domain : yDomain
+            			      }
+                          };
+
+		makeCoordSys(extentDict);
         
 		return {width  : width,
 				height : height
@@ -94,26 +113,82 @@ CorrelationViz = function(width, height) {
 		return tblObj;
 	}
 	
-	var makeCoordSys = function() {
+	var makeCoordSys = function(extentDict) {
+		
+		/*
+		 * extentDict: {
+		 *                x : {scaleType : <linear | ordinal | time> },
+		 *                        domain : <[min,max]>                   // if linear scale
+		 *                        domain : <[ord1,ord2,...]>             // if ordinal scale
+		 *                    },
+		 *                y : {scaleType : <linear | ordinal | time> },
+		 *                         domain: <[min,max]>                   // if linear scale
+		 *                         domain: <[ord1,ord2,...]>             // if ordinal scale
+		 *             }
+		 */
 		
 		/* ---------------------------- X AXIS ---------------------------- */		
+
+		let xScale = null;
+		let yScale = null;
+		
+		// X Scale:
+		
+		switch(extentDict.x.scaleType) {
+		case 'linear':
+			xScale = d3.scale.linear()
+							 .domain(extentDict.x.domain)
+							 .range([0, width - X_AXIS_RIGHT_PADDING]);
+			break;
+		case 'ordinal':
+			xScale = d3.scale.ordinal()
+							 .domain(extentDict.x.domain)
+							 .rangePoints([0, width - X_AXIS_RIGHT_PADDING]);
+			break;
+		default:
+			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+		}
+
+		// Y Scale
+		switch(extentDict.y.scaleType) {
+		case 'linear':
+			yScale = d3.scale.linear()
+							 .domain(extentDict.y.domain)
+							 .range([Y_AXIS_TOP_PADDING, height - Y_AXIS_BOTTOM_PADDING]);
+			break;
+		case 'ordinal':
+			yScale = d3.scale.ordinal()
+							 .domain(extentDict.y.domain)
+							 .rangePoints([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
+			break;
+		default:
+			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+		}
 		
 		// Make the visual coordinate system:
-		xScale = d3.scale.linear()
-			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
-						 .range([0, width - X_AXIS_RIGHT_PADDING]);
 		
 		xAxis = d3.svg.axis()
 				      .scale(xScale)
 				      .orient("bottom");
 		
-		// Create a group, and call the xAxis function to create the axis:
-		svg.append("g")
+		// Create a group, and call the xAxis function to create the axis.
+		let xAxisGroup = svg.append("g")
 			 .attr("class", "axis")
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 		     .call(xAxis);
 		
+		// For ordinal X-axes: rotate labels by 45%
+		if (extentDict.x.scaleType == 'ordinal') {
+		xAxisGroup.selectAll("text")
+		     .attr("y", 0)
+		     .attr("x", 30)
+		     .attr("dy", ".30em")
+		     .attr("transform", "rotate(45)")
+		     .style("text-anchor", "start")
+		}
+		
 		/* ---------------------------- Y AXIS ---------------------------- */		
+		//****
 		yScale = d3.scale.linear()
 			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
 						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
