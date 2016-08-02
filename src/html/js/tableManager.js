@@ -88,7 +88,14 @@ TableManager = function(dataArr, headerArr) {
 		/*
 		 * Get array of row values. rowNum is zero-based.
 		 * Note that if the table includes a header row,
-		 * then rowNum === zero returns the header.
+		 * then this row is skipped. Row 0 will be the
+		 * true zeroe'th *data* row, not the header. 
+		 * That is, row 1 will be returned.
+		 * 
+		 * To retrieve the header row, use getHeader();
+		 * 
+		 * If no header is present, Row 0 will be the
+		 * first row in the table.
 		 */
 		
 		if (typeof(rowNum) === 'undefined') {
@@ -100,6 +107,11 @@ TableManager = function(dataArr, headerArr) {
 		if (rowNum >= rows.length) {
 			throw `Table only contains ${rows.length} rows; caller asked for ${rowNum}`;
 		}
+		
+		if (typeof(headerArr) !== 'undefined') {
+			rowNum++;
+		}
+		
 		let row = tableEl.rows[rowNum];
 		let resArr = [];
 		for (let cell of row.cells) {
@@ -153,7 +165,11 @@ TableManager = function(dataArr, headerArr) {
 	var setRow = function(rowNum, dataArr) {
 		let rowEl = null;
 
-		rowEl = tableEl.rows[rowNum];
+		if (typeof(headerArr) !== 'undefined') {
+			rowEl = tableEl.rows[rowNum+1];
+		} else {
+			rowEl = tableEl.rows[rowNum];
+		}
 		if (typeof(rowEl) === 'undefined') {
 			throw `Row ${rowNum} does not exist in table.`
 		}

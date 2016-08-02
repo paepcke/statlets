@@ -33,4 +33,6 @@
 .axis text   { font-family : sans-serif;
                font-size   : 11pt
              }
-			
+
+.person1Dot  { fill : green; }
+.person2Dot  { fill : blue; }

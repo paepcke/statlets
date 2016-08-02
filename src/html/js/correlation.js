@@ -22,6 +22,8 @@ CorrelationViz = function(width, height) {
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
 	
+	var DOT_RADIUS               = 10;
+	
 	
 	/*---------------------------
 	| contructor 
@@ -76,6 +78,7 @@ CorrelationViz = function(width, height) {
                           };
 
 		makeCoordSys(extentDict);
+		populateChart();
         
 		return {width  : width,
 				height : height
@@ -95,12 +98,7 @@ CorrelationViz = function(width, height) {
 		var     p = {x: point[0], y: point[1] };
 
 		// Append a new point
-		svg.append("circle")
-		.attr("transform", "translate(" + p.x + "," + p.y + ")")
-		.attr("r", "5")
-		.attr("class", "dot")
-		.style("cursor", "pointer")
-		.call(drag);
+		createDot(p.x, p.y, 'dot')
 	}
 
 	/*---------------------------
@@ -119,9 +117,9 @@ CorrelationViz = function(width, height) {
 
 	var createDot = function(x, y, className) {
 		svg.append("circle")
-		.attr("transform", "translate(" + p.x + "," + p.y + ")")
-		.attr("r", "5")
-		.attr("class", "dot")
+		.attr("transform", "translate(" + x + "," + y + ")")
+		.attr("r", DOT_RADIUS)
+		.attr("class", className)
 		.style("cursor", "pointer")
 		.call(drag);
 	}
@@ -144,6 +142,35 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| populateChart 
+	-----------------*/
+	
+	var populateChart = function() {
+		
+		// Get header (months), and data without the
+		// 'Spender', 'Monica', 'Daniel' column:
+		
+		var person1Data = tblObj.getRow(0).slice(1);
+		var person2Data = tblObj.getRow(1).slice(1);
+		let months      = tblObj.getHeader().slice(1);
+		
+		
+		for (let dataIndx=0; 
+		         dataIndx<Math.min(person1Data.length, person2Data.length);
+		         dataIndx++) {
+			let month    = months[dataIndx];
+			let pers1Val = person1Data[dataIndx];
+			let pers2Val = person2Data[dataIndx];
+			let x        = xScale(month);
+			let yPers1   = yScale(pers1Val);
+			let yPers2   = yScale(pers2Val);
+			
+			createDot(x,yPers1, 'person1Dot');
+			createDot(x,yPers2, 'person2Dot');
+		}
+	}
+	
+	/*---------------------------
 	| makeCoordSys 
 	-----------------*/
 	
@@ -163,9 +190,6 @@ CorrelationViz = function(width, height) {
 		
 		/* ---------------------------- X AXIS ---------------------------- */		
 
-		let xScale = null;
-		let yScale = null;
-		
 		// X Scale:
 		
 		switch(extentDict.x.scaleType) {
