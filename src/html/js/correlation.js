@@ -11,6 +11,7 @@ CorrelationViz = function(width, height) {
 	var yAxis  = null;
 	var drag   = null;
 	var tblObj = null;
+	var corrTxtEl = null;
 	
 	// Constants:
 	
@@ -24,6 +25,9 @@ CorrelationViz = function(width, height) {
 	
 	var DOT_RADIUS               = 10;
 	
+	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
+									y : Y_AXIS_TOP_PADDING  + 30
+									};
 	
 	/*---------------------------
 	| contructor 
@@ -79,6 +83,7 @@ CorrelationViz = function(width, height) {
 
 		makeCoordSys(extentDict);
 		populateChart();
+		placeCorrelationValue();
         
 		return {width  : width,
 				height : height
@@ -176,9 +181,22 @@ CorrelationViz = function(width, height) {
 	
 	var placeCorrelationValue = function() {
 		
-		let pers1Data = tblObj.getRow(0);
-		let pers2Data = tblObj.getRow(1);
+		// The slices are to exclude the person names
+		// in col 0:
+		let pers1Data = tblObj.getRow(0).slice(1);
+		let pers2Data = tblObj.getRow(1).slice(1);
 		let corr      = ss.sampleCorrelation(pers1Data, pers2Data);
+		let roundedCorr = +corr.toFixed(2); // The '+' suppresses unnecessary trailing zero, if present.
+		
+		if (corrTxtEl === null) {
+			//Add the SVG Text Element to the svgContainer
+			corrTxtEl = svg.append("text")
+							.attr('x', CORR_TXT_POS.x)
+							.attr('y', CORR_TXT_POS.y)
+							.attr('class', 'statsLabel');
+		}
+		corrTxtEl.text(`r: ${roundedCorr}`)
+
 		
 	}
 	
