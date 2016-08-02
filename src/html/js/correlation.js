@@ -136,9 +136,17 @@ CorrelationViz = function(width, height) {
 	var createTable = function() {
 		let headerRow = ['Spender', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
 		                 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-		let data      = [['Monica', 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
-		                 ['Daniel', 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
-						]
+		//let data      = [['Monica', 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+		//                 ['Daniel', 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
+		//				]
+		let data      = [['Monica'],
+		                 ['Daniel']
+		                 ]
+		for (let i=0; i<12; i++) {
+			data[0].push(Math.round(100*Math.random()));
+			data[1].push(Math.round(100*Math.random()));
+		}
+		
 		tblObj = TableManager(data, headerRow);
 		tblObj.classed({table : 'inputTable',
 						 cell : ['largeLabel', undefined, 0]
