@@ -12,20 +12,11 @@ CorrelationViz = function(width, height) {
 	var tblObj = null;
 	var corrTxtEl = null;
 	var dragClickHandler = null;
+	var bandWidth = null; // width in pixels between two x-axis ticks.
+
 	
 	// Constants:
 
-	
-//***********	
-/*	var X_AXIS_LEFT_PADDING      = 40; // X axis distance left SVG edge
-	var X_AXIS_BOTTOM_PADDING    = 50; // X axis distance bottom SVG edge
-	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
-	
-	var Y_AXIS_BOTTOM_PADDING    = 60; // Y axis distance from SVG bottom
-	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
-	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
-*/	
-	
 	var X_AXIS_LEFT_PADDING      = 0; // X axis distance left SVG edge
 	var X_AXIS_BOTTOM_PADDING    = 50; // X axis distance bottom SVG edge
 	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
@@ -33,7 +24,6 @@ CorrelationViz = function(width, height) {
 	var Y_AXIS_BOTTOM_PADDING    = 60; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
-//***********		
 	
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
@@ -153,8 +143,8 @@ CorrelationViz = function(width, height) {
 			let yPers1   = yScale(pers1Val);
 			let yPers2   = yScale(pers2Val);
 			
-			dragClickHandler.createDot(x,yPers1, 'person1Dot');
-			dragClickHandler.createDot(x,yPers2, 'person2Dot');
+			dragClickHandler.createDot(x,yPers1, 'person1Dot', bandWidth);
+			dragClickHandler.createDot(x,yPers2, 'person2Dot', bandWidth);
 		}
 	}
 	
@@ -216,10 +206,17 @@ CorrelationViz = function(width, height) {
 							 .domain(extentDict.x.domain)
 							 .rangeRoundPoints([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
 							 
-			break;
+			// Width between two ticks is (for instance) pixel-pos
+			// at first domain value minus pixel pos at zeroeth domain
+			// value:
+			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
+
+		break;
 		default:
 			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
 		}
+		
+
 
 		// Y Scale
 		switch(extentDict.y.scaleType) {

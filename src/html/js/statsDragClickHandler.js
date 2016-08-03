@@ -1,9 +1,10 @@
 StatsDragClickHandler = function(svg) {
 	
-	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating. 
+	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating.
+	
 	var drag = null;
 	var _allowDrag = {vertical   : false,
-						  horizontal : false} 
+			          horizontal : false} 
 	var _allowDotCreation = true;
 	
 	var DOT_RADIUS               = 10;
@@ -137,15 +138,31 @@ StatsDragClickHandler = function(svg) {
 	| createDot 
 	-----------------*/
 
-	var createDot = function(x, y, className) {
+	var createDot = function(x, y, className, bandWidth) {
 		/*
 		 * Create a circle at x,y, and class it with className.
 		 * x,y are upper-left-corner-based SVG coordinates.
 		 * 
 		 * Adds two D3 attributes to the circle: xOrig, and yOrig.
 		 * They hold the passed-in (i.e. initial) x/y coordinates. Used
-		 * in dragmove to constrain dragging in x or y directions. 
+		 * in dragmove to constrain dragging in x or y directions.
+		 * 
+		 *  :param x: pixel horizontal position of new circle relative
+		 *  			to SVG origin.
+		 *  :type x : float
+		 *  :param y: pixel vertical position of new circle relative
+		 *  			to SVG origin.
+		 *  :type y : float
+		 *  :param className: CSS class of point.
+		 *  :type className : string
+		 *  :param bandWidth: width in pixels between two ordinal ticks.
+		 *  				Only needed for ordinal scales.
+		 *  :type bandWidth: float
 		 */
+		
+		if (typeof(bandWidth) !== 'undefined') {
+			x = x + Math.round(bandWidth/2.);
+		}
 		
 		let circle = svg.append("circle")
 		  .attr("transform", "translate(" + x + "," + y + ")")
