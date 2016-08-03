@@ -9,7 +9,6 @@ CorrelationViz = function(width, height) {
 	var yScale = null;	
 	var xAxis  = null;
 	var yAxis  = null;
-	var drag   = null;
 	var tblObj = null;
 	var corrTxtEl = null;
 	var dragClickHandler = null;
@@ -24,8 +23,6 @@ CorrelationViz = function(width, height) {
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
 	
-	var DOT_RADIUS               = 10;
-	
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
 									};
@@ -36,7 +33,6 @@ CorrelationViz = function(width, height) {
 	
 	var constructor = function() {
 		
-		dragClickHandler = StatsDragClickHandler();
 		let chartDiv = document.getElementById('chartDiv');
 		
 		chartDiv.style.width  = `${width}px`;
@@ -47,19 +43,22 @@ CorrelationViz = function(width, height) {
 		.attr("height", height)
 		.attr("id", "chart")
 		.attr("class", "chartSVG")
-		.on("click", dragClickHandler.click);
-		
-        // Add a background
+
+		dragClickHandler = StatsDragClickHandler(svg);
+		// Only allow dragging dots vertically:
+		dragClickHandler.setAllowDrag({horizontal : false,
+									   vertical   : true})
+		// Don't allow creation of new dots by clicking:
+		dragClickHandler.setAllowDotCreation(false);
+
+
+		// Add a background
 		svg.append("rect")
 		.attr("width", width) //****
 		.attr("height", height)
 		.attr("class", "chartSVG")
 		.style("fill", "#F6F6F6")
-		
-		// Define drag behavior
-        drag = d3.behavior.drag()
-        .on("drag", dragClickHandler.dragmove);
-		
+				
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
@@ -93,19 +92,6 @@ CorrelationViz = function(width, height) {
 			}
 	}
 
-	/*---------------------------
-	| createDot 
-	-----------------*/
-
-	var createDot = function(x, y, className) {
-		svg.append("circle")
-		.attr("transform", "translate(" + x + "," + y + ")")
-		.attr("r", DOT_RADIUS)
-		.attr("class", className)
-		.style("cursor", "pointer")
-		.call(drag);
-	}
-	
 	/*---------------------------
 	| createTable 
 	-----------------*/
@@ -155,8 +141,8 @@ CorrelationViz = function(width, height) {
 			let yPers1   = yScale(pers1Val);
 			let yPers2   = yScale(pers2Val);
 			
-			createDot(x,yPers1, 'person1Dot');
-			createDot(x,yPers2, 'person2Dot');
+			dragClickHandler.createDot(x,yPers1, 'person1Dot');
+			dragClickHandler.createDot(x,yPers2, 'person2Dot');
 		}
 	}
 	
