@@ -107,7 +107,7 @@ TableManager = function(dataArr, headerArr) {
 	| getRow
 	-----------------*/
 	
-	var getRow = function(rowNum) {
+	var getRow = function(rowNum, inclHeader, inclCol0) {
 		/*
 		 * Get array of row values. rowNum is zero-based.
 		 * Note that if the table includes a header row,
@@ -124,10 +124,26 @@ TableManager = function(dataArr, headerArr) {
 		if (typeof(rowNum) === 'undefined') {
 			throw "Must pass a row number to retrieve.";
 		}
+	
+		if (typeof(inclRow0) === 'undefined') {
+			inclRow0 = false;
+		}
+		
+		if (typeof(inclCol0) === 'undefined') {
+			inclCol0 = true;
+		}
+		
+		let numRows = tableEl.rows.length;
+		let rows    = tableEl.rows;
+		
+		if (! inclRow0) {
+			rowNum++;
+			rows = rows.slice(1);
+			numRows--;
+		}
 		
 		// Get HTMLCollection of <tr> elements:
-		let rows = tableEl.rows;
-		if (rowNum >= rows.length) {
+		if (rowNum >= numRows) {
 			throw `Table only contains ${rows.length} rows; caller asked for ${rowNum}`;
 		}
 		
@@ -177,6 +193,7 @@ TableManager = function(dataArr, headerArr) {
 		if (typeof(cellEl) === undefined) {
 			throw `Table row ${rowNum} does not contain column ${colNum}`
 		}
+		dataArr[rowNum, colNum] = newVal;
 		cellEl.innerHTML = newVal;
 		return newVal;
 	}
@@ -196,6 +213,8 @@ TableManager = function(dataArr, headerArr) {
 		if (typeof(rowEl) === 'undefined') {
 			throw `Row ${rowNum} does not exist in table.`
 		}
+		
+		dataArr[rowNum] = dataArr;
 		let cellNum = 0;
 		for (let cell of rowEl.cells) {
 			cell.innerHTML = dataArr[cellNum++];

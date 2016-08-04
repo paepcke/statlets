@@ -134,8 +134,6 @@ CorrelationViz = function(width, height) {
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
 		
-		var person1Data = tblObj.getRow(0).slice(1);
-		var person2Data = tblObj.getRow(1).slice(1);
 		let months      = tblObj.getHeader().slice(1);
 		
 		let dotClasses  = ['person1Dot', 'person2Dot'];
@@ -157,87 +155,11 @@ CorrelationViz = function(width, height) {
 				.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
 				.attr('class', function() { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+				.call(dragClickHandler.drag);
 		}
-		
-		
-/*		
-		svgSel = d3.select('svg')
-		.data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
-		.selectAll(dotClasses[++currRowNum])
-		.data(function(row) { return row })
-		.enter()
-		.append('circle')
-		.attr('r', DOT_RADIUS)
-		.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
-		.attr('cy', function(d, colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
-		.attr('class', function() { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
-*/		
-		
-/*		d3.select('svg')
-			// Array rows, excluding header row and spender name in col0:
-			.data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) })
-			.selectAll('circle')
-			.data(function(d,rowNum) { return d }) // get and return one row: matrix[rowNum]
-			.enter() // one person-expenditure row at a time
-			.append('circle')
-			.attr('r', DOT_RADIUS)
-			.attr('cx', function(d,rowNum) { return xScale(months[rowNum]) + Math.round(bandWidth / 2.0) })
-			.attr('cy', function(d, rowNum) { return yScale(d) }) // one row element at a time.
-			.attr('class', function(d, rowNum) { return dotClasses[rowNum]; })
-			
-			.call(dragClickHandler.drag);
-*/			
-			//*********
-			foo = 10;
-			//*********			
-		
-/*		d3.selectAll('svg')
-		   .selectAll('.person1Dot') 
-		   .data(person1Data)
-
-		   // Associate (possibly) changed data with existing circles:
-		   .attr('cx', function(d,i) { return xScale[months[i]] + Math.round(bandWidth / 2.0) })
-		   .attr('cy', function(d,i) { return yScale[person1Data[i]] })
-		   .attr('r', 	DOT_RADIUS)
-		   
-			// Next, create new circles for newly-added data:
-		   .enter()
-		   
-		   .append('circle')
-		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
-		   .attr('cy', function(d,i) { return yScale(person1Data[i]) })
-		   .attr('r', 	DOT_RADIUS)
-		   .attr('class', 'person1Dot')
-		   
-		   .attr('xOrig', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
-		   .attr('yOrig', function(d,i) { return yScale(person1Data[i]) })
-		
-		   .call(dragClickHandler.drag);
-		   
-
-		d3.selectAll('svg')
-		   .selectAll('.person2Dot') 
-		   .data(person2Data)
-
-		   // Associate (possibly) changed data with existing circles:
-		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
-		   .attr('cy', function(d,i) { return yScale(person2Data[i]) })
-		   .attr('r', 	DOT_RADIUS)
-		   
-			// Next, create new circles for newly-added data:
-		   .enter()
-		   
-		   .append('circle')
-		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
-		   .attr('cy', function(d,i) { return yScale(person2Data[i]) })
-		   .attr('r', 	DOT_RADIUS)
-		   .attr('class', 'person2Dot')
-		   
-		   .attr('xOrig', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
-		   .attr('yOrig', function(d,i) { return yScale(person2Data[i]) })
-
-    	   .call(dragClickHandler.drag);
-*/		
+		//*********
+		foo = 10;
+		//*********			
 	}
 	
 /*	---------------------------
@@ -401,3 +323,4 @@ CorrelationViz = function(width, height) {
 	return constructor(width, height);
 }
 var corrViz = CorrelationViz(700, 400);
+var bar = 10;
