@@ -186,10 +186,6 @@ TableManager = function(dataArr, headerArr) {
 			throw `Row and col numbers must be positive integers, not [${rowNum},${colNum}].`
 		}
 		
-		//**********
-		console.log(`dataArr before setCell(): ${dataArr}`);
-		//**********
-		
 		rowEl = tableEl.rows[rowNum];
 		if (typeof(rowEl) === 'undefined') {
 			throw `Row ${rowNum} does not exist in table.`

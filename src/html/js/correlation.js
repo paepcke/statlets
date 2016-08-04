@@ -60,7 +60,7 @@ CorrelationViz = function(width, height) {
 
 		// Add a background
 		svg.append("rect")
-		.attr("width", width) //****
+		.attr("width", width)
 		.attr("height", height)
 		.attr("class", "chartSVG")
 		.style("fill", "#F6F6F6")
@@ -149,22 +149,23 @@ CorrelationViz = function(width, height) {
 		for (let row of tblObj.getData(NO_HEADER_ROW, NO_COL0)) {
 			
 			dotClass = dotClasses[++currRowNum];
-			svgSel.selectAll(dotClass)
+
+			personDotSel = svgSel.selectAll(dotClass)
 				.data(function() { return row })
 				
+			personDotSel
 				// Update existing dots with (possibly) changed data:
 				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				
-				.enter() // Add additional dots if now more data than before:
+			personDotSel.enter() 
+				// Add additional dots if now more data than before:
 				.append('circle')
 				.attr('r', DOT_RADIUS)
 				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				.attr('class', function() { return dotClass } )
 
-				.exit().remove()
-			
 				.call(dragClickHandler.drag);
 		}
 	}
@@ -307,7 +308,6 @@ CorrelationViz = function(width, height) {
 		}
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
-		//****
 		yScale = d3.scale.linear()
 			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
 						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
