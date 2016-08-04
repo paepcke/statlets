@@ -147,19 +147,26 @@ CorrelationViz = function(width, height) {
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
 
 		for (let row of tblObj.getData(NO_HEADER_ROW, NO_COL0)) {
-			svgSel.selectAll(dotClasses[++currRowNum])
+			
+			dotClass = dotClasses[++currRowNum];
+			svgSel.selectAll(dotClass)
 				.data(function() { return row })
-				.enter()
+				
+				// Update existing dots with (possibly) changed data:
+				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				
+				.enter() // Add additional dots if now more data than before:
 				.append('circle')
 				.attr('r', DOT_RADIUS)
-				.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
-				.attr('cy', function(d, colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
-				.attr('class', function() { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				.attr('class', function() { return dotClass } )
+
+				.exit().remove()
+			
 				.call(dragClickHandler.drag);
 		}
-		//*********
-		foo = 10;
-		//*********			
 	}
 	
 /*	---------------------------

@@ -107,66 +107,50 @@ TableManager = function(dataArr, headerArr) {
 	| getRow
 	-----------------*/
 	
-	var getRow = function(rowNum, inclHeader, inclCol0) {
+	var getRow = function(rowNum) {
 		/*
 		 * Get array of row values. rowNum is zero-based.
 		 * Note that if the table includes a header row,
-		 * then this row is skipped. Row 0 will be the
+		 * then that header row is ignored. Row 0 will be the
 		 * true zeroe'th *data* row, not the header. 
-		 * That is, row 1 will be returned.
 		 * 
 		 * To retrieve the header row, use getHeader();
 		 * 
-		 * If no header is present, Row 0 will be the
-		 * first row in the table.
+		 * Returns a copy of the internally maintained
+		 * matrix row.
 		 */
 		
-		if (typeof(rowNum) === 'undefined') {
+		if (typeof(rowNum) !== 'number') {
 			throw "Must pass a row number to retrieve.";
 		}
-	
-		if (typeof(inclRow0) === 'undefined') {
-			inclRow0 = false;
+		
+		if (rowNum > dataArr.length) {
+			throw `Table has ${dataArr.length} rows; caller asked for row ${rowNum}`;
 		}
 		
-		if (typeof(inclCol0) === 'undefined') {
-			inclCol0 = true;
-		}
-		
-		let numRows = tableEl.rows.length;
-		let rows    = tableEl.rows;
-		
-		if (! inclRow0) {
-			rowNum++;
-			rows = rows.slice(1);
-			numRows--;
-		}
-		
-		// Get HTMLCollection of <tr> elements:
-		if (rowNum >= numRows) {
-			throw `Table only contains ${rows.length} rows; caller asked for ${rowNum}`;
-		}
-		
-		if (typeof(headerArr) !== 'undefined') {
-			rowNum++;
-		}
-		
-		let row = tableEl.rows[rowNum];
-		let resArr = [];
-		for (let cell of row.cells) {
-			resArr.push(cell.innerHTML);
-		}
-		return resArr;
+		// Return a copy of the row:
+		return dataArr[rowNum].slice(0);
 	}
-	
+
 	/*---------------------------
 	| getCell
 	-----------------*/
 
 	var getCell = function(rowNum, colNum) {
-		if (typeof(colNum) === 'undefined') {
-			throw "Must pass a column number.";
+		/*
+		 * Get value from a cell. rowNum is zero-based.
+		 * Note that if the table includes a header row,
+		 * then this row is skipped. Row 0 will be the
+		 * true zeroe'th *data* row, not the header. 
+		 * 
+		 * To retrieve the header row, use getHeader();
+		 */
+		
+		if (typeof(colNum) !== 'number' ||
+			typeof(rowNum) !== 'number') {
+			throw `Must pass numbers for row and column; caller passed (${rowNum},${colNum}).`;
 		}
+
 		let rowVals  = getRow(rowNum);
 		
 		if (colNum >= rowVals.length) {
@@ -181,20 +165,51 @@ TableManager = function(dataArr, headerArr) {
 	-----------------*/
 
 	var setCell = function(rowNum, colNum, newVal) {
+		
+		/*
+		 * Set value of a cell. rowNum is zero-based.
+		 * Note that if the table includes a header row,
+		 * then that header row is ignored. Row 0 will be the
+		 * true zeroe'th *data* row, not the header.
+		 * 
+		 * Both the internal representation of the table,
+		 * and the HTML are updated.
+		 */
+		
 		let rowEl  = null;
 		let cellEl = null;
 	
+		if (typeof(rowNum) !== 'number' ||
+			typeof(colNum) !== 'number' ||
+			rowNum < 0 ||
+			colNum < 0) {
+			throw `Row and col numbers must be positive integers, not [${rowNum},${colNum}].`
+		}
+		
+		//**********
+		console.log(`dataArr before setCell(): ${dataArr}`);
+		//**********
+		
 		rowEl = tableEl.rows[rowNum];
 		if (typeof(rowEl) === 'undefined') {
 			throw `Row ${rowNum} does not exist in table.`
+		}
+		
+		dataArr[rowNum][colNum] = newVal;
+		
+		if (typeof(headerArr) !== 'undefined') {
+			// For HTML table, header is a regular row.
+			// Skip that:
+			rowNum++;
 		}
 		
 		cellEl = rowEl.cells[colNum];
 		if (typeof(cellEl) === undefined) {
 			throw `Table row ${rowNum} does not contain column ${colNum}`
 		}
-		dataArr[rowNum, colNum] = newVal;
+		
 		cellEl.innerHTML = newVal;
+		
 		return newVal;
 	}
 	
@@ -203,6 +218,13 @@ TableManager = function(dataArr, headerArr) {
 	-----------------*/
 
 	var setRow = function(rowNum, dataArr) {
+		/*
+		 * Replace one row. rowNum is zero-based.
+		 * Note that if the table includes a header row,
+		 * then that row is ignored. Row 0 will be the
+		 * true zeroe'th *data* row, not the header. 
+		 */
+		
 		let rowEl = null;
 
 		if (typeof(headerArr) !== 'undefined') {
@@ -215,6 +237,13 @@ TableManager = function(dataArr, headerArr) {
 		}
 		
 		dataArr[rowNum] = dataArr;
+		
+		if (typeof(headerArr) !== 'undefined') {
+			// HTML table includes the header
+			// as row 0; account for that:
+			rowNum++;
+		}
+		
 		let cellNum = 0;
 		for (let cell of rowEl.cells) {
 			cell.innerHTML = dataArr[cellNum++];
@@ -228,7 +257,7 @@ TableManager = function(dataArr, headerArr) {
 	-----------------*/
 	
 	var numRows = function() {
-		return tbl.rows.length;
+		return dataArr.rows.length;
 	}
 	
 
@@ -411,7 +440,7 @@ TableManager = function(dataArr, headerArr) {
 	/* ------------------------------------- Private Methods ------------------- */
 
 	/*---------------------------
-	| classCelssInOneRow
+	| classCellsInOneRow
 	-----------------*/
 	
 	var classCellsInOneRow = function(className, rowEl) {
@@ -421,7 +450,7 @@ TableManager = function(dataArr, headerArr) {
 	}
 
 	/*---------------------------
-	| idCellseInOneRow
+	| idCellsInOneRow
 	-----------------*/
 		
 	var idCellsInOneRow = function(IDName, rowEl) {
