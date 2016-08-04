@@ -76,8 +76,31 @@ TableManager = function(dataArr, headerArr) {
 	 * the TABLE DOM element.
 	 */
 	
-	var getData = function() {
-		return dataArr;
+	var getData = function(inclHeader, inclCol0) {
+		
+		if (typeof(inclRow0) === 'undefined') {
+			inclRow0 = false;
+		}
+		
+		if (typeof(inclCol0) === 'undefined') {
+			inclCol0 = true;
+		}
+		
+		let resArr = dataArr;
+		
+		if (inclHeader) {
+			resArr = [headerArr].concat([resArr]);
+		}
+		
+		if (! inclCol0) {
+			let tmpArr = [];
+			for (let row of resArr) {
+				tmpArr.push(row.slice(1));
+			}
+			resArr = tmpArr;
+		}
+			
+		return resArr;
 	}
 	
 	/*---------------------------
@@ -434,5 +457,14 @@ divEl.appendChild(tbl.value())
 //tbl.classed({cell : ['testClass', 0]}) // H1 and H2 turn red
 //tbl.classed({cell : ['testClass']}) // All cells turn red
 
-*/
+// Getting raw data with/without header/first-col:
 
+data = tbl.getData(); // [[10,20],[30,40]]
+dataNoHead   = tbl.getData(false); // [[30, 40]]
+dataNoCol    = tbl.getData(true,false); // [[20],[40]]
+dataNeither  = tbl.getData(false,false); // [[40]]
+console.log(dataNoHead);
+console.log(dataNoCol);
+console.log(dataNeither);
+
+*/

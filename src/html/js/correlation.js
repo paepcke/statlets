@@ -13,6 +13,7 @@ CorrelationViz = function(width, height) {
 	var corrTxtEl = null;
 	var dragClickHandler = null;
 	var bandWidth = null; // width in pixels between two x-axis ticks.
+	
 
 	
 	// Constants:
@@ -137,7 +138,48 @@ CorrelationViz = function(width, height) {
 		var person2Data = tblObj.getRow(1).slice(1);
 		let months      = tblObj.getHeader().slice(1);
 		
-		d3.selectAll('svg')
+		let dotClasses  = ['person1Dot', 'person2Dot'];
+		
+		let NO_HEADER_ROW = false;
+		let NO_COL0       = false;
+
+		//********
+		console.log(`Data: ${tblObj.getData(NO_HEADER_ROW, NO_COL0)}`)
+		//********
+		let currRowNum = null;
+		let svgSel = d3.select('svg')
+						.data(function() { console.log(`1st data(); ret ${tblObj.getData(NO_HEADER_ROW, NO_COL0)}`); return tblObj.getData(NO_HEADER_ROW, NO_COL0) })
+						.selectAll("circle")
+						.enter()
+						.data(function (d, rowNum) {console.log(`2nd data(): d: ${d}, rowNum: ${rowNum}`); currRowNum = rowNum; return d; })
+						.enter()
+						.append('circle')
+						.attr('r', DOT_RADIUS)
+						.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+						.attr('cy', function(d,colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
+						.attr('class', function(d, colNum) { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+		
+		
+		
+/*		d3.select('svg')
+			// Array rows, excluding header row and spender name in col0:
+			.data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) })
+			.selectAll('circle')
+			.data(function(d,rowNum) { return d }) // get and return one row: matrix[rowNum]
+			.enter() // one person-expenditure row at a time
+			.append('circle')
+			.attr('r', DOT_RADIUS)
+			.attr('cx', function(d,rowNum) { return xScale(months[rowNum]) + Math.round(bandWidth / 2.0) })
+			.attr('cy', function(d, rowNum) { return yScale(d) }) // one row element at a time.
+			.attr('class', function(d, rowNum) { return dotClasses[rowNum]; })
+			
+			.call(dragClickHandler.drag);
+*/			
+			//*********
+			foo = 10;
+			//*********			
+		
+/*		d3.selectAll('svg')
 		   .selectAll('.person1Dot') 
 		   .data(person1Data)
 
@@ -183,7 +225,7 @@ CorrelationViz = function(width, height) {
 		   .attr('yOrig', function(d,i) { return yScale(person2Data[i]) })
 
     	   .call(dragClickHandler.drag);
-		
+*/		
 	}
 	
 /*	---------------------------
