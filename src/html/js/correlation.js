@@ -143,23 +143,35 @@ CorrelationViz = function(width, height) {
 		let NO_HEADER_ROW = false;
 		let NO_COL0       = false;
 
-		//********
-		console.log(`Data: ${tblObj.getData(NO_HEADER_ROW, NO_COL0)}`)
-		//********
-		let currRowNum = null;
-		let svgSel = d3.select('svg')
-						.data(function() { console.log(`1st data(); ret ${tblObj.getData(NO_HEADER_ROW, NO_COL0)}`); return tblObj.getData(NO_HEADER_ROW, NO_COL0) })
-						.selectAll("circle")
-						.enter()
-						.data(function (d, rowNum) {console.log(`2nd data(): d: ${d}, rowNum: ${rowNum}`); currRowNum = rowNum; return d; })
-						.enter()
-						.append('circle')
-						.attr('r', DOT_RADIUS)
-						.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
-						.attr('cy', function(d,colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
-						.attr('class', function(d, colNum) { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+		let currRowNum = -1;
+		
+		svgSel = d3.select('svg')
+		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
+
+		for (let row of tblObj.getData(NO_HEADER_ROW, NO_COL0)) {
+			svgSel.selectAll(dotClasses[++currRowNum])
+				.data(function() { return row })
+				.enter()
+				.append('circle')
+				.attr('r', DOT_RADIUS)
+				.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cy', function(d, colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
+				.attr('class', function() { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+		}
 		
 		
+/*		
+		svgSel = d3.select('svg')
+		.data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
+		.selectAll(dotClasses[++currRowNum])
+		.data(function(row) { return row })
+		.enter()
+		.append('circle')
+		.attr('r', DOT_RADIUS)
+		.attr('cx', function(d,colNum) { console.log(`set cx: d: ${d}, colNum: ${colNum}`); return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+		.attr('cy', function(d, colNum) { console.log(`set cy: d: ${d}, colNum: ${colNum}`); return yScale(d) }) // one row element at a time
+		.attr('class', function() { console.log(`set class to ${dotClasses[currRowNum]}`); return dotClasses[currRowNum] } )
+*/		
 		
 /*		d3.select('svg')
 			// Array rows, excluding header row and spender name in col0:
