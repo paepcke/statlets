@@ -150,7 +150,7 @@ CorrelationViz = function(width, height) {
 			
 			dotClass = dotClasses[++currRowNum];
 
-			personDotSel = svgSel.selectAll(dotClass)
+			personDotSel = svgSel.selectAll('.' + dotClass)
 				.data(function() { return row })
 				
 			personDotSel
