@@ -29,6 +29,9 @@ CorrelationViz = function(width, height) {
 									y : Y_AXIS_TOP_PADDING  + 30
 									};
 	
+	var DOT_RADIUS               = 10;  // pixels.
+
+	
 	/*---------------------------
 	| contructor 
 	-----------------*/
@@ -86,11 +89,13 @@ CorrelationViz = function(width, height) {
                           };
 
 		makeCoordSys(extentDict);
-		populateChart();
+		updateChart();
 		placeCorrelationValue();
         
 		return {width  : width,
-				height : height
+				height : height,
+				tblObj : tblObj,
+				updateChart, updateChart,
 			}
 	}
 
@@ -120,8 +125,70 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| populateChart 
+	| updateChart 
 	-----------------*/
+	
+	var updateChart = function() {
+		
+		// Get header (months), and data without the
+		// 'Spender', 'Monica', 'Daniel' column:
+		
+		var person1Data = tblObj.getRow(0).slice(1);
+		var person2Data = tblObj.getRow(1).slice(1);
+		let months      = tblObj.getHeader().slice(1);
+		
+		d3.selectAll('svg')
+		   .selectAll('.person1Dot') 
+		   .data(person1Data)
+
+		   // Associate (possibly) changed data with existing circles:
+		   .attr('cx', function(d,i) { return xScale[months[i]] + Math.round(bandWidth / 2.0) })
+		   .attr('cy', function(d,i) { return yScale[person1Data[i]] })
+		   .attr('r', 	DOT_RADIUS)
+		   
+			// Next, create new circles for newly-added data:
+		   .enter()
+		   
+		   .append('circle')
+		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
+		   .attr('cy', function(d,i) { return yScale(person1Data[i]) })
+		   .attr('r', 	DOT_RADIUS)
+		   .attr('class', 'person1Dot')
+		   
+		   .attr('xOrig', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
+		   .attr('yOrig', function(d,i) { return yScale(person1Data[i]) })
+		
+		   .call(dragClickHandler.drag);
+		   
+
+		d3.selectAll('svg')
+		   .selectAll('.person2Dot') 
+		   .data(person2Data)
+
+		   // Associate (possibly) changed data with existing circles:
+		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
+		   .attr('cy', function(d,i) { return yScale(person2Data[i]) })
+		   .attr('r', 	DOT_RADIUS)
+		   
+			// Next, create new circles for newly-added data:
+		   .enter()
+		   
+		   .append('circle')
+		   .attr('cx', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
+		   .attr('cy', function(d,i) { return yScale(person2Data[i]) })
+		   .attr('r', 	DOT_RADIUS)
+		   .attr('class', 'person2Dot')
+		   
+		   .attr('xOrig', function(d,i) { return xScale(months[i]) + Math.round(bandWidth / 2.0) })
+		   .attr('yOrig', function(d,i) { return yScale(person2Data[i]) })
+
+    	   .call(dragClickHandler.drag);
+		
+	}
+	
+/*	---------------------------
+	| populateChart 
+	-----------------
 	
 	var populateChart = function() {
 		
@@ -147,7 +214,7 @@ CorrelationViz = function(width, height) {
 			dragClickHandler.createDot(x,yPers2, 'person2Dot', bandWidth);
 		}
 	}
-	
+*/	
 	/*---------------------------
 	| placeCorrelationValue 
 	-----------------*/
@@ -277,6 +344,6 @@ CorrelationViz = function(width, height) {
 		
 	}
 
-	constructor(width, height)
+	return constructor(width, height);
 }
 var corrViz = CorrelationViz(700, 400);

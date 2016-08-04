@@ -30,7 +30,8 @@ StatsDragClickHandler = function(svg) {
 			    setAllowDrag    	: setAllowDrag,        // setter
 			    allowDotCreation    : allowDotCreation,    // getter
 			    setAllowDotCreation : setAllowDotCreation, // setter
-			    setSvg				: setSvg,              // setter    
+			    setSvg				: setSvg,              // setter
+			    drag			    : drag,
 				}
 	}
 
@@ -122,15 +123,19 @@ StatsDragClickHandler = function(svg) {
 		let x = evt.x;
 		let y = evt.y;
 		
-		if (! _allowDrag.horizontal) {
-			x = d3.select(this).attr('xOrig');
+		if ( _allowDrag.horizontal) {
+			d3.select(this).attr('cx', x);
 		}
 		
-		if (! _allowDrag.vertical) {
-			y = d3.select(this).attr('yOrig');
+		if ( _allowDrag.vertical) {
+			d3.select(this).attr('cy', y);
 		}
 			
-		d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
+		
+		// The following old way worked with createDot. We now
+		// use the more D3-ish way of creating and updating
+		// points:
+		// d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
 	}
 	
 
