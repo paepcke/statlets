@@ -151,6 +151,23 @@ CorrelationViz = function(width, height) {
           	    	// update the table. The dot is found like this:
           	    	//    evt = d3.event;
           	    	//    evt.sourceEvent.target;
+          	    	let circle = d3.event.sourceEvent.target;
+          	    	// The row/col in tbl to which this circle corresponds:
+          	    	let circleSel = d3.select(circle);
+          	    	
+          	    	if (dotClasses.indexOf(circleSel.attr('class')) === -1) {
+          	    		// Was running mouse over something other than
+          	    		// one of our circles:
+          	    		return;
+          	    	}
+          	    	
+          	    	let tblRow = parseInt(circleSel.attr('tblRow'));
+          	    	// The +1: skip col0, which is the spender's name:
+          	    	let tblCol = parseInt(circleSel.attr('tblCol')) + 1;
+          	    	
+          	    	let userFrmY  = yScale.invert(circleSel.attr('cy') - Y_AXIS_TOP_PADDING);
+          	    	
+          	    	tblObj.setCell(tblRow, tblCol, userFrmY.toPrecision(2));
           	    	});
 				
 		svgSel = d3.select('svg')
@@ -164,6 +181,7 @@ CorrelationViz = function(width, height) {
 		for (let row of tblObj.getData(NO_HEADER_ROW, NO_COL0)) {
 			
 			dotClass = dotClasses[++currRowNum];
+			let colNum = 0;
 
 			personDotSel = svgSel.selectAll('.' + dotClass)
 				.data(function() { return row })
@@ -176,7 +194,9 @@ CorrelationViz = function(width, height) {
 			personDotSel.enter() 
 				// Add additional dots if now more data than before:
 				.append('circle')
-				.attr('r', DOT_RADIUS)
+				.attr('tblRow', function() { return currRowNum })
+				.attr('tblCol', function() { return colNum++ } )
+				.attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
 				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				.attr('class', function() { return dotClass } )
