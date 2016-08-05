@@ -118,25 +118,20 @@ StatsDragClickHandler = function(svg) {
 	| dragmove 
 	-----------------*/
 
-	var dragmove = function(d) {
+	var dragmove = function(d3DomElSel) {
 
 		let evt = d3.event;
 		let x = evt.x;
 		let y = evt.y;
 		
-		let target = evt.sourceEvent.target;
-		
 		if ( _allowDrag.horizontal) {
-			//****d3.select(this).attr('cx', x);
-			d3.select(target).attr('cx', x);
+			d3DomElSel.attr('cx', x);
 		}
 		
 		if ( _allowDrag.vertical) {
-			//*****d3.select(this).attr('cy', y);
-			d3.select(target).attr('cy', y);
+			d3DomElSel.attr('cy', y);
 		}
 			
-		
 		// The following old way worked with createDot. We now
 		// use the more D3-ish way of creating and updating
 		// points:

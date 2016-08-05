@@ -143,34 +143,51 @@ CorrelationViz = function(width, height) {
 
 		let currRowNum = -1;
 		
-		let tableDragUpdate = d3.behavior.drag()
-          	    .on("drag", function(d) { 
-          	    	dragClickHandler.dragmove(d)
-          	    	// Find this dot's corresponding table cell
-          	    	// Find new y-position in table coordinates.
-          	    	// update the table. The dot is found like this:
-          	    	//    evt = d3.event;
-          	    	//    evt.sourceEvent.target;
-          	    	let circle = d3.event.sourceEvent.target;
-          	    	// The row/col in tbl to which this circle corresponds:
-          	    	let circleSel = d3.select(circle);
-          	    	
-          	    	if (dotClasses.indexOf(circleSel.attr('class')) === -1) {
-          	    		// Was running mouse over something other than
-          	    		// one of our circles:
-          	    		return;
-          	    	}
-          	    	
-          	    	let tblRow = parseInt(circleSel.attr('tblRow'));
-          	    	// The +1: skip col0, which is the spender's name:
-          	    	let tblCol = parseInt(circleSel.attr('tblCol')) + 1;
-          	    	
-          	    	let userFrmY  = yScale.invert(circleSel.attr('cy') - Y_AXIS_TOP_PADDING);
-          	    	
-          	    	tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));
-          	    	// Update correlation:
-          	    	placeCorrelationValue()
-          	    	});
+		let addDragBehavior = d3.behavior.drag()
+				.on('dragstart', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let circleSel = d3.select(this);
+					
+					// Is the element one of our circles?
+					if (dotClasses.indexOf(circleSel.attr('class')) === -1) {
+						// Was running mouse over something other than
+						// one of our circles:
+						return;
+					}
+					
+					// Allow us to style a moving circle if we want:
+					circleSel.classed("dragging", true);
+
+					// Remember the circle that's in motion:
+					d3.behavior.drag.currCircle = this;
+					
+				})
+				.on('drag', function(d) {
+					let circleSel = d3.select(this);
+					
+					let mouseY  = d3.event.y;
+					let circleY = circleSel.attr('cy');
+					let circleR = circleSel.attr('r');
+					
+					if (Math.abs(mouseY - circleY) > circleR) {
+						// Mouse got ahead of the dragged circle.
+						// Select the circle we are dragging instead:
+						circleSel = d3.select(d3.behavior.drag.currCircle);
+					}
+					
+					if (! circleSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					handleDrag(circleSel);
+				})
+				.on ('dragend', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.behavior.drag.currCircle = undefined;
+				})
 				
 		svgSel = d3.select('svg')
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
@@ -203,12 +220,34 @@ CorrelationViz = function(width, height) {
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				.attr('class', function() { return dotClass } )
 
-				// Attach drag behavior to this circle.
-				// the handler's dragmove() method is 
-				// called for moves:
-				//******.call(dragClickHandler.drag)
-				.call(tableDragUpdate)
+				// Attach drag-start behavior to this circle.
+				.call(addDragBehavior)
 		}
+	}
+	
+	/*---------------------------
+	| handleDrag
+	-----------------*/
+	
+	var handleDrag = function(d3CircleSel) {
+		/*
+		 Find this dot's corresponding table cell
+		 Find new y-position in table coordinates.
+		 update the table.
+		 */
+		
+		let tblRow = parseInt(d3CircleSel.attr('tblRow'));
+		// The +1: skip col0, which is the spender's name:
+		let tblCol = parseInt(d3CircleSel.attr('tblCol')) + 1;
+
+		//******let userFrmY  = yScale.invert(d3CircleSel.attr('cy') - Y_AXIS_TOP_PADDING);
+		let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
+
+		tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));
+		// Update correlation:
+		placeCorrelationValue();
+		
+		dragClickHandler.dragmove(d3CircleSel);
 	}
 	
 /*	---------------------------
