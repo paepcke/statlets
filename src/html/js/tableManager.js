@@ -128,7 +128,7 @@ TableManager = function(dataArr, headerArr) {
 			throw `Table has ${dataArr.length} rows; caller asked for row ${rowNum}`;
 		}
 		
-		// Return a copy of the row:
+		// Return a *copy* of the row:
 		return dataArr[rowNum].slice(0);
 	}
 
@@ -186,12 +186,8 @@ TableManager = function(dataArr, headerArr) {
 			throw `Row and col numbers must be positive integers, not [${rowNum},${colNum}].`
 		}
 		
-		rowEl = tableEl.rows[rowNum];
-		if (typeof(rowEl) === 'undefined') {
-			throw `Row ${rowNum} does not exist in table.`
-		}
-		
 		dataArr[rowNum][colNum] = newVal;
+		
 		
 		if (typeof(headerArr) !== 'undefined') {
 			// For HTML table, header is a regular row.
@@ -199,6 +195,11 @@ TableManager = function(dataArr, headerArr) {
 			rowNum++;
 		}
 		
+		rowEl = tableEl.rows[rowNum];
+		if (typeof(rowEl) === 'undefined') {
+			throw `Row ${rowNum} does not exist in table.`
+		}
+				
 		cellEl = rowEl.cells[colNum];
 		if (typeof(cellEl) === undefined) {
 			throw `Table row ${rowNum} does not contain column ${colNum}`
@@ -213,7 +214,7 @@ TableManager = function(dataArr, headerArr) {
 	| setRow
 	-----------------*/
 
-	var setRow = function(rowNum, dataArr) {
+	var setRow = function(rowNum, newRow) {
 		/*
 		 * Replace one row. rowNum is zero-based.
 		 * Note that if the table includes a header row,
@@ -232,7 +233,7 @@ TableManager = function(dataArr, headerArr) {
 			throw `Row ${rowNum} does not exist in table.`
 		}
 		
-		dataArr[rowNum] = dataArr;
+		dataArr[rowNum] = newRow;
 		
 		if (typeof(headerArr) !== 'undefined') {
 			// HTML table includes the header
@@ -242,9 +243,9 @@ TableManager = function(dataArr, headerArr) {
 		
 		let cellNum = 0;
 		for (let cell of rowEl.cells) {
-			cell.innerHTML = dataArr[cellNum++];
+			cell.innerHTML = newRow[cellNum++];
 		}
-		return dataArr;
+		return newRow;
 	}
 	
 

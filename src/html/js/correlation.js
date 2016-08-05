@@ -146,6 +146,11 @@ CorrelationViz = function(width, height) {
 		svgSel = d3.select('svg')
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
 
+		// For each row of the matrix: create or update 
+		// dots, giving the dots of each row a different
+		// CSS class. This loop should be doable as pure D3,
+		// but I couldn't get the 'outer' loop (i.e. outer selection)
+		// to run through all rows:
 		for (let row of tblObj.getData(NO_HEADER_ROW, NO_COL0)) {
 			
 			dotClass = dotClasses[++currRowNum];
