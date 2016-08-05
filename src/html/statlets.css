@@ -1,3 +1,7 @@
+body        { background-color : Bisque; }
+
+h1          { text-align : center;  }
+
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 
    		     color : blue;
@@ -21,7 +25,7 @@
 
 .chartSVG  {
 			  border-stroke : 10px;
-			  border-color  : red;
+			  border-color  : BurlyWood;
 			  border-style  : solid;
 			}			
 
