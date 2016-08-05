@@ -167,7 +167,9 @@ CorrelationViz = function(width, height) {
           	    	
           	    	let userFrmY  = yScale.invert(circleSel.attr('cy') - Y_AXIS_TOP_PADDING);
           	    	
-          	    	tblObj.setCell(tblRow, tblCol, userFrmY.toPrecision(2));
+          	    	tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));
+          	    	// Update correlation:
+          	    	placeCorrelationValue()
           	    	});
 				
 		svgSel = d3.select('svg')
