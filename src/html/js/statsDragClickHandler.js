@@ -31,7 +31,8 @@ StatsDragClickHandler = function(svg) {
 			    allowDotCreation    : allowDotCreation,    // getter
 			    setAllowDotCreation : setAllowDotCreation, // setter
 			    setSvg				: setSvg,              // setter
-			    drag			    : drag,
+			    dragmove		    : dragmove,
+			    drag				: drag,      // one can go: drag or dragmove. Likely 'drag'
 				}
 	}
 
@@ -123,12 +124,16 @@ StatsDragClickHandler = function(svg) {
 		let x = evt.x;
 		let y = evt.y;
 		
+		let target = evt.sourceEvent.target;
+		
 		if ( _allowDrag.horizontal) {
-			d3.select(this).attr('cx', x);
+			//****d3.select(this).attr('cx', x);
+			d3.select(target).attr('cx', x);
 		}
 		
 		if ( _allowDrag.vertical) {
-			d3.select(this).attr('cy', y);
+			//*****d3.select(this).attr('cy', y);
+			d3.select(target).attr('cy', y);
 		}
 			
 		

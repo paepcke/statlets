@@ -143,6 +143,16 @@ CorrelationViz = function(width, height) {
 
 		let currRowNum = -1;
 		
+		let tableDragUpdate = d3.behavior.drag()
+          	    .on("drag", function(d) { 
+          	    	dragClickHandler.dragmove(d)
+          	    	// Find this dot's corresponding table cell
+          	    	// Find new y-position in table coordinates.
+          	    	// update the table. The dot is found like this:
+          	    	//    evt = d3.event;
+          	    	//    evt.sourceEvent.target;
+          	    	});
+				
 		svgSel = d3.select('svg')
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
 
@@ -171,7 +181,11 @@ CorrelationViz = function(width, height) {
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				.attr('class', function() { return dotClass } )
 
-				.call(dragClickHandler.drag);
+				// Attach drag behavior to this circle.
+				// the handler's dragmove() method is 
+				// called for moves:
+				//******.call(dragClickHandler.drag)
+				.call(tableDragUpdate)
 		}
 	}
 	
