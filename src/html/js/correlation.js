@@ -39,10 +39,16 @@ CorrelationViz = function(width, height) {
 	
 	var constructor = function() {
 		
+		// Find the div in which the chart is to reside,
+		// and its dimensions:
+
 		let chartDiv = document.getElementById('chartDiv');
 		
-		chartDiv.style.width  = `${width}px`;
-		chartDiv.style.height = `${height}px`;
+		width  = chartDiv.offsetWidth;
+		height = chartDiv.offsetHeight;
+
+		//******chartDiv.style.width  = `${width}px`;
+		//******chartDiv.style.height = `${height}px`;
 
 		svg = d3.select("#chartDiv").append("svg")
 		.attr("width", width)

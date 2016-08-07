@@ -2,6 +2,87 @@ body        { background-color : Bisque; }
 
 h1          { text-align : center;  }
 
+.wrapper    { width: 95%;
+	      border: 1px solid Azure;
+	    }
+
+/* .leftDiv, .middleDiv, .rightDiv { */
+/*    display:block; */
+/*    width:33%; */
+/*    border: 1px solid green; */
+/*    box-sizing: border-box; */
+/* } */
+
+.leftDiv, .middleDiv, .rightDiv {
+   display    : block;
+   box-sizing : border-box;
+   height     : 80%;
+}
+
+.leftDiv { float : left;
+           width : 20%;
+           border: 1px solid green;
+         }
+
+.middleDiv { margin:0 auto;
+             width : 40%;
+           border: 1px solid yellow;             
+           }
+
+.rightDiv { float : right;
+            width : 40%;
+           border: 1px solid red;
+          }
+
+/* .nextDiv { */
+/*        clear:both; */
+/*        display:block; */
+/*        width:100%; */
+/*        //\*****height:20%; */
+/*        border:1px solid red; */
+/*        box-sizing: border-box; */
+/* } */
+
+/* #instructions, #chartDiv { */
+/*   box-sizing: border-box; */
+/*   -moz-box-sizing: border-box; */
+/*   -webkit-box-sizing: border-box; */
+/* }     */
+
+/* #wrapper    { width: 100%; */
+/* 	      border: 1px solid Azure; */
+/*     	      position : relative; */
+/*               overflow : auto; */
+/* 	    } */
+
+/* #instructions  { float  : left; */
+/*                  width  : 200px; */
+/* 	         padding : 10px; */
+/* 	       } */
+
+/* #chartDiv   { //padding : 10px; */
+/* 	      width : calc(100% - 200px - 10px); */
+/* 	    } */
+
+
+/* #wrapper    { width: 100%; */
+/* 	      border: 1px solid Azure; */
+/*     	      overflow: hidden; */
+/* 	    } */
+			
+/* #instructions  { width: 20%; */
+/* 	         padding : 50px; */
+/*     		 float:left; */
+/* 	       } */
+				
+			
+/* #chartDiv   { padding : 10px; */
+/* 	      //width : 20%; */
+/* 	      float : right; */
+/*               //float : left; */
+/* 	      //overflow: hidden; /\* if you don't want chartDiv to wrap below instructions *\/  */
+/* 	    } */
+
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 
    		     color : blue;
@@ -17,10 +98,6 @@ h1          { text-align : center;  }
 	 				 text-align : center; 
 	 				 padding : 15px;
 	 				 margin  : auto;
-			}
-			
-#chartDiv   { padding-top : 10px;
-			  margin : auto; 
 			}
 
 .chartSVG  {
