@@ -44,15 +44,13 @@ CorrelationViz = function(width, height) {
 
 		let chartDiv = document.getElementById('chartDiv');
 		
-		width  = chartDiv.offsetWidth;
-		height = chartDiv.offsetHeight;
-
-		//******chartDiv.style.width  = `${width}px`;
-		//******chartDiv.style.height = `${height}px`;
+		width  = chartDiv.clientWidth;
+		height = chartDiv.clientHeight;
 
 		svg = d3.select("#chartDiv").append("svg")
-		.attr("width", width)
-		.attr("height", height)
+		.attr("width", "100%")
+		.attr("height", "100%")
+		.attr("viewBox", `0 0 ${width} ${height}`)
 		.attr("id", "chart")
 		.attr("class", "chartSVG")
 
