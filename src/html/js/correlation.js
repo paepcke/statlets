@@ -47,6 +47,10 @@ CorrelationViz = function(width, height) {
 		width  = chartDiv.clientWidth;
 		height = chartDiv.clientHeight;
 
+		// The "+40" is a kludge! It accounts
+		// for the additional space that the x-axis
+		// labels will take once they are rotated
+		// 45 degrees: 
 		d3.select('#chartDiv')
 			.style("height", height + 40)
 		
@@ -67,11 +71,10 @@ CorrelationViz = function(width, height) {
 
 		// Add a background
 		svg.append("rect")
-			.attr("width", width)
-			.attr("height", height)
+			.attr("width", "100%")
+			.attr("height", "100%")
 			.attr("class", "chartSVG")
 			.attr("id", "svgBackground")
-			.style("fill", "#F6F6F6")
 				
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});

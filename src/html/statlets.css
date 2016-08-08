@@ -53,6 +53,8 @@ h1          { text-align : center;  }
     border : 1px solid BurlyWood;
 }			
 
+#svgBackground { fill : #F6F6F6; }
+
 #tableDiv    { padding-top : 30px;
 			   margin : auto;
 			 }   		     
