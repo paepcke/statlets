@@ -43,10 +43,13 @@ CorrelationViz = function(width, height) {
 		// and its dimensions:
 
 		let chartDiv = document.getElementById('chartDiv');
-		
+			
 		width  = chartDiv.clientWidth;
 		height = chartDiv.clientHeight;
 
+		d3.select('#chartDiv')
+			.style("height", height + 40)
+		
 		svg = d3.select("#chartDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
@@ -64,10 +67,11 @@ CorrelationViz = function(width, height) {
 
 		// Add a background
 		svg.append("rect")
-		.attr("width", width)
-		.attr("height", height)
-		.attr("class", "chartSVG")
-		.style("fill", "#F6F6F6")
+			.attr("width", width)
+			.attr("height", height)
+			.attr("class", "chartSVG")
+			.attr("id", "svgBackground")
+			.style("fill", "#F6F6F6")
 				
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
@@ -79,7 +83,7 @@ CorrelationViz = function(width, height) {
         let flatData    = [].concat.apply([], nestedData);
         // Exclude the col-0 names of people:
         let numericData = flatData.filter(function(item) {return typeof(item) === 'number'});
-        let yDomain     = [0, Math.max(numericData)];
+        let yDomain     = [0, Math.max.apply(null, numericData)];
         
         // X axis is months without the col-0 header 'Spender':
         let xDomain     = tblObj.getHeader().slice(1);
@@ -109,19 +113,22 @@ CorrelationViz = function(width, height) {
 	-----------------*/
 	
 	var createTable = function() {
-		let headerRow = ['Spender', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
+/*		let headerRow = ['Spender', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 
 		                 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+*/		                 
 		//let data      = [['Monica', 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
 		//                 ['Daniel', 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
 		//				]
-		let data      = [['Monica'],
-		                 ['Daniel']
+		
+		let headerRow = ['State', 'Alabama', 'California', 'Georgia',  'Mississippi', 'Nevada']
+		let data      = [['1996', 10.4, 9.1, 9.5, 11.1, 13.7],
+		                 ['2014', 5.7, 4.4, 5.7, 8.6, 6.0]
 		                 ]
-		for (let i=0; i<12; i++) {
+/*		for (let i=0; i<12; i++) {
 			data[0].push(Math.round(100*Math.random()));
 			data[1].push(Math.round(100*Math.random()));
 		}
-		
+*/		
 		tblObj = TableManager(data, headerRow);
 		tblObj.classed({table : 'inputTable',
 						 cell : ['largeLabel', undefined, 0]
@@ -356,9 +363,9 @@ CorrelationViz = function(width, height) {
 		// Y Scale
 		switch(extentDict.y.scaleType) {
 		case 'linear':
-			yScale = d3.scale.linear()
-							 .domain(extentDict.y.domain)
-							 .range([Y_AXIS_TOP_PADDING, height - Y_AXIS_BOTTOM_PADDING]);
+			yScale = d3.scale.linear()	
+			 			 .domain(extentDict.y.domain)
+						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
 			break;
 		case 'ordinal':
 			yScale = d3.scale.ordinal()
@@ -381,20 +388,48 @@ CorrelationViz = function(width, height) {
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 		     .call(xAxis);
 		
+		//********* Remove following:
+/*		if (extentDict.x.scaleType == 'ordinal') {
+	    	xAxisGroup.selectAll("text")
+	    	.attr("y", 0)
+	    	.attr("x", 0)
+	    	.attr("dy", "0.35em")
+	    	.attr("transform", function() {
+	    		return svg.transform()
+	    		.translate(200, 100)
+	    		.rotate(-45)
+	    		.translate(-d3.select(this).attr("width")/2, -d3.select(this).attr("height")/2)()
+	    	})
+	    	.style("text-anchor", "start")
+		}
+*/		     
+				     
 		// For ordinal X-axes: rotate labels by 45%
+		// and move them to center between x-axis ticks:
 		if (extentDict.x.scaleType == 'ordinal') {
-		xAxisGroup.selectAll("text")
-		     .attr("y", 0)
-		     .attr("x", 30)
-		     .attr("dy", ".30em")
-		     .attr("transform", "rotate(45)")
-		     .style("text-anchor", "start")
+			
+			// Find distance between X-ticks;
+			// xScale.range() returns array with
+			// pixel coords of each tick:
+			let tickArr    = xScale.range();
+			let tickWidth  = tickArr[1] - tickArr[0];
+			let txtSel     = xAxisGroup.selectAll("text");
+			
+	    	txtSel
+		    	.attr("y", -10)
+	    		.attr("x", tickWidth / 2)
+		    	//.attr("dy", "-0.35em")
+		    	.attr("transform", "rotate(45)")
+		    	.style("text-anchor", "start")
+	    	
+/*	    	let svgDiv     = document.getElementById('chartDiv');
+	    	let svgHeight  = svgDiv.getBoundingClientRect().height;
+	    	d3.select("#chartDiv")
+	    	   .style("height", svgHeight + 50)
+*/	    	
 		}
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
-		yScale = d3.scale.linear()
-			 			 .domain([0,150]) // expenditures between $0 and $150 **** get from table data
-						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
 		
 		yAxis = d3.svg.axis()
 				      .scale(yScale)

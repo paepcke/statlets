@@ -16,8 +16,7 @@ h1          { text-align : center;  }
 .leftDiv { float : left;
            width : 20%;
            border: 1px solid green;
-           // ****height : fit-content;
-           overflow : scroll;
+           overflow : auto;
            
          }
 
@@ -30,7 +29,6 @@ h1          { text-align : center;  }
 .rightDiv { float : right;
             width : 40%;
             border: 1px solid red;
-            // ****overflow: scroll;
             overflow : initial;
           }
 
