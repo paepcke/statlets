@@ -24,7 +24,7 @@ CorrelationViz = function(width, height) {
 	
 	var Y_AXIS_BOTTOM_PADDING    = 60; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
-	var Y_AXIS_LEFT_PADDING	     = 40; // Y axis distance from left SVG edge
+	var Y_AXIS_LEFT_PADDING	     = 50; // Y axis distance from left SVG edge
 	
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
@@ -511,10 +511,12 @@ CorrelationViz = function(width, height) {
 		yAxisLabel = svg.append("text")
 						.attr("class", "y label")
 						.attr("text-anchor", "end")
-						.attr("x", 100) //*****Y_AXIS_LEFT_PADDING / 2)
-						.attr("y", 100) //*****height / 2.)
+						.attr("x", - (height / 3.))
+						.attr("y", Y_AXIS_LEFT_PADDING / 2)
+						
 						//.attr("transform", "rotate(-90 100 100)")
-						.attr("transform", "rotate(-90 100 100)")
+						//.attr("transform", "rotate(-90 100 100)")
+						.attr("transform", "rotate(-90)")
 						.text("Murders per Capita")
 						
 						
