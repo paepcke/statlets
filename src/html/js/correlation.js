@@ -24,7 +24,7 @@ CorrelationViz = function(width, height) {
 	
 	var Y_AXIS_BOTTOM_PADDING    = 60; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
-	var Y_AXIS_LEFT_PADDING	     = 50; // Y axis distance from left SVG edge
+	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
 	
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
@@ -100,7 +100,7 @@ CorrelationViz = function(width, height) {
             				  },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
-            				   axisLabel : 'Murders per Capita'
+            				   axisLabel : 'Murders per 100K People'
             			      }
                           };
 
@@ -260,10 +260,12 @@ CorrelationViz = function(width, height) {
 			categoryColorObjs.push({category : dataCat, rgb : rgb});
 		}
 
-		let LEGEND_X_PADDING = 40; // px from left
-		let LEGEND_Y_PADDING = 40; // px from top
-		let LEGEND_RECT_SIZE = 18; // sides of legend rects
+		//****let LEGEND_X_PADDING = 40; // px from left
+		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
+		let LEGEND_Y_PADDING = height - 20; // px from top
+		let LEGEND_RECT_SIZE = 12; // sides of legend rects
 		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
+		let LEGEND_TXT_RECT_GAP = 3 // gap between legend text and its rectangle swatch
 		
 		// Create as many groups as there are categories (colors) of data:
 		let legendSel = svgSel.selectAll('.legend')
@@ -284,6 +286,7 @@ CorrelationViz = function(width, height) {
 		    .text(function(catColorObj,i) {
 		    	return catColorObj.category;
 		    	})
+		    .attr("class", "legendText")
 		// Insert a colored legend rectangle swatch into each group:
 		legendSel 
 		  .insert("rect")
@@ -298,7 +301,8 @@ CorrelationViz = function(width, height) {
 		  		let txtRect = this.previousSibling.getBoundingClientRect();
 		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
 		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
-		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`;
+		  		//****return `translate(${LEGEND_X_PADDING + txtRect.width - LEGEND_TXT_RECT_GAP}, ${yOffset})`;
+		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  	})
 		  	.attr('fill', function(catColorObj, i) {
 		  		return catColorObj.rgb;
@@ -506,20 +510,15 @@ CorrelationViz = function(width, height) {
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
 						.attr("y", height - X_AXIS_BOTTOM_PADDING - 6)
-						.text("US States")
+						.text(extentDict.x.axisLabel)
 						
 		yAxisLabel = svg.append("text")
 						.attr("class", "y label")
-						.attr("text-anchor", "end")
-						.attr("x", - (height / 3.))
+						.attr("text-anchor", "end") // I'm still confused about x/y of rotated text:
+						.attr("x", - (height / 4.))  // The "/3." is empirical...
 						.attr("y", Y_AXIS_LEFT_PADDING / 2)
-						
-						//.attr("transform", "rotate(-90 100 100)")
-						//.attr("transform", "rotate(-90 100 100)")
 						.attr("transform", "rotate(-90)")
-						.text("Murders per Capita")
-						
-						
+						.text(extentDict.y.axisLabel)
 	}
 
 	return constructor(width, height);
