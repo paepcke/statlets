@@ -70,12 +70,14 @@ CorrelationViz = function(width, height) {
 
 
 		// Add a background
-		svg.append("rect")
+// **************		
+/*		svg.append("rect")
 			.attr("width", "100%")
 			.attr("height", "100%")
 			.attr("class", "chartSVG")
 			.attr("id", "svgBackground")
-				
+*/				
+// **************				
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
@@ -509,9 +511,10 @@ CorrelationViz = function(width, height) {
 		yAxisLabel = svg.append("text")
 						.attr("class", "y label")
 						.attr("text-anchor", "end")
-						.attr("x", -100) //*****Y_AXIS_LEFT_PADDING / 2)
-						.attr("y", 0) //*****height / 2.)
-						.attr("transform", "rotate(-90)")
+						.attr("x", 100) //*****Y_AXIS_LEFT_PADDING / 2)
+						.attr("y", 100) //*****height / 2.)
+						//.attr("transform", "rotate(-90 100 100)")
+						.attr("transform", "rotate(-90 100 100)")
 						.text("Murders per Capita")
 						
 						
