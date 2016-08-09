@@ -93,10 +93,12 @@ CorrelationViz = function(width, height) {
         
         // Argument for makeCoordSys:
         let extentDict  = {x: {scaleType : 'ordinal',
-        					      domain : xDomain
+        					   domain    : xDomain,
+        					   axisLabel : 'US States'  
             				  },
             			   y: {scaleType : 'linear',
-            				      domain : yDomain
+            				      domain : yDomain,
+            				   axisLabel : 'Murders per Capita'
             			      }
                           };
 
@@ -239,6 +241,13 @@ CorrelationViz = function(width, height) {
 				.call(addDragBehavior)
 		}
 		
+		// If it does not yet exist, create a legend,
+		// else done:
+		
+		if (! d3.selectAll('.legend').empty()) {
+			return;
+		}
+		
 		// Add a legend:
 		
 		let categoryColorObjs = [];
@@ -254,6 +263,7 @@ CorrelationViz = function(width, height) {
 		let LEGEND_RECT_SIZE = 18; // sides of legend rects
 		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
 		
+		// Create as many groups as there are categories (colors) of data:
 		let legendSel = svgSel.selectAll('.legend')
 			.data(categoryColorObjs)
 			.enter()
@@ -266,12 +276,13 @@ CorrelationViz = function(width, height) {
 		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`
 		  	})
 		  	
+		// Insert legend text into each group:
 		legendSel
 		  .insert("text")
 		    .text(function(catColorObj,i) {
 		    	return catColorObj.category;
 		    	})
-		    	
+		// Insert a colored legend rectangle swatch into each group:
 		legendSel 
 		  .insert("rect")
 		  	.attr('height', LEGEND_RECT_SIZE) 
@@ -290,67 +301,6 @@ CorrelationViz = function(width, height) {
 		  	.attr('fill', function(catColorObj, i) {
 		  		return catColorObj.rgb;
 		  	})
-		  	
-/*		 for (let i=0; i<categoryColorObjs.lenth - 1; i++) {
-		legendSel
-		  .insert("g")
-			.attr("class", "legend")
-		  .append("rect")
-		  	.attr('height', LEGEND_RECT_SIZE) 
-		  	.attr('width', LEGEND_RECT_SIZE)
-		  	.attr('transform', function(d,i) {
-		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
-		  		console.log(`d: ${d}; i: ${i}; yOffset: ${yOffset}`); //******
-		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`;
-		  	})
-		  .insert("text")
-		    .text("Bar")
-		 }
-*/		  	
-/*		  
-			.attr("transform", function(categoryRgb, i) {
-				let height  = legendRectSize + legendSpacing;
-				let offset  = height * categoryColorObjs.length / 2;
-				let horz    = -2 * legendRectSize;
-				let vert    = i * height - offset;
-				return `translate(${horz}, ${vert})`;
-			})
-			.attr("id", function(categoryRgb) {
-				return categoryRgb.category
-			});
-*/		
-		
-/*		
-		// Build a group for each legend entry:
-		let legendSel = svgSel.selectAll('.legend')
-			.data(categoryColorObjs)
-			.enter()
-			.append("g")
-			.attr("class", "legend")
-			.attr("transform", function(categoryRgb, i) {
-				let height  = legendRectSize + legendSpacing;
-				let offset  = height * categoryColorObjs.length / 2;
-				let horz    = -2 * legendRectSize;
-				let vert    = i * height - offset;
-				return `translate(${horz}, ${vert})`;
-			})
-			.attr("id", function(categoryRgb) {
-				return categoryRgb.category
-			});
-			
-		for (let catColor of categoryColorObjs) {
-			legendSel.append('rect')
-				.attr('width', legendRectSize)
-				.attr('height', legendRectSize)
-				.style('fill', catColor.color)
-				.style('stroke', catColor.color);
-			
-			legendSel.append('text')
-				.attr('x', legendRectSize + legendSpacing)
-				.attr('y', legendRectSize - legendSpacing)
-				.text(function(d) {return catColor.category });
-		}
-*/		
 	};
 	
 	/*---------------------------
@@ -443,10 +393,12 @@ CorrelationViz = function(width, height) {
 		 *                x : {scaleType : <linear | ordinal | time> },
 		 *                        domain : <[min,max]>                   // if linear scale
 		 *                        domain : <[ord1,ord2,...]>             // if ordinal scale
+		 *                        axisLabel : <label of x axis as a whole>
 		 *                    },
 		 *                y : {scaleType : <linear | ordinal | time> },
 		 *                         domain: <[min,max]>                   // if linear scale
 		 *                         domain: <[ord1,ord2,...]>             // if ordinal scale
+		 *                         axisLabel : <label of y axis as a whole>
 		 *             }
 		 */
 		
@@ -505,22 +457,7 @@ CorrelationViz = function(width, height) {
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 		     .call(xAxis);
 		
-		//********* Remove following:
-/*		if (extentDict.x.scaleType == 'ordinal') {
-	    	xAxisGroup.selectAll("text")
-	    	.attr("y", 0)
-	    	.attr("x", 0)
-	    	.attr("dy", "0.35em")
-	    	.attr("transform", function() {
-	    		return svg.transform()
-	    		.translate(200, 100)
-	    		.rotate(-45)
-	    		.translate(-d3.select(this).attr("width")/2, -d3.select(this).attr("height")/2)()
-	    	})
-	    	.style("text-anchor", "start")
-		}
-*/		     
-				     
+		     
 		// For ordinal X-axes: rotate labels by 45%
 		// and move them to center between x-axis ticks:
 		if (extentDict.x.scaleType == 'ordinal') {
@@ -560,7 +497,24 @@ CorrelationViz = function(width, height) {
 		     .call(yAxis);
 		
 		
+		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
 		
+		xAxisLabel = svg.append("text")
+						.attr("class", "x label")
+						.attr("text-anchor", "middle")
+						.attr("x", width / 2.0)
+						.attr("y", height - X_AXIS_BOTTOM_PADDING - 6)
+						.text("US States")
+						
+		yAxisLabel = svg.append("text")
+						.attr("class", "y label")
+						.attr("text-anchor", "end")
+						.attr("x", -100) //*****Y_AXIS_LEFT_PADDING / 2)
+						.attr("y", 0) //*****height / 2.)
+						.attr("transform", "rotate(-90)")
+						.text("Murders per Capita")
+						
+						
 	}
 
 	return constructor(width, height);

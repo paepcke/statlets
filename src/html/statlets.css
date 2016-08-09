@@ -29,6 +29,7 @@ h1          { text-align : center;  }
 .rightDiv { float : right;
             width : 40%;
             border: 1px solid red;
+            background-color : #F6F6F6;
             overflow : initial;
           }
 
