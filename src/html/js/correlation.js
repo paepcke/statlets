@@ -249,7 +249,7 @@ CorrelationViz = function(width, height) {
 			categoryColorObjs.push({category : dataCat, rgb : rgb});
 		}
 
-		let LEGEND_X_PADDING = 30; // px from left
+		let LEGEND_X_PADDING = 40; // px from left
 		let LEGEND_Y_PADDING = 40; // px from top
 		let LEGEND_RECT_SIZE = 18; // sides of legend rects
 		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
@@ -260,7 +260,7 @@ CorrelationViz = function(width, height) {
 		  .append("g")
 			.attr("class", "legend")
 			.attr("id", categoryColorObjs.category)
-			.attr("rectColor", categoryColorObjs.color)
+			.attr("rectColor", categoryColorObjs.rgb)
 		  	.attr('transform', function(d,i) {
 		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
 		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`
@@ -276,9 +276,19 @@ CorrelationViz = function(width, height) {
 		  .insert("rect")
 		  	.attr('height', LEGEND_RECT_SIZE) 
 		  	.attr('width', LEGEND_RECT_SIZE)
-		  	.attr('transform', function(d,i) {
-		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
+		  	.attr('transform', function(catColorObj,i) {
+		  		// this is rect:
+		  		let legendTextElHeight = this.previousSibling.clientHeight;
+		  		// Align middle of rect with middle of text. the /4 is
+		  		// empirically determined. Unsure of all the measurements
+		  		// involved that would make this precise:
+		  		let txtRect = this.previousSibling.getBoundingClientRect();
+		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
+		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
 		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`;
+		  	})
+		  	.attr('fill', function(catColorObj, i) {
+		  		return catColorObj.rgb;
 		  	})
 		  	
 /*		 for (let i=0; i<categoryColorObjs.lenth - 1; i++) {
