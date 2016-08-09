@@ -110,6 +110,7 @@ CorrelationViz = function(width, height) {
 				updateChart, updateChart,
 			}
 	}
+	
 
 	/*---------------------------
 	| createTable 
@@ -237,7 +238,110 @@ CorrelationViz = function(width, height) {
 				// Attach drag-start behavior to this circle.
 				.call(addDragBehavior)
 		}
-	}
+		
+		// Add a legend:
+		
+		let categoryColorObjs = [];
+		let dataSeriesCategoryIndx = 0; 
+		for (let dotClass of dotClasses) {
+			let rgb = d3.selectAll('.' + dotClass).style('fill');
+			let dataCat = tblObj.getCell(dataSeriesCategoryIndx++, 0);
+			categoryColorObjs.push({category : dataCat, rgb : rgb});
+		}
+
+		let LEGEND_X_PADDING = 30; // px from left
+		let LEGEND_Y_PADDING = 40; // px from top
+		let LEGEND_RECT_SIZE = 18; // sides of legend rects
+		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
+		
+		let legendSel = svgSel.selectAll('.legend')
+			.data(categoryColorObjs)
+			.enter()
+		  .append("g")
+			.attr("class", "legend")
+			.attr("id", categoryColorObjs.category)
+			.attr("rectColor", categoryColorObjs.color)
+		  	.attr('transform', function(d,i) {
+		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
+		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`
+		  	})
+		  	
+		legendSel
+		  .insert("text")
+		    .text(function(catColorObj,i) {
+		    	return catColorObj.category;
+		    	})
+		    	
+		legendSel 
+		  .insert("rect")
+		  	.attr('height', LEGEND_RECT_SIZE) 
+		  	.attr('width', LEGEND_RECT_SIZE)
+		  	.attr('transform', function(d,i) {
+		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
+		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`;
+		  	})
+		  	
+/*		 for (let i=0; i<categoryColorObjs.lenth - 1; i++) {
+		legendSel
+		  .insert("g")
+			.attr("class", "legend")
+		  .append("rect")
+		  	.attr('height', LEGEND_RECT_SIZE) 
+		  	.attr('width', LEGEND_RECT_SIZE)
+		  	.attr('transform', function(d,i) {
+		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
+		  		console.log(`d: ${d}; i: ${i}; yOffset: ${yOffset}`); //******
+		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`;
+		  	})
+		  .insert("text")
+		    .text("Bar")
+		 }
+*/		  	
+/*		  
+			.attr("transform", function(categoryRgb, i) {
+				let height  = legendRectSize + legendSpacing;
+				let offset  = height * categoryColorObjs.length / 2;
+				let horz    = -2 * legendRectSize;
+				let vert    = i * height - offset;
+				return `translate(${horz}, ${vert})`;
+			})
+			.attr("id", function(categoryRgb) {
+				return categoryRgb.category
+			});
+*/		
+		
+/*		
+		// Build a group for each legend entry:
+		let legendSel = svgSel.selectAll('.legend')
+			.data(categoryColorObjs)
+			.enter()
+			.append("g")
+			.attr("class", "legend")
+			.attr("transform", function(categoryRgb, i) {
+				let height  = legendRectSize + legendSpacing;
+				let offset  = height * categoryColorObjs.length / 2;
+				let horz    = -2 * legendRectSize;
+				let vert    = i * height - offset;
+				return `translate(${horz}, ${vert})`;
+			})
+			.attr("id", function(categoryRgb) {
+				return categoryRgb.category
+			});
+			
+		for (let catColor of categoryColorObjs) {
+			legendSel.append('rect')
+				.attr('width', legendRectSize)
+				.attr('height', legendRectSize)
+				.style('fill', catColor.color)
+				.style('stroke', catColor.color);
+			
+			legendSel.append('text')
+				.attr('x', legendRectSize + legendSpacing)
+				.attr('y', legendRectSize - legendSpacing)
+				.text(function(d) {return catColor.category });
+		}
+*/		
+	};
 	
 	/*---------------------------
 	| handleDrag

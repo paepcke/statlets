@@ -55,6 +55,8 @@ h1          { text-align : center;  }
 
 #svgBackground { fill : #F6F6F6; }
 
+.legend {"font-size", "12px"}
+
 #tableDiv    { padding-top : 30px;
 			   margin : auto;
 			 }   		     
