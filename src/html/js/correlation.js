@@ -68,16 +68,6 @@ CorrelationViz = function(width, height) {
 		// Don't allow creation of new dots by clicking:
 		dragClickHandler.setAllowDotCreation(false);
 
-
-		// Add a background
-// **************		
-/*		svg.append("rect")
-			.attr("width", "100%")
-			.attr("height", "100%")
-			.attr("class", "chartSVG")
-			.attr("id", "svgBackground")
-*/				
-// **************				
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
@@ -93,7 +83,7 @@ CorrelationViz = function(width, height) {
         // X axis is months without the col-0 header 'Spender':
         let xDomain     = tblObj.getHeader().slice(1);
         
-        // Argument for makeCoordSys:
+        // Argument for makeDataCoordSys:
         let extentDict  = {x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'US States'  
@@ -104,14 +94,14 @@ CorrelationViz = function(width, height) {
             			      }
                           };
 
-		makeCoordSys(extentDict);
-		updateChart();
+		makeDataCoordSys(extentDict);
+		updateDataChart();
 		placeCorrelationValue();
         
 		return {width  : width,
 				height : height,
 				tblObj : tblObj,
-				updateChart, updateChart,
+				updateDataChart, updateDataChart,
 			}
 	}
 	
@@ -145,17 +135,17 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| updateChart 
+	| updateDataChart 
 	-----------------*/
 	
-	var updateChart = function() {
+	var updateDataChart = function() {
 		
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
 		
 		let months      = tblObj.getHeader().slice(1);
 		
-		let dotClasses  = ['person1Dot', 'person2Dot'];
+		let dotClasses  = ['category1Dot', 'category2Dot'];
 		
 		let NO_HEADER_ROW = false;
 		let NO_COL0       = false;
@@ -260,7 +250,6 @@ CorrelationViz = function(width, height) {
 			categoryColorObjs.push({category : dataCat, rgb : rgb});
 		}
 
-		//****let LEGEND_X_PADDING = 40; // px from left
 		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
 		let LEGEND_Y_PADDING = height - 20; // px from top
 		let LEGEND_RECT_SIZE = 12; // sides of legend rects
@@ -301,7 +290,6 @@ CorrelationViz = function(width, height) {
 		  		let txtRect = this.previousSibling.getBoundingClientRect();
 		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
 		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
-		  		//****return `translate(${LEGEND_X_PADDING + txtRect.width - LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  	})
 		  	.attr('fill', function(catColorObj, i) {
@@ -324,7 +312,6 @@ CorrelationViz = function(width, height) {
 		// The +1: skip col0, which is the spender's name:
 		let tblCol = parseInt(d3CircleSel.attr('tblCol')) + 1;
 
-		//******let userFrmY  = yScale.invert(d3CircleSel.attr('cy') - Y_AXIS_TOP_PADDING);
 		let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
 
 		tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));
@@ -343,23 +330,23 @@ CorrelationViz = function(width, height) {
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
 		
-		var person1Data = tblObj.getRow(0).slice(1);
-		var person2Data = tblObj.getRow(1).slice(1);
+		var category1Data = tblObj.getRow(0).slice(1);
+		var category2Data = tblObj.getRow(1).slice(1);
 		let months      = tblObj.getHeader().slice(1);
 		
 		
 		for (let dataIndx=0; 
-		         dataIndx<Math.min(person1Data.length, person2Data.length);
+		         dataIndx<Math.min(category1Data.length, category2Data.length);
 		         dataIndx++) {
 			let month    = months[dataIndx];
-			let pers1Val = person1Data[dataIndx];
-			let pers2Val = person2Data[dataIndx];
+			let pers1Val = category1Data[dataIndx];
+			let pers2Val = category2Data[dataIndx];
 			let x        = xScale(month);
 			let yPers1   = yScale(pers1Val);
 			let yPers2   = yScale(pers2Val);
 			
-			dragClickHandler.createDot(x,yPers1, 'person1Dot', bandWidth);
-			dragClickHandler.createDot(x,yPers2, 'person2Dot', bandWidth);
+			dragClickHandler.createDot(x,yPers1, 'category1Dot', bandWidth);
+			dragClickHandler.createDot(x,yPers2, 'category2Dot', bandWidth);
 		}
 	}
 */	
@@ -389,10 +376,10 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| makeCoordSys 
+	| makeDataCoordSys 
 	-----------------*/
 	
-	var makeCoordSys = function(extentDict) {
+	var makeDataCoordSys = function(extentDict) {
 		
 		/*
 		 * extentDict: {
@@ -514,6 +501,9 @@ CorrelationViz = function(width, height) {
 						.attr("transform", "rotate(-90)")
 						.text(extentDict.y.axisLabel)
 	}
+
+	/* -------------------------------  Correlation Chart ------------------------------ */
+
 
 	return constructor(width, height);
 }

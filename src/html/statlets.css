@@ -30,6 +30,7 @@ h1          { text-align : center;  }
            border : 1px solid red;
            //flex   : 2 1 auto;
            flex   : 2 1 40%;            
+           position : absolute;            
          }
 
 
@@ -74,6 +75,6 @@ h1          { text-align : center;  }
              
 .legendText  { font-size : 10pt; }
 
-.person1Dot  { fill : green; }
-.person2Dot  { fill : blue; }
+.category1Dot  { fill : green; }
+.category2Dot  { fill : blue; }
 
