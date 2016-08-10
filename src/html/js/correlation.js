@@ -91,7 +91,7 @@ CorrelationViz = function(width, height) {
                           };
 
 		let scalesData = makeCoordSys(extentDict);
-		updateChart(scalesData);
+		updateDataChart(scalesData);
 		placeCorrelationValue();
 		
 		
@@ -126,12 +126,13 @@ CorrelationViz = function(width, height) {
                        };
 
 		let scalesCorr = makeCoordSys(extentDict);
+		updateCorrChart(scalesData);
         
 		return {width  : width,
 				height : height,
 				tblObj : tblObj,
-				updateDataChart : function() { updateChart(scalesData) }, // Curry the scales argument
-				updateCorrChart : function() { updateChart(scalesCorr) }, // Curry the scales argument
+				//updateDataChart : function() { updateChart(scalesData) }, // Curry the scales argument
+				//updateCorrChart : function() { updateChart(scalesCorr) }, // Curry the scales argument
 			}
 	}
 	
@@ -165,10 +166,10 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| updateChart 
+	| updateDataChart 
 	-----------------*/
 	
-	var updateChart = function(scaleInfo) {
+	var updateDataChart = function(scaleInfo) {
 		
 		/*
 		 * Scales is an object with three properties: xScale and yScale,
@@ -190,52 +191,6 @@ CorrelationViz = function(width, height) {
 		let NO_COL0       = false;
 
 		let currRowNum = -1;
-		
-		let addDragBehavior = d3.behavior.drag()
-				.on('dragstart', function(d) {
-					
-					// D3-select the DOM element that's trying
-					// to be dragged:
-					let circleSel = d3.select(this);
-					
-					// Is the element one of our circles?
-					if (dotClasses.indexOf(circleSel.attr('class')) === -1) {
-						// Was running mouse over something other than
-						// one of our circles:
-						return;
-					}
-					
-					// Allow us to style a moving circle if we want:
-					circleSel.classed("dragging", true);
-
-					// Remember the circle that's in motion:
-					d3.behavior.drag.currCircle = this;
-					
-				})
-				.on('drag', function(d) {
-					let circleSel = d3.select(this);
-					
-					let mouseY  = d3.event.y;
-					let circleY = circleSel.attr('cy');
-					let circleR = circleSel.attr('r');
-					
-					if (Math.abs(mouseY - circleY) > circleR) {
-						// Mouse got ahead of the dragged circle.
-						// Select the circle we are dragging instead:
-						circleSel = d3.select(d3.behavior.drag.currCircle);
-					}
-					
-					if (! circleSel.classed("dragging")) {
-						// Not over something being dragged:
-						return;
-					}
-					
-					handleDrag(circleSel, yScale);
-				})
-				.on ('dragend', function(d) {
-					d3.select(this).classed("dragging", false);
-					d3.behavior.drag.currCircle = undefined;
-				})
 				
 		svgSel = d3.select('svg')
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
@@ -269,7 +224,7 @@ CorrelationViz = function(width, height) {
 				.attr('class', function() { return dotClass } )
 
 				// Attach drag-start behavior to this circle.
-				.call(addDragBehavior)
+				.call(addDragBehavior(dotClasses, yScale))
 		}
 		
 		// If it does not yet exist, create a legend,
@@ -330,13 +285,83 @@ CorrelationViz = function(width, height) {
 		  		let txtRect = this.previousSibling.getBoundingClientRect();
 		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
 		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
-		  		//****return `translate(${LEGEND_X_PADDING + txtRect.width - LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  	})
 		  	.attr('fill', function(catColorObj, i) {
 		  		return catColorObj.rgb;
 		  	})
 	};
+	
+	/*---------------------------
+	| updateCorrChart 
+	-----------------*/
+	
+	var updateCorrChart = function(scaleInfo) {
+		
+	}
+	
+	/*---------------------------
+	| createDragBehavior 
+	-----------------*/
+	
+	
+	
+	var addDragBehavior = function(dotClasses, yScale) {
+		/*
+		 * Adds drag behavior to 'this'. In order to 
+		 * have 'this' bound to the object to which the 
+		 * behavior is to be attached, use the addDragBehavior.call(),
+		 * or from a D3 expression: .call(addDragBehavior).
+		 * Does not return anything. 
+		 */
+	
+		return d3.behavior.drag()
+				.on('dragstart', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let circleSel = d3.select(this);
+					
+					// Is the element one of our circles?
+					if (dotClasses.indexOf(circleSel.attr('class')) === -1) {
+						// Was running mouse over something other than
+						// one of our circles:
+						return;
+					}
+					
+					// Allow us to style a moving circle if we want:
+					circleSel.classed("dragging", true);
+
+					// Remember the circle that's in motion:
+					d3.behavior.drag.currCircle = this;
+					
+				})
+				.on('drag', function(d) {
+					let circleSel = d3.select(this);
+					
+					let mouseY  = d3.event.y;
+					let circleY = circleSel.attr('cy');
+					let circleR = circleSel.attr('r');
+					
+					if (Math.abs(mouseY - circleY) > circleR) {
+						// Mouse got ahead of the dragged circle.
+						// Select the circle we are dragging instead:
+						circleSel = d3.select(d3.behavior.drag.currCircle);
+					}
+					
+					if (! circleSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					handleDrag(circleSel, yScale);
+				})
+				.on ('dragend', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.behavior.drag.currCircle = undefined;
+				})
+	}
+	
 	
 	/*---------------------------
 	| handleDrag
