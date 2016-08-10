@@ -42,7 +42,7 @@ CorrelationViz = function(width, height) {
 		// Find the div in which the chart is to reside,
 		// and its dimensions:
 
-		let chartDiv = document.getElementById('chartDiv');
+		let chartDiv = document.getElementById('dataDiv');
 			
 		width  = chartDiv.clientWidth;
 		height = chartDiv.clientHeight;
@@ -51,10 +51,10 @@ CorrelationViz = function(width, height) {
 		// for the additional space that the x-axis
 		// labels will take once they are rotated
 		// 45 degrees: 
-		d3.select('#chartDiv')
+		d3.select('#dataDiv')
 			.style("height", height + 40)
 		
-		svg = d3.select("#chartDiv").append("svg")
+		svg = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
@@ -481,12 +481,6 @@ CorrelationViz = function(width, height) {
 		    	//.attr("dy", "-0.35em")
 		    	.attr("transform", "rotate(45)")
 		    	.style("text-anchor", "start")
-	    	
-/*	    	let svgDiv     = document.getElementById('chartDiv');
-	    	let svgHeight  = svgDiv.getBoundingClientRect().height;
-	    	d3.select("#chartDiv")
-	    	   .style("height", svgHeight + 50)
-*/	    	
 		}
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		

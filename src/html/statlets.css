@@ -2,36 +2,36 @@ body        { background-color : Bisque; }
 
 h1          { text-align : center;  }
 
-.wrapper    { width: 95%;
-	      border: 1px solid Azure;
-              position : relative;
-	    }
+.flexWrapper    { 
+				  display : flex;
+				  flex-direction : row;
+				  flex-wrap : nowrap;
+				  justify-content : center; // Horizontal placement of content divs
+				  align-items : start;      // Vertical align within content divs 
+				  width : 95%;
+	  	    	  border: 1px solid Azure;
+                }
 
-.leftDiv, .middleDiv, .rightDiv {
-   display    : block;
-   box-sizing : border-box;
-   height     : 80%;
-}
+.instructionsDiv {
+           		  border: 1px solid green;
+           		  //flex   : 1 1 auto;
+           		  flex   : 1 1 20%;        // Get 1 unit of free space for either grow or shrink.
+			                               // The 20% is the base value: with within div.
+			      }
 
-.leftDiv { float : left;
-           width : 20%;
-           border: 1px solid green;
-           overflow : auto;
-           
+.dataDiv { 
+           border : 1px solid orange;
+           //flex   : 2 1 auto; 
+           flex   : 2 1 40%; 
+           background-color : #F6F6F6;
          }
 
-.middleDiv { margin:0 auto;
-             width : 40%;
-             border: 1px solid yellow;
-             overflow : auto;
-           }
+.corrDiv { 
+           border : 1px solid red;
+           //flex   : 2 1 auto;
+           flex   : 2 1 40%;            
+         }
 
-.rightDiv { float : right;
-            width : 40%;
-            border: 1px solid red;
-            background-color : #F6F6F6;
-            overflow : initial;
-          }
 
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 
@@ -54,7 +54,7 @@ h1          { text-align : center;  }
     border : 1px solid BurlyWood;
 }			
 
-#svgBackground { fill : #F6F6F6; }
+// #svgBackground { fill : #F6F6F6; }
 
 .legend {"font-size", "12px"}
 
