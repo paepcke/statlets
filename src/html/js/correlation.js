@@ -230,66 +230,10 @@ CorrelationViz = function(width, height) {
 		// If it does not yet exist, create a legend,
 		// else done:
 		
-		if (! d3.selectAll('.legend').empty()) {
-			return;
-		}
-		
-		// Add a legend:
-		
-		let categoryColorObjs = [];
-		let dataSeriesCategoryIndx = 0; 
-		for (let dotClass of dotClasses) {
-			let rgb = d3.selectAll('.' + dotClass).style('fill');
-			let dataCat = tblObj.getCell(dataSeriesCategoryIndx++, 0);
-			categoryColorObjs.push({category : dataCat, rgb : rgb});
+		if (d3.selectAll('.legend').empty()) {
+			addLegend(dotClasses);
 		}
 
-		//****let LEGEND_X_PADDING = 40; // px from left
-		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
-		let LEGEND_Y_PADDING = height - 20; // px from top
-		let LEGEND_RECT_SIZE = 12; // sides of legend rects
-		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
-		let LEGEND_TXT_RECT_GAP = 3 // gap between legend text and its rectangle swatch
-		
-		// Create as many groups as there are categories (colors) of data:
-		let legendSel = svgSel.selectAll('.legend')
-			.data(categoryColorObjs)
-			.enter()
-		  .append("g")
-			.attr("class", "legend")
-			.attr("id", categoryColorObjs.category)
-			.attr("rectColor", categoryColorObjs.rgb)
-		  	.attr('transform', function(d,i) {
-		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
-		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`
-		  	})
-		  	
-		// Insert legend text into each group:
-		legendSel
-		  .insert("text")
-		    .text(function(catColorObj,i) {
-		    	return catColorObj.category;
-		    	})
-		    .attr("class", "legendText")
-		// Insert a colored legend rectangle swatch into each group:
-		legendSel 
-		  .insert("rect")
-		  	.attr('height', LEGEND_RECT_SIZE) 
-		  	.attr('width', LEGEND_RECT_SIZE)
-		  	.attr('transform', function(catColorObj,i) {
-		  		// this is rect:
-		  		let legendTextElHeight = this.previousSibling.clientHeight;
-		  		// Align middle of rect with middle of text. the /4 is
-		  		// empirically determined. Unsure of all the measurements
-		  		// involved that would make this precise:
-		  		let txtRect = this.previousSibling.getBoundingClientRect();
-		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
-		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
-		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
-		  	})
-		  	.attr('fill', function(catColorObj, i) {
-		  		return catColorObj.rgb;
-		  	})
 	};
 	
 	/*---------------------------
@@ -303,7 +247,6 @@ CorrelationViz = function(width, height) {
 	/*---------------------------
 	| createDragBehavior 
 	-----------------*/
-	
 	
 	
 	var addDragBehavior = function(dotClasses, yScale) {
@@ -362,6 +305,67 @@ CorrelationViz = function(width, height) {
 				})
 	}
 	
+	/*---------------------------
+	| addLegend
+	-----------------*/
+	
+	var addLegend = function(dotClasses) {
+		
+		let categoryColorObjs = [];
+		let dataSeriesCategoryIndx = 0; 
+		for (let dotClass of dotClasses) {
+			let rgb = d3.selectAll('.' + dotClass).style('fill');
+			let dataCat = tblObj.getCell(dataSeriesCategoryIndx++, 0);
+			categoryColorObjs.push({category : dataCat, rgb : rgb});
+		}
+
+		//****let LEGEND_X_PADDING = 40; // px from left
+		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
+		let LEGEND_Y_PADDING = height - 20; // px from top
+		let LEGEND_RECT_SIZE = 12; // sides of legend rects
+		let LEGEND_SPACING = 4;    // vertical space betw. legend rows.
+		let LEGEND_TXT_RECT_GAP = 3 // gap between legend text and its rectangle swatch
+		
+		// Create as many groups as there are categories (colors) of data:
+		let legendSel = svgSel.selectAll('.legend')
+			.data(categoryColorObjs)
+			.enter()
+		  .append("g")
+			.attr("class", "legend")
+			.attr("id", categoryColorObjs.category)
+			.attr("rectColor", categoryColorObjs.rgb)
+		  	.attr('transform', function(d,i) {
+		  		let yOffset = LEGEND_Y_PADDING + i * LEGEND_RECT_SIZE + i * LEGEND_SPACING;
+		  		return `translate(${LEGEND_X_PADDING}, ${yOffset})`
+		  	})
+		  	
+		// Insert legend text into each group:
+		legendSel
+		  .insert("text")
+		    .text(function(catColorObj,i) {
+		    	return catColorObj.category;
+		    	})
+		    .attr("class", "legendText")
+		// Insert a colored legend rectangle swatch into each group:
+		legendSel 
+		  .insert("rect")
+		  	.attr('height', LEGEND_RECT_SIZE) 
+		  	.attr('width', LEGEND_RECT_SIZE)
+		  	.attr('transform', function(catColorObj,i) {
+		  		// this is rect:
+		  		let legendTextElHeight = this.previousSibling.clientHeight;
+		  		// Align middle of rect with middle of text. the /4 is
+		  		// empirically determined. Unsure of all the measurements
+		  		// involved that would make this precise:
+		  		let txtRect = this.previousSibling.getBoundingClientRect();
+		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
+		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
+		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
+		  	})
+		  	.attr('fill', function(catColorObj, i) {
+		  		return catColorObj.rgb;
+		  	})
+	}
 	
 	/*---------------------------
 	| handleDrag
