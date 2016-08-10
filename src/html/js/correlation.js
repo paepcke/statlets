@@ -2,23 +2,16 @@ CorrelationViz = function(width, height) {
 
 	// Instance variables:
 	
-	var width  = width;
-	var height = height;
-	var svg    = null;	
-	var xScale = null;
-	var yScale = null;	
-	var xAxis  = null;
-	var yAxis  = null;
-	var tblObj = null;
+	var width   = width;
+	var height  = height;
+	var svgData = null;	
+	var tblObj  = null;
 	var corrTxtEl = null;
 	var dragClickHandler = null;
-	var bandWidth = null; // width in pixels between two x-axis ticks.
-	
 
-	
 	// Constants:
 
-	var X_AXIS_LEFT_PADDING      = 0; // X axis distance left SVG edge
+	var X_AXIS_LEFT_PADDING      = 0;  // X axis distance left SVG edge
 	var X_AXIS_BOTTOM_PADDING    = 50; // X axis distance bottom SVG edge
 	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
 	
@@ -54,19 +47,21 @@ CorrelationViz = function(width, height) {
 		d3.select('#dataDiv')
 			.style("height", height + 40)
 		
-		svg = d3.select("#dataDiv").append("svg")
+		svgData = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
 		.attr("id", "chart")
-		.attr("class", "chartSVG")
+		.attr("class", "svgData")
 
-		dragClickHandler = StatsDragClickHandler(svg);
+
+		dragClickHandler = StatsDragClickHandler(svgData);
 		// Only allow dragging dots vertically:
 		dragClickHandler.setAllowDrag({horizontal : false,
 									   vertical   : true})
 		// Don't allow creation of new dots by clicking:
 		dragClickHandler.setAllowDotCreation(false);
+
 
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
@@ -83,8 +78,9 @@ CorrelationViz = function(width, height) {
         // X axis is months without the col-0 header 'Spender':
         let xDomain     = tblObj.getHeader().slice(1);
         
-        // Argument for makeDataCoordSys:
-        let extentDict  = {x: {scaleType : 'ordinal',
+        // Argument for makeCoordSys:
+        let extentDict  = {svg           : svgData, 
+        				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'US States'  
             				  },
@@ -94,14 +90,48 @@ CorrelationViz = function(width, height) {
             			      }
                           };
 
-		makeDataCoordSys(extentDict);
-		updateDataChart();
+		let scalesData = makeCoordSys(extentDict);
+		updateChart(scalesData);
 		placeCorrelationValue();
+		
+		
+		// The "+40" is a kludge! It makes the 
+		// svg height of the correlation chart
+		// match the kludge needed for the data svg
+		// height:
+		d3.select('#corrDiv')
+			.style("height", height + 40)
+		
+		
+		svgCorr = d3.select("#corrDiv").append("svg")
+		.attr("width", "100%")
+		.attr("height", "100%")
+		.attr("viewBox", `0 0 ${width} ${height}`)
+		.attr("id", "chart")
+		.attr("class", "svgCorr")
+		
+		// The categories of dots ("1996", "2014")
+		let dataCat1 = tblObj.getCell(0, 0);
+		let dataCat2 = tblObj.getCell(1, 0);
+
+        extentDict  = {svg           : svgCorr,
+        			   x: {scaleType : 'linear',
+        				   domain    : yDomain,
+        				   axisLabel : 'Murder rate per 100K in ' + dataCat1   
+            			  },
+            		   y: {scaleType : 'linear',
+            		       domain    : yDomain,
+        				   axisLabel : 'Murder rate per 100K in ' + dataCat2               		      
+            		      }
+                       };
+
+		let scalesCorr = makeCoordSys(extentDict);
         
 		return {width  : width,
 				height : height,
 				tblObj : tblObj,
-				updateDataChart, updateDataChart,
+				updateDataChart : function() { updateChart(scalesData) }, // Curry the scales argument
+				updateCorrChart : function() { updateChart(scalesCorr) }, // Curry the scales argument
 			}
 	}
 	
@@ -135,17 +165,26 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| updateDataChart 
+	| updateChart 
 	-----------------*/
 	
-	var updateDataChart = function() {
+	var updateChart = function(scaleInfo) {
+		
+		/*
+		 * Scales is an object with three properties: xScale and yScale,
+		 * and bandWidth, the width between x-ticks in pixels.
+		 */
+		
+		let xScale    = scaleInfo.xScale;
+		let yScale    = scaleInfo.yScale;
+		let bandWidth = scaleInfo.bandWidth; 
 		
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
 		
 		let months      = tblObj.getHeader().slice(1);
 		
-		let dotClasses  = ['category1Dot', 'category2Dot'];
+		let dotClasses  = ['person1Dot', 'person2Dot'];
 		
 		let NO_HEADER_ROW = false;
 		let NO_COL0       = false;
@@ -191,7 +230,7 @@ CorrelationViz = function(width, height) {
 						return;
 					}
 					
-					handleDrag(circleSel);
+					handleDrag(circleSel, yScale);
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -250,6 +289,7 @@ CorrelationViz = function(width, height) {
 			categoryColorObjs.push({category : dataCat, rgb : rgb});
 		}
 
+		//****let LEGEND_X_PADDING = 40; // px from left
 		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
 		let LEGEND_Y_PADDING = height - 20; // px from top
 		let LEGEND_RECT_SIZE = 12; // sides of legend rects
@@ -290,6 +330,7 @@ CorrelationViz = function(width, height) {
 		  		let txtRect = this.previousSibling.getBoundingClientRect();
 		  		//let vertTxtMiddle = txtRect.bottom - (txtRect.height / 2.);
 		  		let yOffset = - LEGEND_RECT_SIZE + LEGEND_RECT_SIZE / 4.
+		  		//****return `translate(${LEGEND_X_PADDING + txtRect.width - LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  		return `translate(${txtRect.width + LEGEND_TXT_RECT_GAP}, ${yOffset})`;
 		  	})
 		  	.attr('fill', function(catColorObj, i) {
@@ -301,7 +342,7 @@ CorrelationViz = function(width, height) {
 	| handleDrag
 	-----------------*/
 	
-	var handleDrag = function(d3CircleSel) {
+	var handleDrag = function(d3CircleSel, yScale) {
 		/*
 		 Find this dot's corresponding table cell
 		 Find new y-position in table coordinates.
@@ -321,35 +362,6 @@ CorrelationViz = function(width, height) {
 		dragClickHandler.dragmove(d3CircleSel);
 	}
 	
-/*	---------------------------
-	| populateChart 
-	-----------------
-	
-	var populateChart = function() {
-		
-		// Get header (months), and data without the
-		// 'Spender', 'Monica', 'Daniel' column:
-		
-		var category1Data = tblObj.getRow(0).slice(1);
-		var category2Data = tblObj.getRow(1).slice(1);
-		let months      = tblObj.getHeader().slice(1);
-		
-		
-		for (let dataIndx=0; 
-		         dataIndx<Math.min(category1Data.length, category2Data.length);
-		         dataIndx++) {
-			let month    = months[dataIndx];
-			let pers1Val = category1Data[dataIndx];
-			let pers2Val = category2Data[dataIndx];
-			let x        = xScale(month);
-			let yPers1   = yScale(pers1Val);
-			let yPers2   = yScale(pers2Val);
-			
-			dragClickHandler.createDot(x,yPers1, 'category1Dot', bandWidth);
-			dragClickHandler.createDot(x,yPers2, 'category2Dot', bandWidth);
-		}
-	}
-*/	
 	/*---------------------------
 	| placeCorrelationValue 
 	-----------------*/
@@ -365,7 +377,7 @@ CorrelationViz = function(width, height) {
 		
 		if (corrTxtEl === null) {
 			//Add the SVG Text Element to the svgContainer
-			corrTxtEl = svg.append("text")
+			corrTxtEl = svgData.append("text")
 							.attr('x', CORR_TXT_POS.x)
 							.attr('y', CORR_TXT_POS.y)
 							.attr('class', 'statsLabel');
@@ -376,10 +388,10 @@ CorrelationViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| makeDataCoordSys 
+	| makeCoordSys 
 	-----------------*/
 	
-	var makeDataCoordSys = function(extentDict) {
+	var makeCoordSys = function(extentDict) {
 		
 		/*
 		 * extentDict: {
@@ -393,17 +405,29 @@ CorrelationViz = function(width, height) {
 		 *                         domain: <[ord1,ord2,...]>             // if ordinal scale
 		 *                         axisLabel : <label of y axis as a whole>
 		 *             }
+		 *             
+		 * Returns an object with three properties: xScale, yScale,
+		 * and bandWidth, the width in pixels between two x-axis ticks.
 		 */
 		
 		/* ---------------------------- X AXIS ---------------------------- */		
 
+		let svg = extentDict.svg;
+		
+		let xAxis     = null;
+		let yAxis     = null;
+		let xScale    = null;
+		let yScale    = null;
+		let bandWidth = null; // width in pixels between two x-axis ticks.
+
+		
 		// X Scale:
 		
 		switch(extentDict.x.scaleType) {
 		case 'linear':
 			xScale = d3.scale.linear()
 							 .domain(extentDict.x.domain)
-							 .rangeRoundBands([0, width - X_AXIS_RIGHT_PADDING]);
+							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
 			break;
 		case 'ordinal':
 			xScale = d3.scale.ordinal()
@@ -500,10 +524,12 @@ CorrelationViz = function(width, height) {
 						.attr("y", Y_AXIS_LEFT_PADDING / 2)
 						.attr("transform", "rotate(-90)")
 						.text(extentDict.y.axisLabel)
+						
+		return {xScale    : xScale,
+				yScale    : yScale,
+				bandWidth : bandWidth,
+			   }
 	}
-
-	/* -------------------------------  Correlation Chart ------------------------------ */
-
 
 	return constructor(width, height);
 }

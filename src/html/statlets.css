@@ -27,10 +27,10 @@ h1          { text-align : center;  }
          }
 
 .corrDiv { 
-           border : 1px solid red;
+           border : 1px solid orange;
            //flex   : 2 1 auto;
-           flex   : 2 1 40%;            
-           position : absolute;            
+           flex   : 2 1 40%;
+           background-color : #F6F6F6;           
          }
 
 
@@ -51,7 +51,11 @@ h1          { text-align : center;  }
 	 				 margin  : auto;
 			}
 
-.chartSVG  {
+.svgData  {
+    border : 1px solid BurlyWood;
+}			
+
+.svgCorr  {
     border : 1px solid BurlyWood;
 }			
 
@@ -75,6 +79,6 @@ h1          { text-align : center;  }
              
 .legendText  { font-size : 10pt; }
 
-.category1Dot  { fill : green; }
-.category2Dot  { fill : blue; }
+.person1Dot  { fill : green; }
+.person2Dot  { fill : blue; }
 
