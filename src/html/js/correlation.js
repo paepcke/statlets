@@ -28,7 +28,7 @@ CorrelationViz = function(width, height) {
 
 	
 	/*---------------------------
-	| contructor 
+	| constructor 
 	-----------------*/
 	
 	var constructor = function() {
@@ -52,7 +52,7 @@ CorrelationViz = function(width, height) {
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
-		.attr("id", "chart")
+		.attr("id", "dataChart")
 		.attr("class", "svgData")
 
 
@@ -108,7 +108,7 @@ CorrelationViz = function(width, height) {
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
-		.attr("id", "chart")
+		.attr("id", "corrChart")
 		.attr("class", "svgCorr")
 		
 		// The categories of dots ("1996", "2014")
@@ -127,7 +127,7 @@ CorrelationViz = function(width, height) {
                        };
 
 		let scalesCorr = makeCoordSys(extentDict);
-		updateCorrChart(scalesData);
+		updateCorrChart(scalesCorr);
         
 		return {width  : width,
 				height : height,
@@ -230,7 +230,7 @@ CorrelationViz = function(width, height) {
 				.call(addDragBehavior(dotClasses, yScale))
 		}
 		
-		// If it does not yet exist, create a legend,
+		// If legend does not yet exist, create a legend,
 		// else done:
 		
 		if (d3.selectAll('.legend').empty()) {
@@ -298,7 +298,8 @@ CorrelationViz = function(width, height) {
 		ROW_1996 = 0;
 		ROW_2014 = 1;
 		
-		svgData
+		//*****svgCorr
+		svgCorr.selectAll('.corrDot')
 		  .data(function() { return byYear })
 		  
     	  // Update (possibly existing dots):
@@ -309,7 +310,7 @@ CorrelationViz = function(width, height) {
 		    .append('circle')
 		    .attr('state', function(byYearPair, stateIndex) { return states[stateIndex] })
 		    .attr('id', function(byYearPair, stateIndex) { return states[stateIndex] })		    
-		    .attr('tblRows', function(byYearPair, i) { return [ROW_1996, ROW_2014] })
+		    .attr('tblRows', function(byYearPair, i) { return `[${ROW_1996}, ${ROW_2014}]` })
 		    .attr('tblCol', function(byYearPair, i) { return i } )
 			.attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) } )
 			.attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) } )
@@ -317,14 +318,8 @@ CorrelationViz = function(width, height) {
 			.attr('class', 'corrDot')
 			
 			// Attach drag-start behavior to this circle.
-			.call(addDragBehavior(dotClasses, yScale))
+			.call(addDragBehavior(dotClasses, yScale, xScale))
 		
-		// If it does not yet exist, create a legend,
-		// else done:
-		
-		if (d3.selectAll('.legend').empty()) {
-			addLegend(dotClasses);
-		}
 	}
 	
 	/*---------------------------
