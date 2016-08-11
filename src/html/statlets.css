@@ -81,5 +81,5 @@ h1          { text-align : center;  }
 
 .category1Dot  { fill : green; }
 .category2Dot  { fill : blue; }
-.corrDot       { fill : magenta; }
+.corrDot       { fill :  rgb(144, 12, 63) ; } // Dark red.
 

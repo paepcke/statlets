@@ -2,13 +2,14 @@ CorrelationViz = function(width, height) {
 
 	// Instance variables:
 	
-	var width   = width;
-	var height  = height;
-	var svgData = null;	
-	var svgCorr = null;	
-	var tblObj  = null;
-	var corrTxtEl = null;
+	var width   	     = width;
+	var height  	     = height;
+	var svgData 	     = null;	
+	var svgCorr 	     = null;	
+	var tblObj  	     = null;
+	var corrTxtEl        = null;
 	var dragClickHandler = null;
+	var scalesCorr       = null;
 
 	// Constants:
 
@@ -23,6 +24,9 @@ CorrelationViz = function(width, height) {
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
 									};
+
+	var UPDATE_TABLE             = true;
+	var DONT_UPDATE_TABLE        = false;
 	
 	var DOT_RADIUS               = 10;  // pixels.
 
@@ -89,9 +93,8 @@ CorrelationViz = function(width, height) {
                           };
 
 		let scalesData = makeCoordSys(extentDict);
-		updateDataChart(scalesData);
-		placeCorrelationValue();
 		
+		// Build the correlations chart:
 		
 		// The "+40" is a kludge! It makes the 
 		// svg height of the correlation chart
@@ -123,14 +126,19 @@ CorrelationViz = function(width, height) {
             		      }
                        };
 
-		let scalesCorr = makeCoordSys(extentDict);
+		scalesCorr = makeCoordSys(extentDict);
+		// Initialize the data chart, which 
+		// will initialize the correlation chart
+		// as well:
+		updateDataChart(scalesData);
+		placeCorrelationValue();
+		// Make correlation dots match:
 		updateCorrChart(scalesCorr);
+		
         
 		return {width  : width,
 				height : height,
 				tblObj : tblObj,
-				//updateDataChart : function() { updateChart(scalesData) }, // Curry the scales argument
-				//updateCorrChart : function() { updateChart(scalesCorr) }, // Curry the scales argument
 			}
 	}
 	
@@ -225,7 +233,7 @@ CorrelationViz = function(width, height) {
 
 				// Attach drag-start behavior to this circle.
 				// Do update the data table from these moves.
-				.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, true));
+				.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -244,7 +252,7 @@ CorrelationViz = function(width, height) {
 	var updateCorrChart = function(scaleInfo) {
 		
 		/*
-		 * Scales is an object with three properties: xScale and yScale,
+		 * scalesInfo is an object with three properties: xScale and yScale,
 		 * and bandWidth, the width between x-ticks in pixels.
 		 */
 		
@@ -319,7 +327,7 @@ CorrelationViz = function(width, height) {
 			// of correlation dots, b/c it's ambiguous which 
 			// row should be updated (each dot includes information
 			// from rows):
-			.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, false))
+			.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, DONT_UPDATE_TABLE))
 		
 	}
 	
