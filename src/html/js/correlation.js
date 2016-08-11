@@ -42,8 +42,8 @@ CorrelationViz = function(width, height) {
 
 		let chartDiv = document.getElementById('dataDiv');
 			
-		width  = chartDiv.clientWidth;
-		height = chartDiv.clientHeight;
+		this.width  = chartDiv.clientWidth;
+		this.height = chartDiv.clientHeight;
 
 		// The "+40" is a kludge! It accounts
 		// for the additional space that the x-axis
@@ -52,7 +52,7 @@ CorrelationViz = function(width, height) {
 		d3.select('#dataDiv')
 			.style("height", height + 40)
 		
-		svgData = d3.select("#dataDiv").append("svg")
+		this.svgData = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
@@ -65,7 +65,7 @@ CorrelationViz = function(width, height) {
 		// Don't allow creation of new dots by clicking:
 		dragClickHandler.setAllowDotCreation(false);
 
-        tblObj = createTable();
+        this.tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
         
@@ -104,7 +104,7 @@ CorrelationViz = function(width, height) {
 			.style("height", height + 40)
 		
 		
-		svgCorr = d3.select("#corrDiv").append("svg")
+		this.svgCorr = d3.select("#corrDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
@@ -135,6 +135,10 @@ CorrelationViz = function(width, height) {
 		// Make correlation dots match:
 		updateCorrChart(scalesCorr);
 		
+		// Cause dragging in data chart to cause
+		// dots in correlation chart to move:
+		
+		connectDataToCorrelation();
         
 		return {width  : width,
 				height : height,
@@ -727,6 +731,20 @@ CorrelationViz = function(width, height) {
 			   }
 	}
 
+	/*---------------------------
+	| connectDataToCorrelation 
+	-----------------*/
+	
+	var connectDataToCorrelation = function() {
+		let dataCirleSel = d3.select('#svgData').select('circle')
+		
+		dataCirleSel
+			.on("drag.corrLink", function(circle, i) { console.log('Called.') })
+			
+	}
+	
+	
+	
 	return constructor(width, height);
 }
 var corrViz = CorrelationViz(700, 400);
