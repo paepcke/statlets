@@ -259,7 +259,7 @@ CorrelationViz = function(width, height) {
 		
 		let states      = tblObj.getHeader().slice(1);
 		
-		let dotClasses  = ['category1Dot', 'category2Dot'];
+		let dotClasses  = ['corrDot'];
 		
 		let NO_HEADER_ROW = false;
 		let NO_COL0       = false;
@@ -298,7 +298,6 @@ CorrelationViz = function(width, height) {
 		ROW_1996 = 0;
 		ROW_2014 = 1;
 		
-		//*****svgCorr
 		svgCorr.selectAll('.corrDot')
 		  .data(function() { return byYear })
 		  
@@ -327,7 +326,7 @@ CorrelationViz = function(width, height) {
 	-----------------*/
 	
 	
-	var addDragBehavior = function(dotClasses, yScale, xScale) {
+	var addDragBehavior = function(dotClasses, yScale, xScale, dragDirections) {
 		/*
 		 * Adds drag behavior to 'this'. In order to 
 		 * have 'this' bound to the object to which the 
@@ -347,6 +346,12 @@ CorrelationViz = function(width, height) {
 		 * 			up/down and left/right. Horizontal motion might be 
 		 *          suppressed, for example, if the X axis is ordinal. 
 		 * :type xScale: { function | undefined }
+		 * :param dragDirections: Object with all-optional properties
+		 *           vertical, horizontal. If none is present in the object,
+		 *           then dragging is allowed both vertically and horizontally.
+		 *           Else the boolean values of properties vertical/horizontal
+		 *           determine which motions are allowed.
+		 * :type dragDirections: { vertical : boolean &| horizontal : boolean &| <empty> }
 		 */
 	
 		return d3.behavior.drag()
@@ -372,6 +377,10 @@ CorrelationViz = function(width, height) {
 				})
 				.on('drag', function(d) {
 					let circleSel = d3.select(this);
+					if (circleSel.empty()) {
+						// Not over a circle:
+						return;
+					} 
 					
 					let mouseY  = d3.event.y;
 					let circleY = circleSel.attr('cy');
@@ -381,6 +390,10 @@ CorrelationViz = function(width, height) {
 						// Mouse got ahead of the dragged circle.
 						// Select the circle we are dragging instead:
 						circleSel = d3.select(d3.behavior.drag.currCircle);
+						if (circleSel.empty()) {
+							// Not over a circle:
+							return;
+						} 
 					}
 					
 					if (typeof(xScale) !== 'undefined' ) {
@@ -392,6 +405,10 @@ CorrelationViz = function(width, height) {
 							// Mouse got ahead of the dragged circle.
 							// Select the circle we are dragging instead:
 							circleSel = d3.select(d3.behavior.drag.currCircle);
+							if (circleSel.empty()) {
+								// Not over a circle:
+								return;
+							} 
 						}
 					}
 					
@@ -400,7 +417,7 @@ CorrelationViz = function(width, height) {
 						return;
 					}
 					
-					handleDrag(circleSel, yScale, xScale);
+					handleDrag(circleSel, yScale, xScale, dragDirection);
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -473,11 +490,25 @@ CorrelationViz = function(width, height) {
 	| handleDrag
 	-----------------*/
 	
-	var handleDrag = function(d3CircleSel, yScale, xScale) {
+	var handleDrag = function(d3CircleSel, yScale, xScale, dragDirections) {
 		/*
 		 Find this dot's corresponding table cell
 		 Find new y-position in table coordinates.
 		 update the table.
+		 
+		 :param d3CircleSel: D3 selection of a single element to be moved.
+		 :type d3CircleSel: D3Selection
+		 :param yScale: D3 scale for y axis
+		 :type yScale: D3Scale
+		 :param xScale: D3 scale for x axis
+		 :type xScale: D3Scale
+		 :param dragDirections: Object with all-optional properties
+		            vertical, horizontal. If none is present in the object,
+		            then dragging is allowed both vertically and horizontally.
+		            Else the boolean values of properties vertical/horizontal
+		            determine which motions are allowed.
+		 :type dragDirections: { vertical : boolean &| horizontal : boolean &| <empty> }
+		 
 		 */
 		
 		let tblRows = JSON.parse(d3CircleSel.attr('tblRows'));
