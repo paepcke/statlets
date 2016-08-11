@@ -79,6 +79,7 @@ h1          { text-align : center;  }
              
 .legendText  { font-size : 10pt; }
 
-.person1Dot  { fill : green; }
-.person2Dot  { fill : blue; }
+.category1Dot  { fill : green; }
+.category2Dot  { fill : blue; }
+.corrDot       { fill : magenta; }
 

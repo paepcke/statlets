@@ -38,6 +38,7 @@ TableManager = function(dataArr, headerArr) {
 		return {getHeader : getHeader,
 				getData   : getData,
 				getRow    : getRow,
+				getCol	  : getCol,
 				getCell   : getCell,
 				setCell   : setCell,
 				setRow    : setRow,
@@ -132,6 +133,40 @@ TableManager = function(dataArr, headerArr) {
 		return dataArr[rowNum].slice(0);
 	}
 
+	/*---------------------------
+	| getCol
+	-----------------*/
+	
+	var getCol = function(colNum) {
+		/*
+		 * Get array of col values. colNum is zero-based.
+		 * Note that if the table includes a header row,
+		 * then that header row is ignored. Row 0 will be the
+		 * true zeroe'th *data* row, not the header. 
+		 * 
+		 * To retrieve the header row, use getHeader();
+		 * 
+		 * Returns a copy of the internally maintained
+		 * matrix column.
+		 */
+		
+		if (typeof(colNum) !== 'number') {
+			throw "Must pass a column number to retrieve.";
+		}
+		
+		if (colNum > dataArr[0].length) {
+			throw `Table has ${dataArr[0].length} columns; caller asked for row ${colNum}`;
+		}
+		
+		// Return a *copy* of the col:
+		colRes = [];
+		for (let row of dataArr) {
+			colRes.push(row[colNum]);
+		}
+		return colRes;
+	}
+	
+	
 	/*---------------------------
 	| getCell
 	-----------------*/

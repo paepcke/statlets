@@ -5,6 +5,7 @@ CorrelationViz = function(width, height) {
 	var width   = width;
 	var height  = height;
 	var svgData = null;	
+	var svgCorr = null;	
 	var tblObj  = null;
 	var corrTxtEl = null;
 	var dragClickHandler = null;
@@ -183,16 +184,16 @@ CorrelationViz = function(width, height) {
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
 		
-		let months      = tblObj.getHeader().slice(1);
+		let states      = tblObj.getHeader().slice(1);
 		
-		let dotClasses  = ['person1Dot', 'person2Dot'];
+		let dotClasses  = ['category1Dot', 'category2Dot'];
 		
 		let NO_HEADER_ROW = false;
 		let NO_COL0       = false;
 
 		let currRowNum = -1;
 				
-		svgSel = d3.select('svg')
+		svgData
 		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
 
 		// For each row of the matrix: create or update 
@@ -205,21 +206,23 @@ CorrelationViz = function(width, height) {
 			dotClass = dotClasses[++currRowNum];
 			let colNum = 0;
 
-			personDotSel = svgSel.selectAll('.' + dotClass)
+			personDotSel = svgData.selectAll('.' + dotClass)
 				.data(function() { return row })
 				
 			personDotSel
 				// Update existing dots with (possibly) changed data:
-				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				
 			personDotSel.enter() 
 				// Add additional dots if now more data than before:
 				.append('circle')
-				.attr('tblRow', function() { return currRowNum })
+				.attr('state',  function(row, i) { return states[i] })
+				.attr('id', function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Category
+				.attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved ********???
 				.attr('tblCol', function() { return colNum++ } )
 				.attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
-				.attr('cx', function(d,colNum)  { return xScale(months[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
 				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				.attr('class', function() { return dotClass } )
 
@@ -242,20 +245,113 @@ CorrelationViz = function(width, height) {
 	
 	var updateCorrChart = function(scaleInfo) {
 		
+		/*
+		 * Scales is an object with three properties: xScale and yScale,
+		 * and bandWidth, the width between x-ticks in pixels.
+		 */
+		
+		let xScale    = scaleInfo.xScale;
+		let yScale    = scaleInfo.yScale;
+		let bandWidth = scaleInfo.bandWidth; 
+		
+		// Get header (states), and data without the
+		// 'Spender', 'Monica', 'Daniel' column:
+		
+		let states      = tblObj.getHeader().slice(1);
+		
+		let dotClasses  = ['category1Dot', 'category2Dot'];
+		
+		let NO_HEADER_ROW = false;
+		let NO_COL0       = false;
+
+		let currRowNum = -1;
+		
+		/*
+	        From: [
+	               [1996, murdersAlabama1996,  murdersCalifornia1996,...],
+	               [2014, murdersAlabama2014,  murdersCalifornia2014,...]
+	               ]
+	        get: ['1994', '2014']
+		 */
+		let categories = tblObj.getCol(0); 
+		let tblData    = tblObj.getData(NO_HEADER_ROW, NO_COL0);
+		
+		
+		// Get current data from the table:
+		
+		/* Turn the table [[murdersAlabama1996, murdersCalifornia1996, ...],
+		                   [murdersAlabama2014, murdersCalifornia2014, ...]
+		                  ]
+		   into:
+		           [[murdersAlabama1996   , murdersAlabama2014],
+		            [murdersCalifornia2014, murdersCalifornia2014]
+		            ]
+		                
+        */		                
+		let byYear = [];
+		for (let stateIndex=0; stateIndex<tblData[0].length; stateIndex++) {
+			byYear.push({ yearXAxis : tblData[0][stateIndex], 
+						  yearYAxis : tblData[1][stateIndex]
+						});
+		}
+
+		ROW_1996 = 0;
+		ROW_2014 = 1;
+		
+		svgData
+		  .data(function() { return byYear })
+		  
+    	  // Update (possibly existing dots):
+		    .attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) } )
+		    .attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) } )
+			
+		  .enter()
+		    .append('circle')
+		    .attr('state', function(byYearPair, stateIndex) { return states[stateIndex] })
+		    .attr('id', function(byYearPair, stateIndex) { return states[stateIndex] })		    
+		    .attr('tblRows', function(byYearPair, i) { return [ROW_1996, ROW_2014] })
+		    .attr('tblCol', function(byYearPair, i) { return i } )
+			.attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) } )
+			.attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) } )
+			.attr('r', DOT_RADIUS)
+			.attr('class', 'corrDot')
+			
+			// Attach drag-start behavior to this circle.
+			.call(addDragBehavior(dotClasses, yScale))
+		
+		// If it does not yet exist, create a legend,
+		// else done:
+		
+		if (d3.selectAll('.legend').empty()) {
+			addLegend(dotClasses);
+		}
 	}
 	
 	/*---------------------------
-	| createDragBehavior 
+	| addDragBehavior 
 	-----------------*/
 	
 	
-	var addDragBehavior = function(dotClasses, yScale) {
+	var addDragBehavior = function(dotClasses, yScale, xScale) {
 		/*
 		 * Adds drag behavior to 'this'. In order to 
 		 * have 'this' bound to the object to which the 
 		 * behavior is to be attached, use the addDragBehavior.call(),
 		 * or from a D3 expression: .call(addDragBehavior).
 		 * Does not return anything. 
+		 * 
+		 * :param dotClasses: array of CSS class names of dots that 
+		 *         will get moved around. Example: ['category1Dot', 'category2Dot]
+		 *         for the data chart. Or just ['corrDot'] for the 
+		 *         correlation dot. Used to ensure we don't start moving
+		 *         other items in the chart than dots.
+		 * :type dotClasses: [str]
+		 * :param yScale: the  D3 yScale function of the chart.
+		 * :type yScale: function
+		 * :param xScale: Optionally the x-axis scale, if dots can move both
+		 * 			up/down and left/right. Horizontal motion might be 
+		 *          suppressed, for example, if the X axis is ordinal. 
+		 * :type xScale: { function | undefined }
 		 */
 	
 		return d3.behavior.drag()
@@ -292,12 +388,24 @@ CorrelationViz = function(width, height) {
 						circleSel = d3.select(d3.behavior.drag.currCircle);
 					}
 					
+					if (typeof(xScale) !== 'undefined' ) {
+						let mouseX  = d3.event.x;
+						let circleX = circleSel.attr('cx');
+						let circleR = circleSel.attr('r');
+
+						if (Math.abs(mouseX - circleX) > circleR) {
+							// Mouse got ahead of the dragged circle.
+							// Select the circle we are dragging instead:
+							circleSel = d3.select(d3.behavior.drag.currCircle);
+						}
+					}
+					
 					if (! circleSel.classed("dragging")) {
 						// Not over something being dragged:
 						return;
 					}
 					
-					handleDrag(circleSel, yScale);
+					handleDrag(circleSel, yScale, xScale);
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -319,7 +427,6 @@ CorrelationViz = function(width, height) {
 			categoryColorObjs.push({category : dataCat, rgb : rgb});
 		}
 
-		//****let LEGEND_X_PADDING = 40; // px from left
 		let LEGEND_X_PADDING = Y_AXIS_LEFT_PADDING / 3.; // px from left
 		let LEGEND_Y_PADDING = height - 20; // px from top
 		let LEGEND_RECT_SIZE = 12; // sides of legend rects
@@ -327,7 +434,7 @@ CorrelationViz = function(width, height) {
 		let LEGEND_TXT_RECT_GAP = 3 // gap between legend text and its rectangle swatch
 		
 		// Create as many groups as there are categories (colors) of data:
-		let legendSel = svgSel.selectAll('.legend')
+		let legendSel = svgData.selectAll('.legend')
 			.data(categoryColorObjs)
 			.enter()
 		  .append("g")
@@ -371,20 +478,25 @@ CorrelationViz = function(width, height) {
 	| handleDrag
 	-----------------*/
 	
-	var handleDrag = function(d3CircleSel, yScale) {
+	var handleDrag = function(d3CircleSel, yScale, xScale) {
 		/*
 		 Find this dot's corresponding table cell
 		 Find new y-position in table coordinates.
 		 update the table.
 		 */
 		
-		let tblRow = parseInt(d3CircleSel.attr('tblRow'));
+		let tblRows = JSON.parse(d3CircleSel.attr('tblRows'));
 		// The +1: skip col0, which is the spender's name:
 		let tblCol = parseInt(d3CircleSel.attr('tblCol')) + 1;
 
-		let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
-
-		tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));
+		for (let tblRow of tblRows) {
+			let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
+			tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
+			if (typeof(xScale) !== 'undefined') {
+				let userFrmX  = xScale.invert(d3.event.x - X_AXIS_LEFT_PADDING);
+				tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
+			}
+		}
 		// Update correlation:
 		placeCorrelationValue();
 		
