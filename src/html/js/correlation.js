@@ -42,8 +42,8 @@ CorrelationViz = function(width, height) {
 
 		let chartDiv = document.getElementById('dataDiv');
 			
-		this.width  = chartDiv.clientWidth;
-		this.height = chartDiv.clientHeight;
+		width  = chartDiv.clientWidth;
+		height = chartDiv.clientHeight;
 
 		// The "+40" is a kludge! It accounts
 		// for the additional space that the x-axis
@@ -52,7 +52,7 @@ CorrelationViz = function(width, height) {
 		d3.select('#dataDiv')
 			.style("height", height + 40)
 		
-		this.svgData = d3.select("#dataDiv").append("svg")
+		svgData = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
@@ -65,7 +65,7 @@ CorrelationViz = function(width, height) {
 		// Don't allow creation of new dots by clicking:
 		dragClickHandler.setAllowDotCreation(false);
 
-        this.tblObj = createTable();
+        tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
         document.getElementById('tableDiv').appendChild(tblObj.value());
         
@@ -104,7 +104,7 @@ CorrelationViz = function(width, height) {
 			.style("height", height + 40)
 		
 		
-		this.svgCorr = d3.select("#corrDiv").append("svg")
+		svgCorr = d3.select("#corrDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("viewBox", `0 0 ${width} ${height}`)
