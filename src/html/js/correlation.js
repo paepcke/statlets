@@ -57,12 +57,9 @@ CorrelationViz = function(width, height) {
 
 
 		dragClickHandler = StatsDragClickHandler(svgData);
-		// Only allow dragging dots vertically:
-		dragClickHandler.setAllowDrag({horizontal : false,
-									   vertical   : true})
+		
 		// Don't allow creation of new dots by clicking:
 		dragClickHandler.setAllowDotCreation(false);
-
 
         tblObj = createTable();
         tblObj.classed({table: 'inputTable'});
@@ -227,7 +224,8 @@ CorrelationViz = function(width, height) {
 				.attr('class', function() { return dotClass } )
 
 				// Attach drag-start behavior to this circle.
-				.call(addDragBehavior(dotClasses, yScale))
+				// Do update the data table from these moves.
+				.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, true));
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -317,7 +315,11 @@ CorrelationViz = function(width, height) {
 			.attr('class', 'corrDot')
 			
 			// Attach drag-start behavior to this circle.
-			.call(addDragBehavior(dotClasses, yScale, xScale))
+			// Don't update the data table from these moves
+			// of correlation dots, b/c it's ambiguous which 
+			// row should be updated (each dot includes information
+			// from rows):
+			.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, false))
 		
 	}
 	
@@ -326,7 +328,7 @@ CorrelationViz = function(width, height) {
 	-----------------*/
 	
 	
-	var addDragBehavior = function(dotClasses, yScale, xScale, dragDirections) {
+	var addDragBehavior = function(dotClasses, yScale, xScale, dragDirections, updateTable) {
 		/*
 		 * Adds drag behavior to 'this'. In order to 
 		 * have 'this' bound to the object to which the 
@@ -352,6 +354,8 @@ CorrelationViz = function(width, height) {
 		 *           Else the boolean values of properties vertical/horizontal
 		 *           determine which motions are allowed.
 		 * :type dragDirections: { vertical : boolean &| horizontal : boolean &| <empty> }
+		 * :param updateTable: change content of table cells as dragged elements move.
+		 * :type updateTable: bool
 		 */
 	
 		return d3.behavior.drag()
@@ -417,7 +421,7 @@ CorrelationViz = function(width, height) {
 						return;
 					}
 					
-					handleDrag(circleSel, yScale, xScale, dragDirection);
+					handleDrag(circleSel, yScale, xScale, dragDirections, updateTable);
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -490,7 +494,7 @@ CorrelationViz = function(width, height) {
 	| handleDrag
 	-----------------*/
 	
-	var handleDrag = function(d3CircleSel, yScale, xScale, dragDirections) {
+	var handleDrag = function(d3CircleSel, yScale, xScale, dragDirections, updateTable) {
 		/*
 		 Find this dot's corresponding table cell
 		 Find new y-position in table coordinates.
@@ -508,25 +512,42 @@ CorrelationViz = function(width, height) {
 		            Else the boolean values of properties vertical/horizontal
 		            determine which motions are allowed.
 		 :type dragDirections: { vertical : boolean &| horizontal : boolean &| <empty> }
+		 :param updateTable: if true, the table in the UI will be updated to reflect
+		 			the new circle position. 
+		 :param updateTable: bool
 		 
 		 */
+		
+		let vertMove = true;
+		let horMove  = true;
+		if (dragDirections.hasOwnProperty('vertical')) {
+			vertMove = dragDirections.vertical;
+		}
+		if (dragDirections.hasOwnProperty('horizontal')) {
+			horMove = dragDirections.horizontal;
+		}
 		
 		let tblRows = JSON.parse(d3CircleSel.attr('tblRows'));
 		// The +1: skip col0, which is the spender's name:
 		let tblCol = parseInt(d3CircleSel.attr('tblCol')) + 1;
 
-		for (let tblRow of tblRows) {
-			let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
-			tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
-			if (typeof(xScale) !== 'undefined') {
-				let userFrmX  = xScale.invert(d3.event.x - X_AXIS_LEFT_PADDING);
-				tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
+		if (updateTable) {
+			for (let tblRow of tblRows) {
+				if (vertMove) {
+					let userFrmY  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING);
+					tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
+				}
+				if (horMove) {
+					let userFrmX  = xScale.invert(d3.event.x - X_AXIS_LEFT_PADDING);
+					tblObj.setCell(tblRow, tblCol, userFrmY.toFixed(2));		
+				}
 			}
 		}
+		
 		// Update correlation:
 		placeCorrelationValue();
 		
-		dragClickHandler.dragmove(d3CircleSel);
+		dragClickHandler.dragmove(d3CircleSel, vertMove, horMove);
 	}
 	
 	/*---------------------------

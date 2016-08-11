@@ -118,17 +118,24 @@ StatsDragClickHandler = function(svg) {
 	| dragmove 
 	-----------------*/
 
-	var dragmove = function(d3DomElSel) {
+	var dragmove = function(d3DomElSel, dragVert, dragHor) {
 
 		let evt = d3.event;
 		let x = evt.x;
 		let y = evt.y;
 		
-		if ( _allowDrag.horizontal) {
+		if (typeof(dragVert) === 'undefined') {
+			dragVert = _allowDrag.vertical;
+		}
+		if (typeof(dragHor) === 'undefined') {
+			dragHor = _allowDrag.horizontal;
+		}
+		
+		if (dragHor) {
 			d3DomElSel.attr('cx', x);
 		}
 		
-		if ( _allowDrag.vertical) {
+		if (dragVert) {
 			d3DomElSel.attr('cy', y);
 		}
 			
