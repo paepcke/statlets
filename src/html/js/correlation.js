@@ -23,7 +23,7 @@ CorrelationViz = function(width, height) {
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
 									};
-
+	
 	var UPDATE_TABLE             = true;
 	var DONT_UPDATE_TABLE        = false;
 	
@@ -133,6 +133,7 @@ CorrelationViz = function(width, height) {
 		placeCorrelationValue();
 		// Make correlation dots match:
 		updateCorrChart(scalesCorr);
+		addCorrTooltip();
 		
 		return {width  : width,
 				height : height,
@@ -746,15 +747,42 @@ CorrelationViz = function(width, height) {
 			corrCircleSel = d3.select(`#${circleSel.attr('state')}`);
 			
 			updateCorrChart(scalesCorr);
-			
-/*			handleDrag(corrCircleSel, 
-					   scalesCorr.yScale, 
-					   scalesCorr.xScale, 
-					   {vertical : true, horizontal : true}, 
-					   DONT_UPDATE_TABLE);
-*/		}
+		}
 	}
 	
+	/*---------------------------
+	| addCorrTooltip
+	-----------------*/
+	
+	var addCorrTooltip = function() {
+
+		var tooltip = d3.select("#corrChart")
+					.append("rect")
+					    .attr('x', 40)
+					    .attr('y', 40)
+						.attr("id", "corrTooltip")
+						.classed("corrTooltip", true)
+						// .style("fill", "orange")
+						// .style("opacity", 0);
+		
+		d3.selectAll(".corrDot")
+			.on("mouseover", function() {
+				 // ****tooltip.transition().duration(200).style("opacity", .9);
+				tooltip.classed("visible", true)
+			})
+			.on("mousemove", function(circle) {
+				tooltip
+					.text(d3.event.pageX + ", " + d3.event.pageY)
+					//****.style("left", `${circle.cx - 34}px`)
+					//****.style("top",  `${circle.cy - 12}px`)
+					.style("left", (d3.event.pageX - 34) + "px")
+					.style("top", (d3.event.pageY - 12) + "px");
+			})
+			.on("mouseout", function() {
+				tooltip.classed("visible", false);
+			})
+			
+	}
 	
 	
 	return constructor(width, height);

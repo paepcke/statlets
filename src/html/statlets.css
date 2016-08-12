@@ -79,7 +79,24 @@ h1          { text-align : center;  }
              
 .legendText  { font-size : 10pt; }
 
+.corrTooltip { 
+			   fill   : orange;
+			   width  : 60px;
+			   height : 40px;
+			   rx     : 20;
+			   ry     : 20;
+			   opacity : 0;
+			   transition : opacity 0.5;
+			 }
+			 
+.corrTooltip.visible {
+     		   opacity: 0.9;
+}
+
 .category1Dot  { fill : green; }
 .category2Dot  { fill : blue; }
 .corrDot       { fill :  rgb(144, 12, 63) ; } // Dark red.
+
+
+
 
