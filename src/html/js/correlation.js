@@ -4,12 +4,11 @@ CorrelationViz = function(width, height) {
 	
 	var width   	     = width;
 	var height  	     = height;
-	var svgData 	     = null;	
-	var svgCorr 	     = null;	
+	var scalesData	     = null;
+	var scalesCorr       = null;
 	var tblObj  	     = null;
 	var corrTxtEl        = null;
 	var dragClickHandler = null;
-	var scalesCorr       = null;
 
 	// Constants:
 
@@ -92,7 +91,7 @@ CorrelationViz = function(width, height) {
             			      }
                           };
 
-		let scalesData = makeCoordSys(extentDict);
+		this.scalesData = makeCoordSys(extentDict);
 		
 		// Build the correlations chart:
 		
@@ -130,16 +129,11 @@ CorrelationViz = function(width, height) {
 		// Initialize the data chart, which 
 		// will initialize the correlation chart
 		// as well:
-		updateDataChart(scalesData);
+		updateDataChart(this.scalesData);
 		placeCorrelationValue();
 		// Make correlation dots match:
 		updateCorrChart(scalesCorr);
 		
-		// Cause dragging in data chart to cause
-		// dots in correlation chart to move:
-		
-		connectDataToCorrelation();
-        
 		return {width  : width,
 				height : height,
 				tblObj : tblObj,
@@ -370,6 +364,13 @@ CorrelationViz = function(width, height) {
 		 * :type updateTable: bool
 		 */
 	
+		// Get function circleDragged() 
+		// a chance to see which circle moved, and to mirror
+		// on the correlation chart:
+		let dispatch = d3.dispatch('drag', circleDragged);
+		dispatch.on("drag.dataDot", circleDragged);
+										
+
 		return d3.behavior.drag()
 				.on('dragstart', function(d) {
 					
@@ -434,6 +435,8 @@ CorrelationViz = function(width, height) {
 					}
 					
 					handleDrag(circleSel, yScale, xScale, dragDirections, updateTable);
+					// Let interested parties know that a circle moved:
+					dispatch.drag(this, circleSel);
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -732,15 +735,22 @@ CorrelationViz = function(width, height) {
 	}
 
 	/*---------------------------
-	| connectDataToCorrelation 
+	| circleDragged
 	-----------------*/
 	
-	var connectDataToCorrelation = function() {
-		let dataCirleSel = d3.select('#svgData').select('circle')
-		
-		dataCirleSel
-			.on("drag.corrLink", function(circle, i) { console.log('Called.') })
+	var circleDragged = function(circleObj, circleSel) {
+		//console.log(`Circle class: ${circleSel.attr('class')}`);
+		if (["category1Dot", "category2Dot"].some(function(className) { return circleSel.classed(className) })) {
+
+			let state = circleSel.attr('state'); // US State
+			corrCircleSel = d3.select(`#${circleSel.attr('state')}`);
 			
+			handleDrag(corrCircleSel, 
+					   scalesCorr.yScale, 
+					   scalesCorr.xScale, 
+					   {vertical : true, horizontal : true}, 
+					   DONT_UPDATE_TABLE);
+		}
 	}
 	
 	
