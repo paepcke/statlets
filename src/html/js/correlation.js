@@ -745,12 +745,14 @@ CorrelationViz = function(width, height) {
 			let state = circleSel.attr('state'); // US State
 			corrCircleSel = d3.select(`#${circleSel.attr('state')}`);
 			
-			handleDrag(corrCircleSel, 
+			updateCorrChart(scalesCorr);
+			
+/*			handleDrag(corrCircleSel, 
 					   scalesCorr.yScale, 
 					   scalesCorr.xScale, 
 					   {vertical : true, horizontal : true}, 
 					   DONT_UPDATE_TABLE);
-		}
+*/		}
 	}
 	
 	
