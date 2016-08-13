@@ -756,27 +756,28 @@ CorrelationViz = function(width, height) {
 	
 	var addCorrTooltip = function() {
 
-		var tooltip = d3.select("#corrChart")
-					.append("rect")
-					.classed("corrTooltip", true);
+		d3.selectAll(".corrDot")
+		  .append("rect")
+		    .classed("corrTooltip", true)
+		    .attr("id", function() {
+		    	return this.parentNode.id + 'ToolTip';
+		    })
+		    .attr("x", function() {
+		    	let dotCx = d3.select(this.parentNode).attr("cx");
+		    	return dotCx - 10; // start tooltip a bit to the left of the dot. 
+		    })
+		    .attr("y", function() {
+		    	let dotCy = d3.select(this.parentNode).attr("cy");
+		    	return dotCy + 10; // start tooltip a bit below the dot. 
+		    });
 		
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
-				tooltip
-/*					.style('transform', function() {
-					   let evtX = d3.event.screenX;
-					   let evtY = d3.event.screenY;
-					   let cx   = d3.select('#' + d3.event.target.id).attr('cx');
-					   let cy   = d3.select('#' + d3.event.target.id).attr('cy');
-					   // return `translate(${evtX - cx})`;
-					   return 'translate(900, 200)';
-					})
-*/					.style('left', "800px")
-				    .style('top', "900px")
-					.classed("visible", true);
+				// 'This' is the dot; select its tooltip: 
+				d3.select(this).select('.corrTooltip')
+				   .classed("visible", true)
 			})
-			
-			.on("mousemove", function(circle) {
+/*			.on("mousemove", function(circle) {
 				tooltip
 					.text(d3.event.pageX + ", " + d3.event.pageY)
 					//****.style("left", `${circle.cx - 34}px`)
@@ -784,8 +785,9 @@ CorrelationViz = function(width, height) {
 					.style("left", (d3.event.pageX - 34) + "px")
 					.style("top", (d3.event.pageY - 12) + "px");
 			})
-			.on("mouseout", function() {
-				tooltip.classed("visible", false);
+*/			.on("mouseout", function() {
+				d3.select(this).select('.corrTooltip')
+				   .classed("visible", false)
 			})
 			
 	}

@@ -85,7 +85,7 @@ h1          { text-align : center;  }
 			   height : 40px;
 			   rx     : 20;
 			   ry     : 20;
-			   opacity : 0;
+			   opacity : 1;   // *******0;
 			   transition : opacity 200;
 			 }
 			 
