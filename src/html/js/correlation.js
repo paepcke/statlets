@@ -770,13 +770,15 @@ CorrelationViz = function(width, height) {
 				               return removedDot.id + 'Group';
 			    })
 			  .append('rect')
-			    .attr('x', 200)
-			    .attr('y', 50)
+			    .attr('x', function() { return d3.select(removedDot).attr('cx') })
+			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
 			    .attr('width', 50)
 			    .attr('height', 60)
-			    //.style('fill', 'blue')
-			    .attr('class', 'corrTooltip visible');
-			  
+			    .attr('class', 'corrTooltip visible')
+			  .append('text')
+			    .text(d3.select(removedDot).attr('state'))
+			    .attr('x', d3.select(removedDot).attr('cx'))
+			    .attr('y', d3.select(removedDot).attr('cy'))
 		}		
 	
 		d3.selectAll(".corrDot")
