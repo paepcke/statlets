@@ -777,6 +777,7 @@ CorrelationViz = function(width, height) {
 				               return removedDot.id + 'Group';
 			    });
 
+			// Permanent label rectangles:
 			let rectSel = dotLabelAndTxtGrpSel
 			  .append('rect')
 			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
@@ -789,8 +790,35 @@ CorrelationViz = function(width, height) {
 			    .attr('x', rectSel.attr('x'))
 			    .attr('y', rectSel.attr('y'))
 			    .attr('class', 'corrStateLabelTxt')
+			    
+			// Tooltip label rectangles:
+			let tooltipRectSel = dotLabelAndTxtGrpSel
+			  .append('rect')
+			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
+			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
+			    .attr('id', function() {
+			    	return d3.select(removedDot).attr('state') + 'TooltipRect';
+			    })
+			    .attr('class', 'corrTooltipRect');
+			    
+			let tooltipTxtSel = dotLabelAndTxtGrpSel
+			  .append('text')
+			    .text(d3.select(removedDot).attr('state'))
+			    .attr('x', rectSel.attr('x'))
+			    .attr('y', rectSel.attr('y'))
+			    .attr('class', 'corrTooltipTxt')
+			    .attr('id', function() {
+			    	return d3.select(removedDot).attr('state') + 'TooltipTxt';
+			    })
+			    
+			// Adjust tooltip rect width to text width:
+			tooltipRectSel
+				.attr('width', function() {
+					return tooltipTxtSel.node().getBBox().width + 6;
+				})
 		}		
 	
+		// Permanent label texts:
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
 				// 'This' is the dot; select its tooltip: 
