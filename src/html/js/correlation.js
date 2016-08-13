@@ -756,26 +756,42 @@ CorrelationViz = function(width, height) {
 	
 	var addCorrTooltip = function() {
 
-		d3.selectAll(".corrDot")
-		  .append("rect")
-		    .classed("corrTooltip", true)
-		    .attr("id", function() {
-		    	return this.parentNode.id + 'ToolTip';
-		    })
-		    .attr("x", function() {
-		    	let dotCx = d3.select(this.parentNode).attr("cx");
-		    	return dotCx - 10; // start tooltip a bit to the left of the dot. 
-		    })
-		    .attr("y", function() {
-		    	let dotCy = d3.select(this.parentNode).attr("cy");
-		    	return dotCy + 10; // start tooltip a bit below the dot. 
-		    });
+		let svgCorr = d3.select(".svgCorr");
+		let dotsSel = d3.selectAll(".corrDot");
+		// Removal returns array of array of all removed
+		// elements. The [0] makes this [<circle>,<circle>,...]
+		let removedDots = d3.selectAll('.corrDot').remove()[0];
 		
+		for (let removedDot of removedDots) {
+			svgCorr
+  			  .append("g")
+			    .attr('id', function() {
+				               d3.select(this).append(function() { return removedDot });
+				               return removedDot.id + 'Group';
+			    })
+			  .append('rect')
+			    .attr('x', 200)
+			    .attr('y', 50)
+			    .attr('width', 50)
+			    .attr('height', 60)
+			    //.style('fill', 'blue')
+			    .attr('class', 'corrTooltip visible');
+			  
+		}		
+	
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
 				// 'This' is the dot; select its tooltip: 
-				d3.select(this).select('.corrTooltip')
-				   .classed("visible", true)
+				d3.select('#undefinedToolTip')
+					//.attr("x", function(d) { return 10 })
+					//.attr('y', function(d) { return 30 })
+/*					.attr('x', function() {
+						return d3.mouse(this)[0]
+					})
+					.attr('y', function() {
+						return d3.mouse(this)[1]
+					})
+*/					.classed("visible", true)
 			})
 /*			.on("mousemove", function(circle) {
 				tooltip
