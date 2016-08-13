@@ -86,7 +86,7 @@ h1          { text-align : center;  }
 			   rx     : 20;
 			   ry     : 20;
 			   opacity : 0;
-			   transition : opacity 0.5;
+			   transition : opacity 200;
 			 }
 			 
 .corrTooltip.visible {
@@ -95,7 +95,7 @@ h1          { text-align : center;  }
 
 .category1Dot  { fill : green; }
 .category2Dot  { fill : blue; }
-.corrDot       { fill :  rgb(144, 12, 63) ; } // Dark red.
+.corrDot       { fill : rgb(144, 12, 63) ; } // Dark red.
 
 
 

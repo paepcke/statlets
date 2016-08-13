@@ -758,18 +758,24 @@ CorrelationViz = function(width, height) {
 
 		var tooltip = d3.select("#corrChart")
 					.append("rect")
-					    .attr('x', 40)
-					    .attr('y', 40)
-						.attr("id", "corrTooltip")
-						.classed("corrTooltip", true)
-						// .style("fill", "orange")
-						// .style("opacity", 0);
+					.classed("corrTooltip", true);
 		
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
-				 // ****tooltip.transition().duration(200).style("opacity", .9);
-				tooltip.classed("visible", true)
+				tooltip
+/*					.style('transform', function() {
+					   let evtX = d3.event.screenX;
+					   let evtY = d3.event.screenY;
+					   let cx   = d3.select('#' + d3.event.target.id).attr('cx');
+					   let cy   = d3.select('#' + d3.event.target.id).attr('cy');
+					   // return `translate(${evtX - cx})`;
+					   return 'translate(900, 200)';
+					})
+*/					.style('left', "800px")
+				    .style('top', "900px")
+					.classed("visible", true);
 			})
+			
 			.on("mousemove", function(circle) {
 				tooltip
 					.text(d3.event.pageX + ", " + d3.event.pageY)
