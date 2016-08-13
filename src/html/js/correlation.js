@@ -28,6 +28,13 @@ CorrelationViz = function(width, height) {
 	var DONT_UPDATE_TABLE        = false;
 	
 	var DOT_RADIUS               = 10;  // pixels.
+	
+	var STATE_TBL = {Alabama : 'AL',
+					 California : 'CA',
+					 Georgia    : 'GA',
+					 Nevada     : 'NV',
+					 Mississippi: 'MS'
+	}
 
 	
 	/*---------------------------
@@ -763,22 +770,25 @@ CorrelationViz = function(width, height) {
 		let removedDots = d3.selectAll('.corrDot').remove()[0];
 		
 		for (let removedDot of removedDots) {
-			svgCorr
+			let dotLabelAndTxtGrpSel = svgCorr
   			  .append("g")
 			    .attr('id', function() {
 				               d3.select(this).append(function() { return removedDot });
 				               return removedDot.id + 'Group';
-			    })
+			    });
+
+			let rectSel = dotLabelAndTxtGrpSel
 			  .append('rect')
-			    .attr('x', function() { return d3.select(removedDot).attr('cx') })
+			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
 			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
-			    .attr('width', 50)
-			    .attr('height', 60)
-			    .attr('class', 'corrTooltip visible')
+			    .attr('class', 'corrStateLabelRect');
+			
+			let txtSel = dotLabelAndTxtGrpSel
 			  .append('text')
-			    .text(d3.select(removedDot).attr('state'))
-			    .attr('x', d3.select(removedDot).attr('cx'))
-			    .attr('y', d3.select(removedDot).attr('cy'))
+			    .text(STATE_TBL[d3.select(removedDot).attr('state')])
+			    .attr('x', rectSel.attr('x'))
+			    .attr('y', rectSel.attr('y'))
+			    .attr('class', 'corrStateLabelTxt')
 		}		
 	
 		d3.selectAll(".corrDot")
