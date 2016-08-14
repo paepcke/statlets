@@ -798,8 +798,13 @@ CorrelationViz = function(width, height) {
 			    .attr('class', 'corrStateLabelTxt')
 
 			    
+			
+			let tooltipGrpSel = svgCorr
+				.append('g')
+				  .attr('id', d3.select(removedDot).attr('state') + 'TooltipGrp');
+			
 			// Tooltip label rectangles:
-			let tooltipRectSel = dotLabelAndTxtGrpSel
+			let tooltipRectSel = tooltipGrpSel
 			  .append('rect')
 			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
 			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
@@ -809,8 +814,7 @@ CorrelationViz = function(width, height) {
 			    .attr('class', 'corrTooltipRect');
 			    
 			let dotToolTxt = `${d3.select(removedDot).attr('state')} ${catStrings.xCat}: ${dotUserX}; ${catStrings.yCat}: ${dotUserY}`; 
-			
-			let tooltipTxtSel = dotLabelAndTxtGrpSel
+			let tooltipTxtSel = tooltipGrpSel
 			  .append('text')
 			    .text(dotToolTxt)
 			    .attr('x', rectSel.attr('x'))
@@ -828,7 +832,7 @@ CorrelationViz = function(width, height) {
 				.attr('width', function() {
 					return tooltipTxtSel.node().getBBox().width + 6;
 				})
-				.attr('x', function() { return svgCorr.attr('width') / 2.0 - this.width / 2.0} )
+				.attr('x', function() { return svgCorr.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0} )
 				.attr('y', 50);
 		}		
 	
