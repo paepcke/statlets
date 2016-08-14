@@ -80,18 +80,10 @@ h1          { text-align : center;  }
 .legendText  { font-size : 10pt; }
 
 .corrStateLabelTxt {
-				     font-size : 10pt;
-				     transform : translate(0.6em, 1em);
+				     font-size : 12px;
+				     fill      : cyan;
+				     opacity   : 0.8;
 				   }
-.corrStateLabelRect { 
-	                   fill : black;
-	                   width: 2em;
-	                   height : 1em;
-	                   rx : 5;
-	                   ry : 20:
-	                   transform : translate(-1em, 0.5em);
-	                   opacity : 0.2; 
-					}
 
 // Tooltip group (of rect and text):				   
 .corrTooltip *      { 

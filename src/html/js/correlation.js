@@ -782,25 +782,30 @@ CorrelationViz = function(width, height) {
 			let dotLabelAndTxtGrpSel = svgCorrSel
   			  .append("g")
 			    .attr('id', function() {
+			    			   // Add the removed dot into the new group:
+			    			   // (this is a side effect, and bad form!):
 				               d3.select(this).append(function() { return removedDot });
 				               return removedDot.id + 'Group';
-			    });
+			    })
+			    .attr('class', 'dotLabelGrp');
 
-			// Permanent-label rectangles:
-			let rectSel = dotLabelAndTxtGrpSel
-			  .append('rect')
-			    .attr('x', function() { return dotSel.attr('cx')})
-			    .attr('y', function() { return dotSel.attr('cy') })
-			    .attr('class', 'corrStateLabelRect');
 
 			// Permanent-label text:
 			let txtSel = dotLabelAndTxtGrpSel
 			  .append('text')
 			    .text(STATE_TBL[dotState])
-			    .attr('x', rectSel.attr('x'))
-			    .attr('y', rectSel.attr('y'))
+			    .attr('text-anchor', 'middle')
+			    .attr('dominant-baseline', 'middle')
+			    .attr('x', function() { 
+			    	return dotSel.attr('cx');
+			    })
+			    .attr('y', function() {
+			    	return parseFloat(dotSel.attr('cy'));
+			    })
 			    .attr('class', 'corrStateLabelTxt');
-
+			
+			
+			
 			// Tooltips; one for each dot. Put
 			// into a group for easy moving:
 			
@@ -823,8 +828,8 @@ CorrelationViz = function(width, height) {
 			let tooltipTxtSel = tooltipGrpSel
 			  .append('text')
 			    .text(dotToolTxt)
-			    .attr('x', rectSel.attr('x'))
-			    .attr('y', rectSel.attr('y'))
+			    .attr('x', dotSel.attr('cx'))
+			    .attr('y', dotSel.attr('cy'))
 			    .attr('class', 'corrTooltipTxt')
 			    .attr('id', function() {
 			    	return dotState + 'corrTooltipTxt';
@@ -854,9 +859,13 @@ CorrelationViz = function(width, height) {
 		}		
 	
 		// Permanent label texts:
-		d3.selectAll(".corrDot")
+		d3.selectAll(".dotLabelGrp") // .corrDot
 			.on("mouseover", function() {
-				d3.select('#' + d3.select(d3.event.target).attr('tooltipGrpName')).classed('visible', true)
+				// 'This' is the group:
+				let theDotSel    = d3.select(this).select('circle');
+				let tooltipName  = theDotSel.attr('tooltipGrpName');
+				let tooltipSel   = d3.select('#' + tooltipName);
+				tooltipSel.classed('visible', true);
 			})
 /*			.on("mousemove", function(circle) {
 				tooltip
@@ -867,7 +876,11 @@ CorrelationViz = function(width, height) {
 					.style("top", (d3.event.pageY - 12) + "px");
 			})
 */			.on("mouseout", function() {
-				d3.select('#' + d3.select(d3.event.target).attr('tooltipGrpName')).classed('visible', false)
+				// 'This' is the group:
+				let theDotSel    = d3.select(this).select('circle');
+				let tooltipName  = theDotSel.attr('tooltipGrpName');
+				let tooltipSel   = d3.select('#' + tooltipName);
+				tooltipSel.classed('visible', false);
 			})
 			
 	}
