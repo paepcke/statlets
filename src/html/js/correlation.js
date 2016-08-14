@@ -765,8 +765,9 @@ CorrelationViz = function(width, height) {
 	
 	var addCorrTooltip = function(scalesCorr, catStrings) {
 
-		let svgCorr = d3.select(".svgCorr");
-		let dotsSel = d3.selectAll(".corrDot");
+		let svgCorrSel  = d3.select(".svgCorr");
+		let dotsSel  = d3.selectAll(".corrDot");
+		
 		// Removal returns array of array of all removed
 		// elements. The [0] makes this [<circle>,<circle>,...]
 		let removedDots = d3.selectAll('.corrDot').remove()[0];
@@ -775,45 +776,49 @@ CorrelationViz = function(width, height) {
 			
 			let dotUserX = scalesCorr.xScale.invert(d3.select(removedDot).attr('cx')).toFixed(1);
 			let dotUserY = scalesCorr.yScale.invert(d3.select(removedDot).attr('cy')).toFixed(1);
+			let dotSel   = d3.select(removedDot);
+			let dotState = dotSel.attr('state');
 			
-			let dotLabelAndTxtGrpSel = svgCorr
+			let dotLabelAndTxtGrpSel = svgCorrSel
   			  .append("g")
 			    .attr('id', function() {
 				               d3.select(this).append(function() { return removedDot });
 				               return removedDot.id + 'Group';
 			    });
 
-			// Permanent label rectangles:
+			// Permanent-label rectangles:
 			let rectSel = dotLabelAndTxtGrpSel
 			  .append('rect')
-			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
-			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
+			    .attr('x', function() { return dotSel.attr('cx')})
+			    .attr('y', function() { return dotSel.attr('cy') })
 			    .attr('class', 'corrStateLabelRect');
 
+			// Permanent-label text:
 			let txtSel = dotLabelAndTxtGrpSel
 			  .append('text')
-			    .text(STATE_TBL[d3.select(removedDot).attr('state')])
+			    .text(STATE_TBL[dotState])
 			    .attr('x', rectSel.attr('x'))
 			    .attr('y', rectSel.attr('y'))
-			    .attr('class', 'corrStateLabelTxt')
+			    .attr('class', 'corrStateLabelTxt');
 
-			    
+			// Tooltips; one for each dot. Put
+			// into a group for easy moving:
 			
-			let tooltipGrpSel = svgCorr
+			let tooltipGrpSel = svgCorrSel
 				.append('g')
-				  .attr('id', d3.select(removedDot).attr('state') + 'TooltipGrp');
+				  .attr('id', dotState + 'TooltipGrp');
 			
 			// Tooltip label rectangles:
 			let tooltipRectSel = tooltipGrpSel
 			  .append('rect')
-			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
-			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
+			    .attr('x', function() { return dotSel.attr('cx')})
+			    .attr('y', function() { return dotSel.attr('cy') })
 			    .attr('id', function() {
-			    	return d3.select(removedDot).attr('state') + 'TooltipRect';
+			    	return dotState + 'TooltipRect';
 			    })
 			    .attr('class', 'corrTooltipRect');
 			    
-			let dotToolTxt = `${d3.select(removedDot).attr('state')} ${catStrings.xCat}: ${dotUserX}; ${catStrings.yCat}: ${dotUserY}`; 
+			let dotToolTxt = `${dotState} ${catStrings.xCat}: ${dotUserX}; ${catStrings.yCat}: ${dotUserY}`; 
 			let tooltipTxtSel = tooltipGrpSel
 			  .append('text')
 			    .text(dotToolTxt)
@@ -821,7 +826,7 @@ CorrelationViz = function(width, height) {
 			    .attr('y', rectSel.attr('y'))
 			    .attr('class', 'corrTooltipTxt')
 			    .attr('id', function() {
-			    	return d3.select(removedDot).attr('state') + 'TooltipTxt';
+			    	return dotState + 'corrTooltipTxt';
 			    });
 			    
 			// Adjust tooltip rect width to text width.
@@ -830,10 +835,15 @@ CorrelationViz = function(width, height) {
 			// extension beyond the window:
 			tooltipRectSel
 				.attr('width', function() {
-					return tooltipTxtSel.node().getBBox().width + 6;
-				})
-				.attr('x', function() { return svgCorr.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0} )
-				.attr('y', 50);
+					return tooltipTxtSel.node().getBBox().width + 8;
+				});
+
+			let grpLeftTarget = svgCorrSel.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0;
+			let grpTopTarget = 50;
+			let dx = grpLeftTarget - tooltipRectSel.attr('x');
+			let dy = grpTopTarget  - tooltipRectSel.attr('y');
+			
+			tooltipGrpSel.attr('transform', `translate(${dx}, ${dy})`);
 		}		
 	
 		// Permanent label texts:
