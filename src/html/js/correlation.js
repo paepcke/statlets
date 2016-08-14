@@ -355,7 +355,23 @@ CorrelationViz = function(width, height) {
 			// of correlation dots, b/c it's ambiguous which 
 			// row should be updated (each dot includes information
 			// from both rows):
-			corrGrpSel.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, DONT_UPDATE_TABLE))
+			// *****corrGrpSel.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, DONT_UPDATE_TABLE))
+			
+			corrGrpSel
+			  .on("mouseover", function() {
+			  	// 'This' is the group:
+			  	let theDotSel    = d3.select(this).select('circle');
+			  	let tooltipName  = theDotSel.attr('tooltipGrpName');
+			  	let tooltipSel   = d3.select('#' + tooltipName);
+			  	tooltipSel.classed('visible', true);
+			  })
+			  .on("mouseout", function() {
+			  	// 'This' is the group:
+			  	let theDotSel    = d3.select(this).select('circle');
+			  	let tooltipName  = theDotSel.attr('tooltipGrpName');
+			  	let tooltipSel   = d3.select('#' + tooltipName);
+			  	tooltipSel.classed('visible', false);
+			  })
 		}
 	}
 	
@@ -848,23 +864,6 @@ CorrelationViz = function(width, height) {
 			// Make it easy to get a dot's tooltip group:
 			dotSel.attr('tooltipGrpName', tooltipGrpSel.attr('id'));
 		});
-	
-	
-		d3.selectAll(".corrDotGrp") // .corrDot
-			.on("mouseover", function() {
-				// 'This' is the group:
-				let theDotSel    = d3.select(this).select('circle');
-				let tooltipName  = theDotSel.attr('tooltipGrpName');
-				let tooltipSel   = d3.select('#' + tooltipName);
-				tooltipSel.classed('visible', true);
-			})
-			.on("mouseout", function() {
-				// 'This' is the group:
-				let theDotSel    = d3.select(this).select('circle');
-				let tooltipName  = theDotSel.attr('tooltipGrpName');
-				let tooltipSel   = d3.select('#' + tooltipName);
-				tooltipSel.classed('visible', false);
-			})
 			
 	}
 	
