@@ -818,13 +818,18 @@ CorrelationViz = function(width, height) {
 			    .attr('class', 'corrTooltipTxt')
 			    .attr('id', function() {
 			    	return d3.select(removedDot).attr('state') + 'TooltipTxt';
-			    })
+			    });
 			    
-			// Adjust tooltip rect width to text width:
+			// Adjust tooltip rect width to text width.
+			// For now, just move them all to the top of the
+			// screen so we don't neet to deal with overlap and 
+			// extension beyond the window:
 			tooltipRectSel
 				.attr('width', function() {
 					return tooltipTxtSel.node().getBBox().width + 6;
 				})
+				.attr('x', function() { return svgCorr.attr('width') / 2.0 - this.width / 2.0} )
+				.attr('y', 50);
 		}		
 	
 		// Permanent label texts:
