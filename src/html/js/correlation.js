@@ -316,8 +316,8 @@ CorrelationViz = function(width, height) {
 		  .data(function() { return byYear })
 		  
     	  // Update (possibly existing dots):
-		    .attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) } )
-		    .attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) } )
+		    .attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
+		    .attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
 			
 		  .enter()
 		    .append('circle')
@@ -325,8 +325,8 @@ CorrelationViz = function(width, height) {
 		    .attr('id', function(byYearPair, stateIndex) { return states[stateIndex] })		    
 		    .attr('tblRows', function(byYearPair, i) { return `[${ROW_1996}, ${ROW_2014}]` })
 		    .attr('tblCol', function(byYearPair, i) { return i } )
-			.attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) } )
-			.attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) } )
+			.attr('cx', function(byYearPair, stateIndex) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
+			.attr('cy', function(byYearPair, stateIndex) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
 			.attr('r', DOT_RADIUS)
 			.attr('class', 'corrDot')
 			
@@ -774,8 +774,8 @@ CorrelationViz = function(width, height) {
 		
 		for (let removedDot of removedDots) {
 			
-			let dotUserX = scalesCorr.xScale.invert(d3.select(removedDot).attr('cx')).toFixed(1);
-			let dotUserY = scalesCorr.yScale.invert(d3.select(removedDot).attr('cy')).toFixed(1);
+			let dotUserX = (scalesCorr.xScale.invert(d3.select(removedDot).attr('cx') - X_AXIS_LEFT_PADDING)).toFixed(1);
+			let dotUserY = (scalesCorr.yScale.invert(d3.select(removedDot).attr('cy') - Y_AXIS_TOP_PADDING)).toFixed(1);
 			let dotSel   = d3.select(removedDot);
 			let dotState = dotSel.attr('state');
 			
@@ -806,7 +806,8 @@ CorrelationViz = function(width, height) {
 			
 			let tooltipGrpSel = svgCorrSel
 				.append('g')
-				  .attr('id', dotState + 'TooltipGrp');
+				  .attr('id', dotState + 'TooltipGrp')
+				  .attr('class', 'corrTooltip');
 			
 			// Tooltip label rectangles:
 			let tooltipRectSel = tooltipGrpSel
@@ -830,27 +831,32 @@ CorrelationViz = function(width, height) {
 			    });
 			    
 			// Adjust tooltip rect width to text width.
-			// For now, just move them all to the top of the
-			// screen so we don't neet to deal with overlap and 
-			// extension beyond the window:
 			tooltipRectSel
 				.attr('width', function() {
 					return tooltipTxtSel.node().getBBox().width + 8;
 				});
 
+			// For now, just move them all to the top of the
+			// screen so we don't neet to deal with overlap and 
+			// extension beyond the window:
+			
 			let grpLeftTarget = svgCorrSel.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0;
 			let grpTopTarget = 50;
 			let dx = grpLeftTarget - tooltipRectSel.attr('x');
 			let dy = grpTopTarget  - tooltipRectSel.attr('y');
 			
-			tooltipGrpSel.attr('transform', `translate(${dx}, ${dy})`);
+			tooltipGrpSel
+				.attr('transform', `translate(${dx}, ${dy})`)
+				.classed('visible', false);
+			
+			// Make it easy to get a dot's tooltip group:
+			dotSel.attr('tooltipGrpName', tooltipGrpSel.attr('id'));
 		}		
 	
 		// Permanent label texts:
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
-				d3.select('#undefinedToolTip')
-					.classed("visible", true)
+				d3.select('#' + d3.select(d3.event.target).attr('tooltipGrpName')).classed('visible', true)
 			})
 /*			.on("mousemove", function(circle) {
 				tooltip
@@ -861,8 +867,7 @@ CorrelationViz = function(width, height) {
 					.style("top", (d3.event.pageY - 12) + "px");
 			})
 */			.on("mouseout", function() {
-				d3.select(this).select('.corrTooltip')
-				   .classed("visible", false)
+				d3.select('#' + d3.select(d3.event.target).attr('tooltipGrpName')).classed('visible', false)
 			})
 			
 	}
