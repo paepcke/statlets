@@ -120,7 +120,7 @@ CorrelationViz = function(width, height) {
 		// The categories of dots ("1996", "2014")
 		let dataCat1 = tblObj.getCell(0, 0);
 		let dataCat2 = tblObj.getCell(1, 0);
-
+		
         extentDict  = {svg           : svgCorr,
         			   x: {scaleType : 'linear',
         				   domain    : yDomain,
@@ -140,7 +140,9 @@ CorrelationViz = function(width, height) {
 		placeCorrelationValue();
 		// Make correlation dots match:
 		updateCorrChart(scalesCorr);
-		addCorrTooltip();
+		// Create labels and tooltips. Pass the
+		// x/y scales and the 1996/2014 category strings:
+		addCorrTooltip(scalesCorr, {xCat : dataCat1, yCat : dataCat2});
 		
 		return {width  : width,
 				height : height,
@@ -761,7 +763,7 @@ CorrelationViz = function(width, height) {
 	| addCorrTooltip
 	-----------------*/
 	
-	var addCorrTooltip = function() {
+	var addCorrTooltip = function(scalesCorr, catStrings) {
 
 		let svgCorr = d3.select(".svgCorr");
 		let dotsSel = d3.selectAll(".corrDot");
@@ -770,6 +772,10 @@ CorrelationViz = function(width, height) {
 		let removedDots = d3.selectAll('.corrDot').remove()[0];
 		
 		for (let removedDot of removedDots) {
+			
+			let dotUserX = scalesCorr.xScale.invert(d3.select(removedDot).attr('cx')).toFixed(1);
+			let dotUserY = scalesCorr.yScale.invert(d3.select(removedDot).attr('cy')).toFixed(1);
+			
 			let dotLabelAndTxtGrpSel = svgCorr
   			  .append("g")
 			    .attr('id', function() {
@@ -783,13 +789,14 @@ CorrelationViz = function(width, height) {
 			    .attr('x', function() { return d3.select(removedDot).attr('cx')})
 			    .attr('y', function() { return d3.select(removedDot).attr('cy') })
 			    .attr('class', 'corrStateLabelRect');
-			
+
 			let txtSel = dotLabelAndTxtGrpSel
 			  .append('text')
 			    .text(STATE_TBL[d3.select(removedDot).attr('state')])
 			    .attr('x', rectSel.attr('x'))
 			    .attr('y', rectSel.attr('y'))
 			    .attr('class', 'corrStateLabelTxt')
+
 			    
 			// Tooltip label rectangles:
 			let tooltipRectSel = dotLabelAndTxtGrpSel
@@ -801,9 +808,11 @@ CorrelationViz = function(width, height) {
 			    })
 			    .attr('class', 'corrTooltipRect');
 			    
+			let dotToolTxt = `${d3.select(removedDot).attr('state')} ${catStrings.xCat}: ${dotUserX}; ${catStrings.yCat}: ${dotUserY}`; 
+			
 			let tooltipTxtSel = dotLabelAndTxtGrpSel
 			  .append('text')
-			    .text(d3.select(removedDot).attr('state'))
+			    .text(dotToolTxt)
 			    .attr('x', rectSel.attr('x'))
 			    .attr('y', rectSel.attr('y'))
 			    .attr('class', 'corrTooltipTxt')
@@ -821,17 +830,8 @@ CorrelationViz = function(width, height) {
 		// Permanent label texts:
 		d3.selectAll(".corrDot")
 			.on("mouseover", function() {
-				// 'This' is the dot; select its tooltip: 
 				d3.select('#undefinedToolTip')
-					//.attr("x", function(d) { return 10 })
-					//.attr('y', function(d) { return 30 })
-/*					.attr('x', function() {
-						return d3.mouse(this)[0]
-					})
-					.attr('y', function() {
-						return d3.mouse(this)[1]
-					})
-*/					.classed("visible", true)
+					.classed("visible", true)
 			})
 /*			.on("mousemove", function(circle) {
 				tooltip
