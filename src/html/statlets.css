@@ -79,6 +79,7 @@ h1          { text-align : center;  }
              
 .legendText  { font-size : 10pt; }
 
+.corrDotGrp     {}
 .corrStateLabelTxt {
 				     font-size : 12px;
 				     fill      : cyan;
