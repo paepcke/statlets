@@ -4,8 +4,8 @@ CorrelationViz = function(width, height) {
 	
 	var width   	     = width;
 	var height  	     = height;
-	var scalesData	     = null;
-	var scalesCorr       = null;
+	var scalesData	     = null;  // {xScale : <xScaleFunc>, yScalse : <yScaleFunc>}
+	var scalesCorr       = null;  // {xScale : <xScaleFunc>, yScalse : <yScaleFunc>}
 	var tblObj  	     = null;
 	var corrTxtEl        = null;
 	var dragClickHandler = null;
@@ -226,15 +226,15 @@ CorrelationViz = function(width, height) {
 				
 			personDotSel
 				// Update existing dots with (possibly) changed data:
-				.attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				.attr('cx', function()  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				.attr('cy', function()  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				
 			personDotSel.enter() 
 				// Add additional dots if now more data than before:
 				.append('circle')
 				.attr('state',  function(row, i) { return states[i] })
 				.attr('id', function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Category
-				.attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved ********???
+				.attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved
 				.attr('tblCol', function() { return colNum++ } )
 				.attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
 				.attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
@@ -322,10 +322,10 @@ CorrelationViz = function(width, height) {
 			let dotSel = corrGrpSel
 		        .append('circle')
 		    	 .attr('state', function() {
-		    		 return states[stateIndex++] 
-		    	 })
-		    	 .attr('id', function(dummy, stateIndex) {
 		    		 return states[stateIndex] 
+		    	 })
+		    	 .attr('id', function() {
+		    		 return states[stateIndex++] 
 		    	 })		    
 		    	 .attr('tblRows', function() { return `[${ROW_1996}, ${ROW_2014}]` })
 		    	 .attr('tblCol', function(dummy, i) { return i } )
@@ -481,7 +481,8 @@ CorrelationViz = function(width, height) {
 					}
 					
 					handleDrag(circleSel, yScale, xScale, dragDirections, updateTable);
-					// Let interested parties know that a circle moved:
+					// Let interested parties know that a circle moved.
+					// Used to sync (synchronize) corr chart with data chart:
 					dispatch.drag(this, circleSel);
 				})
 				.on ('dragend', function(d) {
@@ -559,7 +560,8 @@ CorrelationViz = function(width, height) {
 		/*
 		 Find this dot's corresponding table cell
 		 Find new y-position in table coordinates.
-		 update the table.
+		 update the table. Call updateCorrelationValue()
+		 to update the Pearson's r on the data chart.
 		 
 		 :param d3CircleSel: D3 selection of a single element to be moved.
 		 :type d3CircleSel: D3Selection
@@ -784,14 +786,56 @@ CorrelationViz = function(width, height) {
 	| circleDragged
 	-----------------*/
 	
-	var circleDragged = function(circleObj, circleSel) {
-		//console.log(`Circle class: ${circleSel.attr('class')}`);
-		if (["category1Dot", "category2Dot"].some(function(className) { return circleSel.classed(className) })) {
+	var circleDragged = function(circleObj, dataCircleSel) {
+		/*
+		 * Called when a data circle is dragged. Finds the
+		 * corresponding correlation circle, and echoes
+		 * the move. Two data points correspond to one
+		 * correlation point.
+		 */
+		
+		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
+		// Given the data point find the correlation point 
+		// that is the same US state; the data point that
+		// moved might be a 1996 point or a 2014 pont:
+		if (["category1Dot", "category2Dot"].some(function(className) { return dataCircleSel.classed(className) })) {
 
-			let state = circleSel.attr('state'); // US State
-			corrCircleSel = d3.select(`#${circleSel.attr('state')}`);
-			
-			updateCorrChart(scalesCorr);
+			let state = dataCircleSel.attr('state'); // US State
+			let corrCircleSel     = d3.select(`#${dataCircleSel.attr('state')}`);
+			let corrCircleGrp     = corrCircleSel.node().parentNode;
+			let corrLabelSel      = d3.select(corrCircleGrp).select('text');
+
+			// Was the 1996 dot of the state moved, 
+			// or the 2016 dot?
+			// tblRows will have only one val: the 
+			// year-row for the data circle. tblRow
+			// will be something like the string "[1]":
+			// get the '1' from that string:
+			let tblRow  	      = JSON.parse(dataCircleSel.attr('tblRows'))[0]; 
+			let tblCol  	      = parseInt(dataCircleSel.attr('tblCol'));
+			let targetUserVal     = tblObj.getCell(tblRow, tblCol + 1); // tblCol-0 is year col
+			let currCx            = parseFloat(corrCircleSel.attr('cx'));
+			let currCy            = parseFloat(corrCircleSel.attr('cy'));
+			let currLabelX        = parseFloat(corrLabelSel.attr('x'));
+			let currLabelY        = parseFloat(corrLabelSel.attr('y'));
+			let dx                = 0;
+			let dy                = 0;
+			if (tblRow == 0) {
+				// Was 1996-data point, so corr x-axis is affected:
+				dx = scalesCorr.xScale(targetUserVal) - currCx + X_AXIS_LEFT_PADDING;
+				let newCircleX = currCx + dx;
+				let newLabelX  = currLabelX + dx;
+				corrCircleSel.attr('cx', newCircleX);
+				corrLabelSel.attr('x', newLabelX)
+			} else {
+				dy = scalesCorr.yScale(targetUserVal) - currCy + Y_AXIS_TOP_PADDING;
+				let newCircleY = currCy + dy;
+				let newLabelY  = currLabelY + dy;
+				corrCircleSel.attr('cy', newCircleY);
+				corrLabelSel.attr('y', newLabelY);
+			}
+//***			d3.select(corrCircleGrp)
+//***				.attr('transform', `translate(${dx}, ${dy})`);
 		}
 	}
 	
