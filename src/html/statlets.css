@@ -88,9 +88,10 @@ h1          { text-align : center;  }
 
 // Tooltip group (of rect and text):				   
 .corrTooltip *      { 
-                      opacity : 0; 
+                      opacity : 0;
 					}
-.corrTooltip.visible * { opacity : 0.9; }
+.corrTooltip.visible * { opacity : 0.9; 
+						}
 .corrTooltipRect { 
 			       fill   : orange;
 			       height : 1em;

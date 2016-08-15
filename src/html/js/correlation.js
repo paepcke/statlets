@@ -350,19 +350,35 @@ CorrelationViz = function(width, height) {
 			    })
 			    .attr('class', 'corrStateLabelTxt');
 			
-			// Attach drag-start behavior to this group.
-			// Don't update the data table from these moves
-			// of correlation dots, b/c it's ambiguous which 
-			// row should be updated (each dot includes information
-			// from both rows):
-			// *****corrGrpSel.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: true}, DONT_UPDATE_TABLE))
-			
 			corrGrpSel
 			  .on("mouseover", function() {
 			  	// 'This' is the group:
-			  	let theDotSel    = d3.select(this).select('circle');
-			  	let tooltipName  = theDotSel.attr('tooltipGrpName');
-			  	let tooltipSel   = d3.select('#' + tooltipName);
+			  	let theDotSel       = d3.select(this).select('circle');
+			  	let tooltipName     = theDotSel.attr('tooltipGrpName');
+			  	let tooltipSel      = d3.select('#' + tooltipName);
+			  	let tooltipRecSel   = tooltipSel.select('rect');
+			  	let tooltipLabelSel = tooltipSel.select('text');
+			  	
+			  	// Find highest corr dot (i.e. lowest y-value),
+			  	// and place tooltip just above that dot:
+			  	let minY = parseFloat(theDotSel.attr('cy'));
+			  	d3.selectAll('.corrDot').each(function(dotSel) {
+			  		let thisY = parseFloat(d3.select(this).attr('cy')); 
+			  		if ( thisY < minY) 
+			  			minY = thisY;
+			  	})
+			  	
+tooltipSel.classed('visible', true); //*****			  	
+			  	let currRectY    = parseFloat(tooltipRecSel.attr('y'));
+			  	let dy           = currRectY - minY;
+			  	let targetRectY  = currRectY + dy;
+			  	
+			  	let currLabelY   = parseFloat(tooltipLabelSel.attr('y'));
+			  	let targetLabelY = currLabelY + dy;
+
+			  	tooltipRecSel.attr('y', targetRectY);
+			  	tooltipLabelSel.attr('y', targetLabelY);
+			  	
 			  	tooltipSel.classed('visible', true);
 			  })
 			  .on("mouseout", function() {
@@ -848,7 +864,6 @@ CorrelationViz = function(width, height) {
 		let svgCorrSel  = d3.select(".svgCorr");
 		let dotsSel  = d3.selectAll(".corrDot");
 		
-		//****for (let removedDot of removedDots) {
 		svgCorrSel.selectAll('circle')
 		  .each(function() {
 			
@@ -898,13 +913,14 @@ CorrelationViz = function(width, height) {
 			
 			let grpLeftTarget = svgCorrSel.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0;
 			let grpTopTarget = 50;
-			let dx = grpLeftTarget - tooltipRectSel.attr('x');
+			
+/*			let dx = grpLeftTarget - tooltipRectSel.attr('x');
 			let dy = grpTopTarget  - tooltipRectSel.attr('y');
 			
 			tooltipGrpSel
 				.attr('transform', `translate(${dx}, ${dy})`)
 				.classed('visible', false);
-			
+*/			
 			// Make it easy to get a dot's tooltip group:
 			dotSel.attr('tooltipGrpName', tooltipGrpSel.attr('id'));
 		});
