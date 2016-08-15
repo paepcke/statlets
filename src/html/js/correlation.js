@@ -20,6 +20,8 @@ CorrelationViz = function(width, height) {
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
 	
+	var X_TOOLTIP_PADDING        = 100; // Fixed x position for tooltip
+	
 	var CORR_TXT_POS             = {x : Y_AXIS_LEFT_PADDING + 30,
 									y : Y_AXIS_TOP_PADDING  + 30
 									};
@@ -369,14 +371,18 @@ CorrelationViz = function(width, height) {
 			  	})
 			  	
 tooltipSel.classed('visible', true); //*****			  	
+			  	
 			  	let currRectY    = parseFloat(tooltipRecSel.attr('y'));
-			  	let dy           = currRectY - minY;
+			  	let dy           = minY - currRectY;
 			  	let targetRectY  = currRectY + dy;
 			  	
 			  	let currLabelY   = parseFloat(tooltipLabelSel.attr('y'));
 			  	let targetLabelY = currLabelY + dy;
 
+			  	tooltipRecSel.attr('x', X_TOOLTIP_PADDING);
 			  	tooltipRecSel.attr('y', targetRectY);
+			  	
+			  	tooltipLabelSel.attr('x', X_TOOLTIP_PADDING);
 			  	tooltipLabelSel.attr('y', targetLabelY);
 			  	
 			  	tooltipSel.classed('visible', true);
@@ -889,7 +895,7 @@ tooltipSel.classed('visible', true); //*****
 			    	return dotState + 'TooltipRect';
 			    })
 			    .attr('class', 'corrTooltipRect');
-			    
+		      
 			let dotToolTxt = `${dotState} ${catStrings.xCat}: ${dotUserX}; ${catStrings.yCat}: ${dotUserY}`; 
 			let tooltipTxtSel = tooltipGrpSel
 			  .append('text')
@@ -900,33 +906,16 @@ tooltipSel.classed('visible', true); //*****
 			    .attr('id', function() {
 			    	return dotState + 'corrTooltipTxt';
 			    });
-			    
+		      
 			// Adjust tooltip rect width to text width.
 			tooltipRectSel
 				.attr('width', function() {
 					return tooltipTxtSel.node().getBBox().width + 8;
 				});
-
-			// For now, just move them all to the top of the
-			// screen so we don't neet to deal with overlap and 
-			// extension beyond the window:
-			
-			let grpLeftTarget = svgCorrSel.node().getBBox().width / 2.0 - tooltipRectSel.attr('width') / 2.0;
-			let grpTopTarget = 50;
-			
-/*			let dx = grpLeftTarget - tooltipRectSel.attr('x');
-			let dy = grpTopTarget  - tooltipRectSel.attr('y');
-			
-			tooltipGrpSel
-				.attr('transform', `translate(${dx}, ${dy})`)
-				.classed('visible', false);
-*/			
 			// Make it easy to get a dot's tooltip group:
 			dotSel.attr('tooltipGrpName', tooltipGrpSel.attr('id'));
-		});
-			
+		  });
 	}
-	
 	
 	return constructor(width, height);
 }
