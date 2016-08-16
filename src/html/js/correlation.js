@@ -354,7 +354,7 @@ CorrelationViz = function(width, height) {
 
 		let stateIndex = 0;
 		
-		d3.select('.wrapper').selectAll('g circle')
+		d3.select('#flexWrapper #corrChart').selectAll('g circle')		
 		 .data(byYear)
              // Update already-existing (possibly) changed dots:
              .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
@@ -362,14 +362,15 @@ CorrelationViz = function(width, height) {
     	     
 	     .enter()
 	        .append('g')
+	        .attr('class', 'corrDotGrp')
 	        .append('circle')
              .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
     	     .attr('cy', function(byYearPair) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
-	    	 .attr('state', function() {
-	    		  return states[stateIndex] 
+	    	 .attr('state', function(d, i) {
+	    		  return states[i] 
 	    	   })
-	    	 .attr('id', function() {
-	    		 return states[stateIndex++] 
+	    	 .attr('id', function(d, i) {
+	    		 return states[i] 
 	    	   })		    
 	    	 .attr('tblRows', function() { return `[${ROW_1996}, ${ROW_2014}]` })
 	    	 .attr('tblCol', function(dummy, i) { return i } )
@@ -378,12 +379,12 @@ CorrelationViz = function(width, height) {
 			 .attr('r', DOT_RADIUS)
 			 .attr('class', 'corrDot');
 		
-			let circleTxtGrpSel = d3.selectAll('.wrapper g');
+			let circleTxtGrpSel = d3.select('#flexWrapper #corrChart').selectAll('.corrDotGrp');
 			// If called the first time, no dot-texts (state abbreviations) 
 			// have been created, just the groups and a circle inside:
 			let noLabelsCreated = circleTxtGrpSel.select('text').empty();
 			
-			if ( noLabelsCreated) {
+			if ( noLabelsCreated ) {
 				circleTxtGrpSel
 				// 'this' will be an existing group:
 				.each(function(byYearPair, byYearIndx) {
@@ -406,9 +407,10 @@ CorrelationViz = function(width, height) {
 			} else {
 				circleTxtGrpSel.selectAll('text')
 					.each(function(byYearPair, byYearIndx) {
-						let	grpSel   = d3.select(this);
+						let	grpSel   = d3.select(this.parentNode);
 						let dotSel   = grpSel.select('circle');
-						grpSel
+						// Select the state abbreviation label:
+						d3.select(this)
 						   .attr('x', function() {               // Center text over circle. 
 							     return dotSel.attr('cx');
 						   		})
