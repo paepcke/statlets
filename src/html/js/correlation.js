@@ -23,6 +23,7 @@ CorrelationViz = function(width, height) {
 	var tblObj  	     = null;
 	var corrTxtEl        = null;
 	var dragClickHandler = null;
+	var currBtn		 	 = null; // Currently active exercise-step button.
 
 	// Constants:
 
@@ -1044,7 +1045,6 @@ CorrelationViz = function(width, height) {
 		let homeBtn = d3.select('#home').node();
 		goToStep(homeBtn);
 		homeBtn.focus();
-			
 	}
 	
 	/*---------------------------
@@ -1060,6 +1060,10 @@ CorrelationViz = function(width, height) {
 		// caller just wants to reset the data to its
 		// true values:
 		if ( stepName !== 'reset' ) {
+			
+			// New 'currently active' button:
+			currBtn = stepButtonEl;
+
 			d3.selectAll('.instrTxt.visible').classed('visible', false);
 			// Turn on only the appropriate one:
 			d3.select('#' + stepName + 'Txt').classed('visible', true);
@@ -1067,22 +1071,29 @@ CorrelationViz = function(width, height) {
 
 		switch (stepName) {
 		case 'home':
-			d3.select('.corrDiv')
+			d3.select('#corrDiv')
 				.attr('class', 'corrDiv');
 			break;
 		case "step1":
+			d3.select('#corrDiv')
+				.attr('class', 'corrDiv');
 			break;
 		case "step2":
-			d3.select('.corrDiv')
+			d3.select('#corrDiv')
 				.attr('class', 'corrDiv.visible')
 			break;
 		case "reset":
+			
 			let data = getTrueData().data;
 			for ( let rowNum=0; rowNum<data.length; rowNum++) {
 				tblObj.setRow(rowNum, data[rowNum]);
 			}
 			updateDataChart(scalesData);
+			// Update correlation:
+			placeCorrelationValue();
 			updateCorrChart(scalesCorr);
+			// Re-select the current exercise-step button:
+			currBtn.focus();
 			break;
 		}
 	}
