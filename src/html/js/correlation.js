@@ -261,7 +261,7 @@ CorrelationViz = function(width, height) {
 		let currRowNum = -1;
 				
 		svgData
-		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }) // matrix
+		  .data(function() { return tblObj.getData(NO_HEADER_ROW, NO_COL0) }); // matrix
 
 		// For each row of the matrix: create or update 
 		// dots, giving the dots of each row a different
@@ -274,11 +274,18 @@ CorrelationViz = function(width, height) {
 			let colNum = 0;
 
 			personDotSel = svgData.selectAll('.' + dotClass)
-				.data(function() { return row })
+				.data(function() { return row });
+			personDotSel
  				    // Update existing dots with (possibly) changed data:
-				   	.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				   	.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
-			   .enter() 
+				   	.transition('resettingX')
+				   		.delay(0.1)
+				   		.duration(800) // ms
+				   		.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				   	.transition('resettingY')
+				   		.delay(0.1)
+				   		.duration(800) // ms
+				   		.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+			personDotSel.enter() 
 				 // Add additional dots if now more data than before:
 				   .append('circle')
 				   .attr('state',  function(row, i) { return states[i] })
