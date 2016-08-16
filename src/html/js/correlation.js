@@ -353,41 +353,72 @@ CorrelationViz = function(width, height) {
 		let ROW_2014 = 1;
 
 		let stateIndex = 0;
-		for (let byYearPair of byYear) {
-			let corrGrpSel = svgCorr
-				.append('g')
-				  .attr('class', 'corrDotGrp')
-			let dotSel = corrGrpSel
-		        .append('circle')
-		    	 .attr('state', function() {
-		    		 return states[stateIndex] 
-		    	 })
-		    	 .attr('id', function() {
-		    		 return states[stateIndex++] 
-		    	 })		    
-		    	 .attr('tblRows', function() { return `[${ROW_1996}, ${ROW_2014}]` })
-		    	 .attr('tblCol', function(dummy, i) { return i } )
-				 .attr('cx', function() { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
-				 .attr('cy', function() { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
-				 .attr('r', DOT_RADIUS)
-				 .attr('class', 'corrDot');
+		
+		d3.select('.wrapper').selectAll('g circle')
+		 .data(byYear)
+             // Update already-existing (possibly) changed dots:
+             .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
+    	     .attr('cy', function(byYearPair) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
+    	     
+	     .enter()
+	        .append('g')
+	        .append('circle')
+             .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
+    	     .attr('cy', function(byYearPair) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
+	    	 .attr('state', function() {
+	    		  return states[stateIndex] 
+	    	   })
+	    	 .attr('id', function() {
+	    		 return states[stateIndex++] 
+	    	   })		    
+	    	 .attr('tblRows', function() { return `[${ROW_1996}, ${ROW_2014}]` })
+	    	 .attr('tblCol', function(dummy, i) { return i } )
+			 .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
+			 .attr('cy', function(byYearPair) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
+			 .attr('r', DOT_RADIUS)
+			 .attr('class', 'corrDot');
+		
+			let circleTxtGrpSel = d3.selectAll('.wrapper g');
+			// If called the first time, no dot-texts (state abbreviations) 
+			// have been created, just the groups and a circle inside:
+			let noLabelsCreated = circleTxtGrpSel.select('text').empty();
 			
-			let dotState = dotSel.attr('state');
-			
-			// Permanent-label text:
-			let txtSel = corrGrpSel
-			  .append('text')
-			    .text(STATE_TBL[dotState])            // State abbreviation
-			    .attr('text-anchor', 'middle')        // For centering within the circle
-			    .attr('dominant-baseline', 'middle')  // horizontally and vertically.
-			    .attr('x', function() {               // Center text over circle. 
-			    	return dotSel.attr('cx');
-			    })
-			    .attr('y', function() {
-			    	return parseFloat(dotSel.attr('cy'))
-			    })
-			    .attr('class', 'corrStateLabelTxt');
-			
+			if ( noLabelsCreated) {
+				circleTxtGrpSel
+				// 'this' will be an existing group:
+				.each(function(byYearPair, byYearIndx) {
+					let	grpSel   = d3.select(this);
+					let dotSel   = grpSel.select('circle');
+					let dotState = dotSel.attr('state');
+					grpSel
+					  .append('text')
+			    		  .text(STATE_TBL[dotState])            // State abbreviation
+			    		  .attr('text-anchor', 'middle')        // For centering within the circle
+			    		  .attr('dominant-baseline', 'middle')  // horizontally and vertically.
+			    		  .attr('x', function() {               // Center text over circle. 
+			    		  	return dotSel.attr('cx');
+			    		  })
+			    		  .attr('y', function() {
+			    		  	return parseFloat(dotSel.attr('cy'))
+			    		  })
+			    		  .attr('class', 'corrStateLabelTxt');
+				});
+			} else {
+				circleTxtGrpSel.selectAll('text')
+					.each(function(byYearPair, byYearIndx) {
+						let	grpSel   = d3.select(this);
+						let dotSel   = grpSel.select('circle');
+						grpSel
+						   .attr('x', function() {               // Center text over circle. 
+							     return dotSel.attr('cx');
+						   		})
+						   .attr('y', function() {
+							     return parseFloat(dotSel.attr('cy'))
+						   		});
+					});
+			}
+		
+			let corrGrpSel = d3.selectAll('.corrDotGrp');
 			corrGrpSel
 			  .on("mouseover", function() {
 			  	// 'This' is the group:
@@ -428,7 +459,6 @@ CorrelationViz = function(width, height) {
 			  	let tooltipSel   = d3.select('#' + tooltipName);
 			  	tooltipSel.classed('visible', false);
 			  })
-		}
 	}
 	
 	/*---------------------------
