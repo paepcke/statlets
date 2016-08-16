@@ -112,6 +112,9 @@ CorrelationViz = function(width, height) {
 		// height:
 		d3.select('#corrDiv')
 			.style("height", height + 40)
+			//.attr("class", "corrDiv.visible") // ***** Take out.
+			.attr("class", "corrDiv") // ***** Take out.
+
 		
 		
 		svgCorr = d3.select("#corrDiv").append("svg")
@@ -390,8 +393,6 @@ CorrelationViz = function(width, height) {
 			  		if ( thisY < minY) 
 			  			minY = thisY;
 			  	})
-			  	
-tooltipSel.classed('visible', true); //*****			  	
 			  	
 			  	let currRectY    = parseFloat(tooltipRecSel.attr('y'));
 			  	let dy           = minY - currRectY;
@@ -877,8 +878,6 @@ tooltipSel.classed('visible', true); //*****
 				corrCircleSel.attr('cy', newCircleY);
 				corrLabelSel.attr('y', newLabelY);
 			}
-//***			d3.select(corrCircleGrp)
-//***				.attr('transform', `translate(${dx}, ${dy})`);
 		}
 	}
 	
@@ -965,26 +964,30 @@ tooltipSel.classed('visible', true); //*****
 			  .attr("value", "Step 2")
 			  .attr("class", "button cntBtn");
 		
-		d3.select(".controlButtonBar")
+/*		d3.select(".controlButtonBar")
 			.append('input')
 			  .attr("type", "button")
 			  .attr("id", "step3")
 			  .attr("value", "Step 3")
 			  .attr("class", "button cntBtn");
-		
+*/		
 		d3.select(".controlButtonBar")
 			.append('input')
 			  .attr("type", "button")
 			  .attr("id", "reset")
 			  .attr("value", "Reset")
 			  .attr("class", "button cntBtn reset");
-		
 
-		
 		d3.selectAll(".button.cntBtn")
 			.on("click", function() {
 				goToStep(this);
-			})
+			});
+			
+		// Start in the Home state:
+		let homeBtn = d3.select('#home').node();
+		goToStep(homeBtn);
+		homeBtn.focus();
+			
 	}
 	
 	/*---------------------------
@@ -995,17 +998,26 @@ tooltipSel.classed('visible', true); //*****
 		
 		let stepName = stepButtonEl.id;
 		
-		// Turn off all instruction text:
-		d3.selectAll('.instrTxt.visible').classed('visible', false);
-		// Turn on only the appropriate one:
-		d3.select('#' + stepName + 'Txt').classed('visible', true);
+		
+		// Turn off all instruction text, unless
+		// caller just wants to reset the data to its
+		// true values:
+		if ( stepName !== 'reset' ) {
+			d3.selectAll('.instrTxt.visible').classed('visible', false);
+			// Turn on only the appropriate one:
+			d3.select('#' + stepName + 'Txt').classed('visible', true);
+		}
 
 		switch (stepName) {
 		case 'home':
-			//alert("Home clicked")
+			d3.select('.corrDiv')
+				.attr('class', 'corrDiv');
 			break;
 		case "step1":
-			//alert("Step 1 clicked")
+			break;
+		case "step2":
+			d3.select('.corrDiv')
+				.attr('class', 'corrDiv.visible')
 			break;
 		case "reset":
 			let data = getTrueData().data;

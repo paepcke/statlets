@@ -30,6 +30,13 @@
                 other states. Then click the Step 1 button.
 			</div>
 			<div class="instrTxt" id="step1Txt">
+				Note that the blue Nevada 2014 data point drops relative
+				to Mississippi's 2014 data, while Nevada's green data point rises.
+				This difference 'ruins' the otherwise great correlation.
+				Drag Nevada's 2014 data point up to see how <i>r</i>
+				improves. But is this 'better' <i>r</i> desirable for
+				these data?  
+				<p>
 				To get a feel for the behavior of Pearson's <i>r</i>, move the
 				data points up and down, observing the correlation measure.
 				Try to arrange the data points such that <i>r=0.7</i>.
@@ -42,12 +49,32 @@
 				do you see differences in how rapidly <i>r</i> changes when
 				you move the points? Try (roughly) doubling one series, leaving
 				the other data points alone. How does <i>r</i> change? What
-				about when you instead add a constant to each point?
+				about when you instead add a constant to each point? For acurate
+				readings, you can consult the table below the chart; it updates
+				as you drag.
 			</div>
-		</div>
+			<div class="instrTxt" id="step2Txt">
+				The chart on the right shows a different view onto the 
+				same data. The x-axis records the 1996 data, while the
+				y-axis shows the 2014 values. This chart summarizes
+				the correlation. You can run your mouse over any of the
+				points to see what they represent.
+				<p>
+				Note that we only have half the number of data points in this 
+				chart than in the data chart on the left. Why is that?
+				<p>
+				Drag the data points in the left chart as you did in the
+				earlier steps. What happens to the points in the correlation
+				chart?
+				<p>
+				Now try moving the points in the correlation chart. You will
+				notice that the data points in the data chart do <b>not</b> follow.
+				Why do you think that reciprocal behavior is not possible?
+			</div>
+		</div> <!-- end instructionsDiv -->
 		<div class="dataDiv" id="dataDiv"></div>
-      <div class="corrDiv" id="corrDiv"></div>
-	</div>
+	    <div class="corrDiv" id="corrDiv"></div>
+	</div> <!-- end flexWrapper -->
 	<div id="tableDiv"></div>
 	
 	<script src="js/tableManager.js"></script>

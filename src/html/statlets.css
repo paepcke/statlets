@@ -24,19 +24,21 @@ h1          { text-align : center;  }
 .instrTxt.visible  { display : inline; }
 
 .dataDiv { 
-           border : 1px solid orange;
-           //flex   : 2 1 auto; 
-           flex   : 2 1 40%; 
+           // border : 1px solid orange;
+           flex   : 2 1 auto; 
+           //flex   : 2 1 40%; 
            background-color : #F6F6F6;
          }
 
 .corrDiv { 
-           border : 1px solid orange;
-           //flex   : 2 1 auto;
-           flex   : 2 1 40%;
-           background-color : #F6F6F6;           
+           // border : 1px solid orange;
+           flex   : 2 1 auto;
+           // flex   : 2 1 40%;
+           background-color : #F6F6F6;
+	       opacity : 0;           
          }
 
+.corrDiv.visible { opacity = 1; }
 
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 
@@ -78,7 +80,7 @@ h1          { text-align : center;  }
 			 }			 
 
 .axis text   { font-family : sans-serif;
-               font-size   : 11pt;
+               font-size   : 8pt;
              }
              
 .legendText  { font-size : 10pt; }
