@@ -106,11 +106,13 @@ CorrelationViz = function(width, height) {
         let extentDict  = {svg           : svgData, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
-        					   axisLabel : 'US States'  
+        					   axisLabel : 'US States',
+        					 axisLabelId : 'dataXLabel'        						   
             				  },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
-            				   axisLabel : 'Murders per 100K People'
+            				   axisLabel : 'Murders per 100K People',
+            			     axisLabelId : 'dataYLabel'
             			      }
                           };
 
@@ -140,18 +142,27 @@ CorrelationViz = function(width, height) {
 		let dataCat1 = tblObj.getCell(0, 0);
 		let dataCat2 = tblObj.getCell(1, 0);
 		
-        extentDict  = {svg           : svgCorr,
-        			   x: {scaleType : 'linear',
-        				   domain    : yDomain,
-        				   axisLabel : 'Murder rate per 100K in ' + dataCat1   
+        extentDict  = {svg             : svgCorr,
+        			   x: {scaleType   : 'linear',
+        				   domain      : yDomain,
+        				   axisLabel   : 'Murders per 100K in ' + dataCat1,
+        				   axisLabelId : 'corrXLabel'
             			  },
-            		   y: {scaleType : 'linear',
-            		       domain    : yDomain,
-        				   axisLabel : 'Murder rate per 100K in ' + dataCat2               		      
+            		   y: {scaleType   : 'linear',
+            		       domain      : yDomain,
+        				   axisLabel   : 'Murders per 100K in ' + dataCat2,
+        				   axisLabelId : 'corrYLabel'
             		      }
                        };
 
 		scalesCorr = makeCoordSys(extentDict);
+		
+		// Move the correlation x-axis label below
+		// the axis:
+		
+		let corrXLabelY = parseFloat(d3.select('#corrXLabel').attr('y'));
+		d3.select('#corrXLabel').attr('y', corrXLabelY + 50);
+		
 		// Initialize the data chart, which 
 		// will initialize the correlation chart
 		// as well:
@@ -814,7 +825,7 @@ CorrelationViz = function(width, height) {
 		     .call(xAxis);
 		
 		     
-		// For ordinal X-axes: rotate labels by 45%
+		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
 		if (extentDict.x.scaleType == 'ordinal') {
 			
@@ -851,6 +862,7 @@ CorrelationViz = function(width, height) {
 		
 		xAxisLabel = svg.append("text")
 						.attr("class", "x label")
+						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
 						.attr("y", height - X_AXIS_BOTTOM_PADDING - 6)
@@ -858,6 +870,7 @@ CorrelationViz = function(width, height) {
 						
 		yAxisLabel = svg.append("text")
 						.attr("class", "y label")
+						.attr("id", extentDict.y.axisLabelId)
 						.attr("text-anchor", "end") // I'm still confused about x/y of rotated text:
 						.attr("x", - (height / 4.))  // The "/3." is empirical...
 						.attr("y", Y_AXIS_LEFT_PADDING / 2)
