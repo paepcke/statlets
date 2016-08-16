@@ -9,11 +9,11 @@ h1          { text-align : center;  }
 				  justify-content : center; // Horizontal placement of content divs
 				  align-items : start;      // Vertical align within content divs 
 				  width : 95%;
-	  	    	  border: 1px solid Azure;
+	  	    	  // border: 1px solid Azure;
                 }
 
 .instructionsDiv {
-           		  border: 1px solid green;
+           		  // border: 1px solid green;
 			      min-height : 20em;
            		  flex   : 1 1 20%;        // Get 1 unit of free space for either grow or shrink.
 			                               // The 20% is the base value: with within div.
@@ -120,9 +120,12 @@ h1          { text-align : center;  }
 			          margin-right : auto;
 			          border : 1px;
 			        }
-.controlButtonBar    { 
+.controlButtonBar    { }
 			           
-			    }
+.button.cntBtn:focus { outline : 0 !important;
+               		   background : LightGray; 
+              		 }			           
+			           
 .button.cntBtn { background : DarkGray;
  				 border-radius : 25px;
  				 width : 50px;
