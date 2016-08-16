@@ -1,3 +1,15 @@
+/*
+ * TODO:
+ * 	o Reset button does not refresh the corr chart
+ *  o Buttons need to be wider for Ubuntu
+ *  o States are cut off in data chart on Ubuntu (firefox)
+ *      Likely need to remove the auto-flex.
+ *  o corr chart loses its white background
+ *  o going from Step 2 back to home does not
+ *       make corr chart invisible.
+ */
+
+
 CorrelationViz = function(width, height) {
 
 	// Instance variables:
