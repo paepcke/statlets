@@ -14,10 +14,13 @@ h1          { text-align : center;  }
 
 .instructionsDiv {
            		  border: 1px solid green;
-           		  //flex   : 1 1 auto;
+			      min-height : 20em;
            		  flex   : 1 1 20%;        // Get 1 unit of free space for either grow or shrink.
 			                               // The 20% is the base value: with within div.
 			      }
+			      
+.instrTxt          { display : none; }
+.instrTxt.visible  { display : inline; }
 
 .dataDiv { 
            border : 1px solid orange;
@@ -113,6 +116,20 @@ h1          { text-align : center;  }
 .category2Dot  { fill : blue; }
 .corrDot       { fill : rgb(144, 12, 63) ; } // Dark red.
 
+.controlBarWrapper  { margin-left : 200px;
+			          margin-right : auto;
+			          border : 1px;
+			        }
+.controlButtonBar    { 
+			           
+			    }
+.button.cntBtn { background : DarkGray;
+ 				 border-radius : 25px;
+ 				 width : 50px;
+ 				 margin-left : 8px;
+ 				 margin-bottom : 2px;
+		       }
 
+.button.cntBtn.reset { margin-left : 35px; }
 
 

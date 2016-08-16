@@ -1,6 +1,8 @@
 CorrelationViz = function(width, height) {
 
 	// Instance variables:
+
+	var that             = null;  // Reference to this instance
 	
 	var width   	     = width;
 	var height  	     = height;
@@ -100,7 +102,7 @@ CorrelationViz = function(width, height) {
             			      }
                           };
 
-		this.scalesData = makeCoordSys(extentDict);
+		scalesData = makeCoordSys(extentDict);
 		
 		// Build the correlations chart:
 		
@@ -138,7 +140,7 @@ CorrelationViz = function(width, height) {
 		// Initialize the data chart, which 
 		// will initialize the correlation chart
 		// as well:
-		updateDataChart(this.scalesData);
+		updateDataChart(scalesData);
 		placeCorrelationValue();
 		
 		// Make correlation dots match:
@@ -147,6 +149,9 @@ CorrelationViz = function(width, height) {
 		// Create tooltips. Pass the
 		// x/y scales and the 1996/2014 category strings:
 		addCorrTooltip(scalesCorr, {xCat : dataCat1, yCat : dataCat2});
+		
+		// Add the statlet control buttons at the top:
+		addControlButtons();
 		
 		return {width  : width,
 				height : height,
@@ -171,6 +176,7 @@ CorrelationViz = function(width, height) {
 		let data      = [['1996', 10.4, 9.1, 9.5, 11.1, 13.7],
 		                 ['2014', 5.7, 4.4, 5.7, 8.6, 6.0]
 		                 ]
+// For alternative, random placement:		
 /*		for (let i=0; i<12; i++) {
 			data[0].push(Math.round(100*Math.random()));
 			data[1].push(Math.round(100*Math.random()));
@@ -225,27 +231,24 @@ CorrelationViz = function(width, height) {
 
 			personDotSel = svgData.selectAll('.' + dotClass)
 				.data(function() { return row })
-				
-			personDotSel
-				// Update existing dots with (possibly) changed data:
-				.attr('cx', function()  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				.attr('cy', function()  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
-				
-			personDotSel.enter() 
-				// Add additional dots if now more data than before:
-				.append('circle')
-				.attr('state',  function(row, i) { return states[i] })
-				.attr('id', function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Category
-				.attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved
-				.attr('tblCol', function() { return colNum++ } )
-				.attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
-				.attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				.attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
-				.attr('class', function() { return dotClass } )
+ 				    // Update existing dots with (possibly) changed data:
+				   	.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				   	.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+			   .enter() 
+				 // Add additional dots if now more data than before:
+				   .append('circle')
+				   .attr('state',  function(row, i) { return states[i] })
+				   .attr('id', function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Category
+				   .attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved
+				   .attr('tblCol', function() { return colNum++ } )
+				   .attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
+				   .attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				   .attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				   .attr('class', function() { return dotClass } )
 
-				// Attach drag-start behavior to this circle.
-				// Do update the data table from these moves.
-				.call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
+				   // Attach drag-start behavior to this circle.
+				   // Do update the data table from these moves.
+				   .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -915,6 +918,81 @@ tooltipSel.classed('visible', true); //*****
 			// Make it easy to get a dot's tooltip group:
 			dotSel.attr('tooltipGrpName', tooltipGrpSel.attr('id'));
 		  });
+	}
+	
+	/*---------------------------
+	| addControlButtons 
+	-----------------*/
+	
+	var addControlButtons = function() {
+		
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "home")
+			  .attr("value", "Home")
+			  .attr("class", "button cntBtn");
+
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "step1")
+			  .attr("value", "Step 1")
+			  .attr("class", "button cntBtn")
+	
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "step2")
+			  .attr("value", "Step 2")
+			  .attr("class", "button cntBtn");
+		
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "step3")
+			  .attr("value", "Step 3")
+			  .attr("class", "button cntBtn");
+		
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "reset")
+			  .attr("value", "Reset")
+			  .attr("class", "button cntBtn reset");
+		
+
+		
+		d3.selectAll(".button.cntBtn")
+			.on("click", function() {
+				goToStep(this);
+			})
+	}
+	
+	/*---------------------------
+	| goToStep 
+	-----------------*/
+	
+	var goToStep = function(stepButtonEl) {
+		
+		let stepName = stepButtonEl.id;
+		
+		// Turn off all instruction text:
+		d3.selectAll('.instrTxt.visible').classed('visible', false);
+		// Turn on only the appropriate one:
+		d3.select('#' + stepName + 'Txt').classed('visible', true);
+
+		switch (stepName) {
+		case 'home':
+			//alert("Home clicked")
+			break;
+		case "step1":
+			//alert("Step 1 clicked")
+			break;
+		case "reset":
+			updateDataChart(scalesData);
+			break;
+		}
 	}
 	
 	return constructor(width, height);

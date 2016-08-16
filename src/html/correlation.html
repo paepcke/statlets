@@ -10,24 +10,42 @@
 </head>
 <body>
 	<h1>Exploring Correlation</h1>
+	<div class="controlBarWrapper">
+		<div class="controlButtonBar"></div>
+	</div>
 	<div class="flexWrapper" id="flexWrapper">
-	  <div class="instructionsDiv" id="instructions">
-		Monica and Daniel spend some amount of money each month. 
-		The table at the bottom lists how much. The chart  
-		displays the same information.
-		<p>
-		The Pearson's correlation <i><b>r</b></i> is shown in the
-		upper left of the chart. It tells us to
-		what degree the patterns of Monica's and Daniel's expenditures 
-		are similar over time.
-		<p>
-		Your job: move the data points in the chart up and down and
-		observe how the correlation coefficient changes. Try to 
-		get the coefficient as high as you can, then move individual
-		points to see how sensitive the coefficient is to those
-		changes.
-	  </div>
-	  <div class="dataDiv" id="dataDiv"></div>
+		<div class="instructionsDiv" id="instructions">
+			<div class="instrTxt" id="homeTxt">
+				This chart shows the murder rates per 100k citizens
+				in five US States. The green data points show the rates 
+				in 1996; the blue points show the rates at 2014. Note
+				the consistent difference between the two data series.
+				<p>
+				The Pearson's correlation <i><b>r</b></i> is shown in the upper
+				left of the chart. It tells us to what degree the murder 
+                rate changes between 1996 and 2014 are similar between
+                the states. For example, in 1996 Alabama's rate was 
+                10.4 murders/100K-citizens. By 2014 the rate had fallen
+                to 5.7murders/100k-citizens. Observe the trend in the 
+                other states. Then click the Step 1 button.
+			</div>
+			<div class="instrTxt" id="step1Txt">
+				To get a feel for the behavior of Pearson's <i>r</i>, move the
+				data points up and down, observing the correlation measure.
+				Try to arrange the data points such that <i>r=0.7</i>.
+				Then arrange the points very differently, but ending up
+				with an <i>r=0.7</i> again. You can click the <i>Reset</i>
+				button to arrange the data into their true values as often
+				as you like.
+				<p>
+				Observe how sensitive <i>r</i> is to moving particular points.
+				do you see differences in how rapidly <i>r</i> changes when
+				you move the points? Try (roughly) doubling one series, leaving
+				the other data points alone. How does <i>r</i> change? What
+				about when you instead add a constant to each point?
+			</div>
+		</div>
+		<div class="dataDiv" id="dataDiv"></div>
       <div class="corrDiv" id="corrDiv"></div>
 	</div>
 	<div id="tableDiv"></div>
