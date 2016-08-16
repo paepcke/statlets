@@ -40,7 +40,9 @@ h1          { text-align : center;  }
 		   opacity : 0;
          }
 
-.corrDiv.visible { opacity = 1; }
+.corrDiv.visible { opacity = 1; 
+				   background-color : #F6F6F6;
+				 }
 
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 

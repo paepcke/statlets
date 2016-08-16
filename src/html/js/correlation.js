@@ -127,8 +127,7 @@ CorrelationViz = function(width, height) {
 		// height:
 		d3.select('#corrDiv')
 			.style("height", height + 40)
-			//.attr("class", "corrDiv.visible") // ***** Take out.
-			.attr("class", "corrDiv") // ***** Take out.
+			.attr("class", "corrDiv");
 
 		
 		
@@ -1081,6 +1080,10 @@ CorrelationViz = function(width, height) {
 		case "step2":
 			d3.select('#corrDiv')
 				.attr('class', 'corrDiv.visible')
+				// Need to set background-color when
+				// making visible. Doesn't refresh that
+				// after making visible:
+				.style('background-color', '#F6F6F6')
 			break;
 		case "reset":
 			
