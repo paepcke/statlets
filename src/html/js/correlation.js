@@ -161,6 +161,24 @@ CorrelationViz = function(width, height) {
 	
 
 	/*---------------------------
+	| getTrueData 
+	-----------------*/
+	
+	var getTrueData = function() {
+		/*
+		 * Returns an object containing 
+		 * the header row, and a matrix with
+		 * the data.
+		 */
+		
+		return {headerRow : ['State', 'Alabama', 'California', 'Georgia',  'Mississippi', 'Nevada'],
+			    data      : [['1996', 10.4, 9.1, 9.5, 11.1, 13.7],
+					         ['2014', 5.7, 4.4, 5.7, 8.6, 6.0]
+		                 	 ]
+		}
+	}
+	
+	/*---------------------------
 	| createTable 
 	-----------------*/
 	
@@ -172,10 +190,10 @@ CorrelationViz = function(width, height) {
 		//                 ['Daniel', 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
 		//				]
 		
-		let headerRow = ['State', 'Alabama', 'California', 'Georgia',  'Mississippi', 'Nevada']
-		let data      = [['1996', 10.4, 9.1, 9.5, 11.1, 13.7],
-		                 ['2014', 5.7, 4.4, 5.7, 8.6, 6.0]
-		                 ]
+		let allData   = getTrueData();
+		let headerRow = allData.headerRow;
+		let data      = allData.data;
+
 // For alternative, random placement:		
 /*		for (let i=0; i<12; i++) {
 			data[0].push(Math.round(100*Math.random()));
@@ -990,7 +1008,12 @@ tooltipSel.classed('visible', true); //*****
 			//alert("Step 1 clicked")
 			break;
 		case "reset":
+			let data = getTrueData().data;
+			for ( let rowNum=0; rowNum<data.length; rowNum++) {
+				tblObj.setRow(rowNum, data[rowNum]);
+			}
 			updateDataChart(scalesData);
+			updateCorrChart(scalesCorr);
 			break;
 		}
 	}
