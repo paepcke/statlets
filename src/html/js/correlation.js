@@ -438,6 +438,9 @@ CorrelationViz = function(width, height) {
 					});
 			}
 		
+			// Make the state abbreviation labels non-selectable:
+			d3.selectAll('.corrStateLabelTxt').classed('unselectable', true);
+			
 			let corrGrpSel = d3.selectAll('.corrDotGrp');
 			corrGrpSel
 			  .on("mouseover", function() {
