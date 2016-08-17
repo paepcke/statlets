@@ -394,7 +394,7 @@ CorrelationViz = function(width, height) {
 	    	 .attr('tblCol', function(dummy, i) { return i } )
 			 .attr('cx', function(byYearPair) { return xScale(byYearPair.yearXAxis) + X_AXIS_LEFT_PADDING } )
 			 .attr('cy', function(byYearPair) { return yScale(byYearPair.yearYAxis) + Y_AXIS_TOP_PADDING } )
-			 .attr('r', DOT_RADIUS)
+			 .attr('r', DOT_RADIUS + 2)
 			 .attr('class', 'corrDot');
 		
 			let circleTxtGrpSel = d3.select('#flexWrapper #corrChart').selectAll('.corrDotGrp');
@@ -656,6 +656,8 @@ CorrelationViz = function(width, height) {
 		  	.attr('fill', function(catColorObj, i) {
 		  		return catColorObj.rgb;
 		  	})
+		  	
+		d3.selectAll('.legendText').classed('unselectable', true);
 	}
 	
 	/*---------------------------
@@ -741,6 +743,7 @@ CorrelationViz = function(width, height) {
 		}
 		corrTxtEl.text(`r: ${roundedCorr}`)
 
+		d3.select('.statsLabel').classed('unselectable', true);
 		
 	}
 	
@@ -884,6 +887,10 @@ CorrelationViz = function(width, height) {
 						.attr("transform", "rotate(-90)")
 						.text(extentDict.y.axisLabel)
 						
+		d3.selectAll('.axis text').classed('unselectable', true);			
+		d3.selectAll('.x.label').classed('unselectable', true);
+		d3.selectAll('.y.label').classed('unselectable', true);
+		
 		return {xScale    : xScale,
 				yScale    : yScale,
 				bandWidth : bandWidth,

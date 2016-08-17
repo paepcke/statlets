@@ -2,6 +2,21 @@ body        { background-color : Bisque; }
 
 h1          { text-align : center;  }
 
+/* Suppress ability to select non-selectable
+   text and other items (and getting the blue overlay)
+   Usage: d3.select('...').classed('unselectable', true) 
+   */
+*.unselectable {
+		 -webkit-touch-callout: none; /* iOS Safari */
+		 -webkit-user-select: none;   /* Chrome/Safari/Opera */
+		 -khtml-user-select: none;    /* Konqueror */
+		 -moz-user-select: none;      /* Firefox */
+		 -ms-user-select: none;       /* Internet Explorer/Edge */
+		 user-select: none;           /* Non-prefixed version, currently
+		                                  not supported by any browser */
+}
+
+
 .flexWrapper    { 
 				  display : flex;
 				  flex-direction : row;
@@ -71,7 +86,8 @@ h1          { text-align : center;  }
 
 // #svgBackground { fill : #F6F6F6; }
 
-.legend {"font-size", "12px"}
+.legend {font-size, 12px;
+		}
 
 #tableDiv    { padding-top : 30px;
 			   margin : auto;
@@ -85,14 +101,14 @@ h1          { text-align : center;  }
 
 .axis text   { font-family : sans-serif;
                font-size   : 8pt;
-             }
+               }
              
 .legendText  { font-size : 10pt; }
 
 .corrDotGrp     {}
 .corrStateLabelTxt {
 				     font-size : 12px;
-				     fill      : cyan;
+				     fill      : White;
 				     opacity   : 0.8;
 				   }
 
@@ -135,7 +151,7 @@ h1          { text-align : center;  }
 			           
 .button.cntBtn { background : DarkGray;
  				 border-radius : 25px;
- 				 width : 50px;
+ 				 width : 60px;
  				 margin-left : 8px;
  				 margin-bottom : 2px;
 		       }
