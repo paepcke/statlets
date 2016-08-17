@@ -146,8 +146,7 @@ h1          { text-align : center;  }
 .controlButtonBar    { }
 			           
 .button.cntBtn:focus { outline : 0 !important;
-               		   background : LightGray; 
-              		 }			           
+              		 }
 			           
 .button.cntBtn { background : DarkGray;
  				 border-radius : 25px;
@@ -155,6 +154,8 @@ h1          { text-align : center;  }
  				 margin-left : 8px;
  				 margin-bottom : 2px;
 		       }
+
+.button.cntBtn.current { background : LightGray; } // the currently active exercise.              		 
 
 .button.cntBtn.reset { margin-left : 35px; }
 

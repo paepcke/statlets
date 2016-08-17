@@ -1056,8 +1056,9 @@ CorrelationViz = function(width, height) {
 			
 		// Start in the Home state:
 		let homeBtn = d3.select('#home').node();
+		//****d3.select(homeBtn).attr('class', 'button cntBtn current');
+		currBtn = homeBtn;
 		goToStep(homeBtn);
-		homeBtn.focus();
 	}
 	
 	/*---------------------------
@@ -1068,14 +1069,15 @@ CorrelationViz = function(width, height) {
 		
 		let stepName = stepButtonEl.id;
 		
-		
 		// Turn off all instruction text, unless
 		// caller just wants to reset the data to its
 		// true values:
 		if ( stepName !== 'reset' ) {
 			
+			d3.select(currBtn).attr('class', 'button cntBtn');
 			// New 'currently active' button:
 			currBtn = stepButtonEl;
+			d3.select(currBtn).attr('class', 'button cntBtn current');
 
 			d3.selectAll('.instrTxt.visible').classed('visible', false);
 			// Turn on only the appropriate one:
@@ -1109,8 +1111,6 @@ CorrelationViz = function(width, height) {
 			// Update correlation:
 			placeCorrelationValue();
 			updateCorrChart(scalesCorr);
-			// Re-select the current exercise-step button:
-			currBtn.focus();
 			break;
 		}
 	}
