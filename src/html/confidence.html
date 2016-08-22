@@ -1,0 +1,36 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" type="text/css" href="confidence.css">
+
+<!-- Load d3.js -->
+<script src="js/d3.min.js" charset="utf-8"></script>
+<!-- All the stats we need: -->
+<script src="js/simple-statistics.min.js"></script>
+</head>
+<body>
+	<h1>Exploring Confidence Intervals</h1>
+	<div class="controlBarWrapper">
+		<div class="controlButtonBar"></div>
+	</div>
+	<div class="flexWrapper" id="flexWrapper">
+		<div class="instructionsDiv" id="instructions">
+			<div class="instrTxt" id="homeTxt">
+				About confidence intervals.
+			</div>
+			<div class="instrTxt" id="step1Txt">
+				More confidence intervals
+			</div>
+			<div class="instrTxt" id="step2Txt">
+				Still more.
+
+			</div>
+		</div> <!-- end instructionsDiv -->
+		<div class="dataDiv" id="dataDiv"></div>
+	    <div class="allStatesDiv" id="allStatesDiv"></div>
+	</div> <!-- end flexWrapper -->
+	
+	<script src="js/statsBarchartResizeHandler.js"></script>
+	<script src="js/confidence.js"></script>
+</body>
+</html>
