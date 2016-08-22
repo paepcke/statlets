@@ -159,6 +159,12 @@ ConfidenceViz = function(width, height) {
 		let xScale = scalesData.xScale;
 		let yScale = scalesData.yScale;
 		
+		// Get function barsDragged() 
+		// a chance to see which bar moved, and to mirror
+		// on the correlation chart:
+		let dispatch = d3.dispatch('drag', barPulled);
+		dispatch.on("drag.teenBirthBar", barPulled); //************
+		
 		d3.select('#dataSvg').selectAll('.sampleStateBar')
 			// Data are the teen birth rates:
 			//**** .data(statesToInclude.map(function(state) { return teenBirthObj[state] }))
@@ -484,49 +490,49 @@ ConfidenceViz = function(width, height) {
 		 * correlation point.
 		 */
 		
-		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
-		// Given the data point find the correlation point 
-		// that is the same US state; the data point that
-		// moved might be a 1996 point or a 2014 pont:
-		if (["category1Dot", "category2Dot"].some(function(className) { return dataCircleSel.classed(className) })) {
-
-			let state = dataCircleSel.attr('state'); // US State
-			let corrCircleSel     = d3.select(`#${dataCircleSel.attr('state')}`);
-			let corrCircleGrp     = corrCircleSel.node().parentNode;
-			let corrLabelSel      = d3.select(corrCircleGrp).select('text');
-
-			// Was the 1996 dot of the state moved, 
-			// or the 2016 dot?
-			// tblRows will have only one val: the 
-			// year-row for the data circle. tblRow
-			// will be something like the string "[1]":
-			// get the '1' from that string:
-			let tblRow  	      = JSON.parse(dataCircleSel.attr('tblRows'))[0]; 
-			let tblCol  	      = parseInt(dataCircleSel.attr('tblCol'));
-			let targetUserVal     = tblObj.getCell(tblRow, tblCol + 1); // tblCol-0 is year col
-			let currCx            = parseFloat(corrCircleSel.attr('cx'));
-			let currCy            = parseFloat(corrCircleSel.attr('cy'));
-			let currLabelX        = parseFloat(corrLabelSel.attr('x'));
-			let currLabelY        = parseFloat(corrLabelSel.attr('y'));
-			let dx                = 0;
-			let dy                = 0;
-			if (tblRow == 0) {
-				// Was 1996-data point, so corr x-axis is affected:
-				dx = scalesCorr.xScale(targetUserVal) - currCx + X_AXIS_LEFT_PADDING;
-				let newCircleX = currCx + dx;
-				let newLabelX  = currLabelX + dx;
-				corrCircleSel.attr('cx', newCircleX);
-				corrLabelSel.attr('x', newLabelX)
-			} else {
-				dy = scalesCorr.yScale(targetUserVal) - currCy + Y_AXIS_TOP_PADDING;
-				let newCircleY = currCy + dy;
-				let newLabelY  = currLabelY + dy;
-				corrCircleSel.attr('cy', newCircleY);
-				corrLabelSel.attr('y', newLabelY);
-			}
-//***			d3.select(corrCircleGrp)
-//***				.attr('transform', `translate(${dx}, ${dy})`);
-		}
+//		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
+//		// Given the data point find the correlation point 
+//		// that is the same US state; the data point that
+//		// moved might be a 1996 point or a 2014 pont:
+//		if (["category1Dot", "category2Dot"].some(function(className) { return dataCircleSel.classed(className) })) {
+//
+//			let state = dataCircleSel.attr('state'); // US State
+//			let corrCircleSel     = d3.select(`#${dataCircleSel.attr('state')}`);
+//			let corrCircleGrp     = corrCircleSel.node().parentNode;
+//			let corrLabelSel      = d3.select(corrCircleGrp).select('text');
+//
+//			// Was the 1996 dot of the state moved, 
+//			// or the 2016 dot?
+//			// tblRows will have only one val: the 
+//			// year-row for the data circle. tblRow
+//			// will be something like the string "[1]":
+//			// get the '1' from that string:
+//			let tblRow  	      = JSON.parse(dataCircleSel.attr('tblRows'))[0]; 
+//			let tblCol  	      = parseInt(dataCircleSel.attr('tblCol'));
+//			let targetUserVal     = tblObj.getCell(tblRow, tblCol + 1); // tblCol-0 is year col
+//			let currCx            = parseFloat(corrCircleSel.attr('cx'));
+//			let currCy            = parseFloat(corrCircleSel.attr('cy'));
+//			let currLabelX        = parseFloat(corrLabelSel.attr('x'));
+//			let currLabelY        = parseFloat(corrLabelSel.attr('y'));
+//			let dx                = 0;
+//			let dy                = 0;
+//			if (tblRow == 0) {
+//				// Was 1996-data point, so corr x-axis is affected:
+//				dx = scalesCorr.xScale(targetUserVal) - currCx + X_AXIS_LEFT_PADDING;
+//				let newCircleX = currCx + dx;
+//				let newLabelX  = currLabelX + dx;
+//				corrCircleSel.attr('cx', newCircleX);
+//				corrLabelSel.attr('x', newLabelX)
+//			} else {
+//				dy = scalesCorr.yScale(targetUserVal) - currCy + Y_AXIS_TOP_PADDING;
+//				let newCircleY = currCy + dy;
+//				let newLabelY  = currLabelY + dy;
+//				corrCircleSel.attr('cy', newCircleY);
+//				corrLabelSel.attr('y', newLabelY);
+//			}
+////***			d3.select(corrCircleGrp)
+////***				.attr('transform', `translate(${dx}, ${dy})`);
+//		}
 	}
 	
 	
