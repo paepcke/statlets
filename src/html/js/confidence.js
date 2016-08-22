@@ -170,6 +170,64 @@ ConfidenceViz = function(width, height) {
 	      	.attr('width', xScale.rangeBand())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
+	      	// Attach drag-start behavior to this bar.
+	      	//*****.call(addDragBehavior, scalesData);
+	      	.call(d3.behavior.drag()
+				.on('dragstart', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let barSel = d3.select(this);
+					
+					// Is the element one of our bars?
+					if (barSel.attr('class') !== 'teenBirthBar') {
+						// Was running mouse over something other than
+						// one of our circles:
+						return;
+					}
+					
+					// Allow us to style a moving bar if we want:
+					barSel.classed("dragging", true);
+
+					// Remember the bar that's in motion:
+					d3.behavior.drag.currBar = this;
+					
+				})
+				.on('drag', function(d) {
+					let barSel = d3.select(this);
+					if (barSel.empty()) {
+						// Not over a bar:
+						return;
+					} 
+					
+					let mouseY  = d3.event.y;
+					let barX = barSel.attr('x');
+					let barY = barSel.attr('y');
+					
+					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
+						// Mouse got ahead of the bar being resized.
+						// Select the bar we are dragging instead:
+						barSel = d3.select(d3.behavior.drag.currBar);
+						if (barSel.empty()) {
+							// Not over a bar:
+							return;
+						} 
+					}
+					
+					if (! barSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					dragClickHandler.dragmove(barSel);
+					// Let interested parties know that a bar was resized.
+					// Used to sync (synchronize) CI chart with data chart:
+					dispatch.drag(this, barSel);
+				})
+				.on ('dragend', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.behavior.drag.currBar = undefined;
+				}))
 	}
 	
 	/*---------------------------
@@ -323,6 +381,152 @@ ConfidenceViz = function(width, height) {
 				yScale    : yScale,
 				bandWidth : bandWidth,
 			   }
+	}
+	
+	/*---------------------------
+	| addDragBehavior 
+	-----------------*/
+	
+	
+	var addDragBehavior = function(dataScales) {
+		/*
+		 * Adds drag behavior to 'this'. In order to 
+		 * have 'this' bound to the object to which the 
+		 * behavior is to be attached, use the addDragBehavior.call(),
+		 * or from a D3 expression: .call(addDragBehavior).
+		 * Does not return anything. 
+		 * 
+		 * :param yScale: the  D3 yScale function of the chart.
+		 * :type yScale: function
+		 * :param xScale: Optionally the x-axis scale, if dots can move both
+		 * 			up/down and left/right. Horizontal motion might be 
+		 *          suppressed, for example, if the X axis is ordinal. 
+		 * :type xScale: { function | undefined }
+		 */
+	
+		let xScale = dataScales.xScale;
+		let yScale = dataScales.yScale;		
+		
+		// Get function barsDragged() 
+		// a chance to see which bar moved, and to mirror
+		// on the correlation chart:
+		let dispatch = d3.dispatch('drag', barPulled);
+		dispatch.on("drag.teenBirthBar", barPulled); //************
+										
+
+		return d3.behavior.drag()
+				.on('dragstart', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let barSel = d3.select(this);
+					
+					// Is the element one of our bars?
+					if (barSel.attr('class') !== 'teenBirthBar') {
+						// Was running mouse over something other than
+						// one of our bars:
+						return;
+					}
+					
+					// Allow us to style a moving bar if we want:
+					barSel.classed("dragging", true);
+
+					// Remember the bar that's in motion:
+					d3.behavior.drag.currBar = this;
+					
+				})
+				.on('drag', function(d) {
+					let barSel = d3.select(this);
+					if (barSel.empty()) {
+						// Not over a bar:
+						return;
+					} 
+					
+					let mouseY  = d3.event.y;
+					let barX = barSel.attr('x');
+					let barY = barSel.attr('y');
+					
+					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
+						// Mouse got ahead of the bar being resized.
+						// Select the bar we are dragging instead:
+						barSel = d3.select(d3.behavior.drag.currBar);
+						if (barSel.empty()) {
+							// Not over a bar:
+							return;
+						} 
+					}
+					
+					if (! barSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					dragClickHandler.dragmove(barSel);
+					// Let interested parties know that a bar was resized.
+					// Used to sync (synchronize) CI chart with data chart:
+					dispatch.drag(this, barSel);
+				})
+				.on ('dragend', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.behavior.drag.currBar = undefined;
+				})
+	}
+
+	/*---------------------------
+	| barPulled
+	-----------------*/
+	
+	var barPulled = function(barObj, dataBarSel) {
+		/*
+		 * Called when a data bar is dragged. Finds the
+		 * corresponding correlation circle, and echoes
+		 * the move. Two data points correspond to one
+		 * correlation point.
+		 */
+		
+		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
+		// Given the data point find the correlation point 
+		// that is the same US state; the data point that
+		// moved might be a 1996 point or a 2014 pont:
+		if (["category1Dot", "category2Dot"].some(function(className) { return dataCircleSel.classed(className) })) {
+
+			let state = dataCircleSel.attr('state'); // US State
+			let corrCircleSel     = d3.select(`#${dataCircleSel.attr('state')}`);
+			let corrCircleGrp     = corrCircleSel.node().parentNode;
+			let corrLabelSel      = d3.select(corrCircleGrp).select('text');
+
+			// Was the 1996 dot of the state moved, 
+			// or the 2016 dot?
+			// tblRows will have only one val: the 
+			// year-row for the data circle. tblRow
+			// will be something like the string "[1]":
+			// get the '1' from that string:
+			let tblRow  	      = JSON.parse(dataCircleSel.attr('tblRows'))[0]; 
+			let tblCol  	      = parseInt(dataCircleSel.attr('tblCol'));
+			let targetUserVal     = tblObj.getCell(tblRow, tblCol + 1); // tblCol-0 is year col
+			let currCx            = parseFloat(corrCircleSel.attr('cx'));
+			let currCy            = parseFloat(corrCircleSel.attr('cy'));
+			let currLabelX        = parseFloat(corrLabelSel.attr('x'));
+			let currLabelY        = parseFloat(corrLabelSel.attr('y'));
+			let dx                = 0;
+			let dy                = 0;
+			if (tblRow == 0) {
+				// Was 1996-data point, so corr x-axis is affected:
+				dx = scalesCorr.xScale(targetUserVal) - currCx + X_AXIS_LEFT_PADDING;
+				let newCircleX = currCx + dx;
+				let newLabelX  = currLabelX + dx;
+				corrCircleSel.attr('cx', newCircleX);
+				corrLabelSel.attr('x', newLabelX)
+			} else {
+				dy = scalesCorr.yScale(targetUserVal) - currCy + Y_AXIS_TOP_PADDING;
+				let newCircleY = currCy + dy;
+				let newLabelY  = currLabelY + dy;
+				corrCircleSel.attr('cy', newCircleY);
+				corrLabelSel.attr('y', newLabelY);
+			}
+//***			d3.select(corrCircleGrp)
+//***				.attr('transform', `translate(${dx}, ${dy})`);
+		}
 	}
 	
 	

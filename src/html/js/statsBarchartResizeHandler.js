@@ -61,49 +61,16 @@ StatsBarchartResizeHandler = function(svg) {
 	var dragmove = function(d3DomElSel) {
 
 		let evt = d3.event;
-		let x = evt.x;
-		let y = evt.y;
+		let y  = evt.y;
+		let dy = evt.dy;
+		let newY = parseFloat(d3DomElSel.attr('y')) + dy;
+		let newHeight = parseFloat(d3DomElSel.attr('height')) - dy;
 		
-		d3DomElSel.attr('height', y);
+		d3DomElSel.attr('y', newY);
+		d3DomElSel.attr('height', newHeight);
 			
 	}
-	
-
-	/*---------------------------
-	| createBar 
-	-----------------*/
-
-	var createBar = function(x, y, width, className) {
-		/*
-		 * Create a rect at x,y, and class it with className.
-		 * x,y are upper-left-corner-based SVG coordinates.
-		 * 
-		 *  :param x: pixel horizontal position of new lower-left
-		 *  		corner of the new rect relative	to SVG origin.
-		 *  :type x : float
-		 *  :param y: pixel vertical position of new rect relative
-		 *  			to SVG origin.
-		 *  :type y : float
-		 *  :param width: bar width
-		 *  :type width: float
-		 *  :param className: CSS class of point.
-		 *  :type className : string
-		 */
 		
-		if (typeof(width) !== 'undefined') {
-			x = x + Math.round(width/2.);
-		}
-		
-		let rect = svg.append("rect")
-		  .attr("transform", "translate(" + x + "," + y + ")")
-		  .attr("width", BAR_WITH)
-		  .attr("xOrig", x)      // save this original x-position
-		  .attr("yOrig", y)      // save this original y-position
-		  .attr("class", className)
-		  .style("cursor", "pointer")
-		  .call(drag);
-	}
-	
 	return(constructor());
 	
 }
