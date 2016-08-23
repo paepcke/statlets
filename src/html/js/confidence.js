@@ -6,10 +6,13 @@ ConfidenceViz = function(width, height) {
 	
 	var width   	     = width;
 	var height  	     = height;
-	var scalesData	     = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
-	var scalesAllStates  = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
 	var dragClickHandler = null;
 	var currBtn		 	 = null; // Currently active exercise-step button.
+	
+	var scalesData	     = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
+	var scalesAllStates  = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
+	var xDomain 	     = null;
+	var yDomain 	     = null;
 
 	// Constants:
 
@@ -97,9 +100,9 @@ ConfidenceViz = function(width, height) {
 
 		dragClickHandler = StatsBarchartResizeHandler(svgData);
 		
-        let yDomain     = [0, Math.max.apply(null, Object.values(teenBirthObj))];
+        yDomain     = [0, Math.max.apply(null, Object.values(teenBirthObj))];
         
-        let xDomain     = sampleFromStates(NUM_SAMPLES); 
+        xDomain     = sampleFromStates(NUM_SAMPLES); 
         
         // Argument for makeCoordSys:
         let extentDict  = {svg           : svgData, 
@@ -158,7 +161,7 @@ ConfidenceViz = function(width, height) {
             		      }
                        };
 
-		scalesAllStates = makeCoordSys(extentDict);
+		let scalesAllStates = makeCoordSys(extentDict);
 
 		// Generate bar chart for the chosen states:
         updateAllStatesChart(xDomainAllStates, teenBirthObj, scalesAllStates);
@@ -189,6 +192,7 @@ ConfidenceViz = function(width, height) {
         						     })		
         createCIViz(ci, scalesAllStates);        						     
 
+        addSamplingButtons()
         addControlButtons();
 		
 		return {width  : width,
@@ -336,9 +340,16 @@ ConfidenceViz = function(width, height) {
 		                         .y(function(xyObj) { return xyObj.y; })
 		                         .interpolate("linear");	
 
-		let lineGraph = svgContainer.append("path")
-		                            .attr("d", lineFunction(lineData))
-		                            .attr("class", meanLineDict.lineClass);
+		let meanLineSel = d3.select('.' + meanLineDict.lineClass);
+		if ( meanLineSel.empty() ) {
+			// Create new mean line:
+			svgContainer.append("path")
+				.attr("d", lineFunction(lineData))
+				.attr("class", meanLineDict.lineClass);
+		} else {
+			// Move mean line:
+			meanLineSel.attr("d", lineFunction(lineData));
+		}
 	}
 	
 	/*---------------------------
@@ -347,11 +358,14 @@ ConfidenceViz = function(width, height) {
 	
 	var computeConfInterval = function( ciInfo ) {
 		/*
+		 * ciInfo { dataArr  	   		   : <theDataVals>
+		 * 			populationSize 		   : <number of units in population>
+		 * 			makeSmallPopCorrection : <doOrDontMakeFinitePopCorr> 
+		 * 
 		 * Returns object: { lowBound  : lowConfidenceIntervalBound,
 		 * 					 highBound : highConfidenceIntervalBound,
 		 *                 }
 		 *                 
-		 * Makes                
 		 */
 		
 		let data 	= ciInfo.dataArr;
@@ -407,23 +421,29 @@ ConfidenceViz = function(width, height) {
 						   y : yScale(ciObj.lowBound) + Y_AXIS_TOP_PADDING }
 		               ]
 		// Accessor function for each data point:
-		var lineFunction = d3.svg.line()
+		let lineFunction = d3.svg.line()
 		                         .x(function(xyObj) { return xyObj.x; })
 		                         .y(function(xyObj) { return xyObj.y; })
 		                         .interpolate("linear");	
 
-		let lineGraph = d3.select('#allStatesSvg')
-		                    .append("path")
-		                       .attr("d", lineFunction(lineData))
-		                       .attr("id", "#ciViz")
-		                       .attr("class", "confIntLine");
+		let ciVizSel = d3.select('#ciViz');
+		
+		if ( ciVizSel.empty() ) {
+			d3.select('#allStatesSvg')
+				.append("path")
+				.attr("d", lineFunction(lineData))
+				.attr("id", "#ciViz")
+				.attr("class", "confIntLine");
+		} else {
+			ciVizSel.attr("d", lineFunction(lineData))
+		}
 	}
 	
 	/*---------------------------
 	| newSample 
 	-----------------*/
 	
-	var newSample = function( xDomain ) {
+	var newSample = function() {
 
 		let currSampleSize = xDomain.length;
 
@@ -434,9 +454,30 @@ ConfidenceViz = function(width, height) {
 									   });
 		
 		let newState = sampleFromStates(1, remainingStates);
-		xDomain.append(newState);
+
+		xDomain.push(newState);
+
+		xScale = d3.scale.ordinal()
+			.domain(xDomain)
+			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
+		scalesData.xScale = xScale;
+		// Width between two ticks is (for instance) pixel-pos
+		// at first domain value minus pixel pos at zeroeth domain
+		// value:
+		scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
+		
 		updateDataChart(xDomain, teenBirthObj, scalesData);
-		return xDomain;
+        addMeanLine( { svg       : svgData, 
+        			   yData     : xDomain.map(function(state) { return teenBirthObj[state] }),
+        			   yScale    : scalesData.yScale,
+        			   length    : width - Y_AXIS_LEFT_PADDING,
+        			   lineClass : 'meanLineSample'
+        });
+        
+        computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
+        					   populationSize : xDomain.length,
+        					   makeSmallPopCorrection : true
+        })
 	}
 	
 	/*---------------------------
@@ -700,6 +741,21 @@ ConfidenceViz = function(width, height) {
 		return shuffled.slice(0, sampleSize);
 	}		
 
+	/*---------------------------
+	| addSamplingButtons 
+	-----------------*/
+	
+	var addSamplingButtons = function() {
+		d3.select("#buttonCol")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "home")
+			  .attr("value", "Add to sample")
+			  .attr("class", "button sampleBtn")
+			  .on("click", function() { newSample() } )
+			.append('br')
+	}
+	
 	/*---------------------------
 	| addControlButtons 
 	-----------------*/

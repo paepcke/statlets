@@ -147,8 +147,8 @@ h1          { text-align : center;  }
 			        }
 .controlButtonBar    { }
 			           
-.button.cntBtn:focus { outline : 0 !important;
-              		 }
+.button.cntBtn:focus { outline : 0 !important; }
+
 			           
 .button.cntBtn { background : DarkGray;
  				 border-radius : 25px;
@@ -161,4 +161,12 @@ h1          { text-align : center;  }
 
 .button.cntBtn.reset { margin-left : 35px; }
 
+.button.sampleBtn { background : rgb(221, 159, 183);
+ 				    border-radius : 25px;
+ 				    width : 100px;
+ 				    margin-top : 40px;
+ 				    margin-right : 20px;
+ 				    margin-bottom : 2px;
+		          }
+.button.sampleBtn:focus { outline : 0 !important };
 
