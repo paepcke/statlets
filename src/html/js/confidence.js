@@ -420,6 +420,26 @@ ConfidenceViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| newSample 
+	-----------------*/
+	
+	var newSample = function( xDomain ) {
+
+		let currSampleSize = xDomain.length;
+
+		// Get one new state's teen birth rates:
+		let remainingStates = Object.keys(teenBirthObj)
+								   .filter(function(i) {
+									   return xDomain.indexOf(i) < 0;
+									   });
+		
+		let newState = sampleFromStates(1, remainingStates);
+		xDomain.append(newState);
+		updateDataChart(xDomain, teenBirthObj, scalesData);
+		return xDomain;
+	}
+	
+	/*---------------------------
 	| makeCoordSys 
 	-----------------*/
 	
@@ -655,8 +675,18 @@ ConfidenceViz = function(width, height) {
 	| sampleFromStates
 	-----------------*/
 	
-	var sampleFromStates = function(sampleSize) {
-		let arr = Object.keys(teenBirthObj);
+	var sampleFromStates = function(sampleSize, stateArr) {
+		/*
+		 * Given a sample size, return an array of randomly
+		 * sampled US states. If stateArr is provided, then
+		 * only the states in that array will be picked from.
+		 * Else all 51 states (plus D.C.) are the population
+		 */
+		
+		let arr = stateArr;
+		if (typeof(stateArr) === 'undefined') {
+			arr = Object.keys(teenBirthObj);
+		}
 		let shuffled = arr.slice(0), 
 			i = arr.length, 
 			temp, 
