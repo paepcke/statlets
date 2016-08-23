@@ -16,7 +16,7 @@ ConfidenceViz = function(width, height) {
 	var X_AXIS_LEFT_PADDING      = 0;  // X axis distance left SVG edge
 	var X_AXIS_BOTTOM_PADDING    = 70; // X axis distance bottom SVG edge  50
 	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
-	
+	var X_AXIS_RIGHT_PADDING_CORR_ALL_STATES = - X_AXIS_RIGHT_PADDING + 5; // X axis distance right SVG edge
 	var Y_AXIS_BOTTOM_PADDING    = 80; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
@@ -105,10 +105,16 @@ ConfidenceViz = function(width, height) {
 		// Generate bar chart for the chosen states:
         updateDataChart(xDomain, teenBirthObj, scalesData);
 		
+        
 		// Build the all-states chart:
 		
+        let yDomainAllStates = [0, Math.max.apply(null, Object.values(teenBirthObj))];
+        
+        let xDomainAllStates = Object.keys(teenBirthObj);
+        
+        
 		// The "+40" is a kludge! It makes the 
-		// svg height of the correlation chart
+		// svg height of the all-states chart
 		// match the kludge needed for the data svg
 		// height:
 		d3.select('#allStatesDiv')
@@ -123,23 +129,27 @@ ConfidenceViz = function(width, height) {
 		.attr("class", "svgAllStates")
 		
         extentDict  = {svg             : svgAllStates,
-        			   x: {scaleType   : 'linear',
-        				   domain      : yDomain,
+        			   x: {scaleType   : 'ordinal',
+        				   domain      : xDomainAllStates,
         				   axisLabel   : 'US States',
-        				   axisLabelId : 'allStatesXLabel'
+        				   axisLabelId : 'allStatesXLabel',
+        				   subclass    : 'allStates',          // styled separately.
+        				  rightPadding : X_AXIS_RIGHT_PADDING_CORR_ALL_STATES
             			  },
             		   y: {scaleType   : 'linear',
-            		       domain      : yDomain,
+            		       domain      : yDomainAllStates,
         				   axisLabel   : 'Teen Pregnancies',
         				   axisLabelId : 'allStatesYLabel'
             		      }
                        };
 
 		scalesAllStates = makeCoordSys(extentDict);
+
+		// Generate bar chart for the chosen states:
+        updateAllStatesChart(xDomainAllStates, teenBirthObj, scalesAllStates);
 		
-		// Move the correlation x-axis label below
+		// Move the x-axis label below
 		// the axis:
-		
 		let allStatesXLabelY = parseFloat(d3.select('#allStatesXLabel').attr('y'));
 		d3.select('#allStatesXLabel').attr('y', allStatesXLabelY + 50);
 		
@@ -161,7 +171,7 @@ ConfidenceViz = function(width, height) {
 		
 		// Get function barsDragged() 
 		// a chance to see which bar moved, and to mirror
-		// on the correlation chart:
+		// on the confidence interval chart:
 		let dispatch = d3.dispatch('drag', barPulled);
 		dispatch.on("drag.teenBirthBar", barPulled); //************
 		
@@ -237,26 +247,60 @@ ConfidenceViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| updateAllStatesChart
+	-----------------*/
+
+	var updateAllStatesChart = function(statesToInclude, teenBirthObj, scalesData) {
+		
+		let xScale = scalesData.xScale;
+		let yScale = scalesData.yScale;
+		
+		d3.select('#allStatesSvg').selectAll('.allStatesBar')
+			// Data are the teen birth rates:
+			//**** .data(statesToInclude.map(function(state) { return teenBirthObj[state] }))
+			 .data(statesToInclude)
+	      .enter().append('rect')
+	      	.attr('class', 'allStatesBar')
+	      	.attr('id', function(state) { return 'allStatesBar' + state })
+	      	.attr('x', function(state) { return xScale(state) })
+	      	.attr('width', xScale.rangeBand())
+	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
+	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
+	}
+	
+	/*---------------------------
 	| makeCoordSys 
 	-----------------*/
 	
 	var makeCoordSys = function(extentDict) {
 		
 		/*
-		 * extentDict: {
-		 *                x : {scaleType : <linear | ordinal | time> },
-		 *                        domain : <[min,max]>                   // if linear scale
-		 *                        domain : <[ord1,ord2,...]>             // if ordinal scale
-		 *                        axisLabel : <label of x axis as a whole>
-		 *                    },
-		 *                y : {scaleType : <linear | ordinal | time> },
-		 *                         domain: <[min,max]>                   // if linear scale
-		 *                         domain: <[ord1,ord2,...]>             // if ordinal scale
-		 *                         axisLabel : <label of y axis as a whole>
-		 *             }
-		 *             
+		 * :param extentDict:
+		 *  	extentDict: {
+		 *  	               x : {scaleType    : <linear | ordinal | time> },
+		 *  	                       domain    : <[min,max]>                   // if linear scale
+		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
+		 *  	                       axisLabel : <axis description>
+		 *  	                       subclass  : <additionalClass>             // optional
+		 *  						 rightPadding: <padding-right px>            // optional
+		 *  	                   },
+		 *  	               y : {scaleType    : <linear | ordinal | time> },
+		 *  	                       domain    : <[min,max]>                   // if linear scale
+		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
+		 *  	                       axisLabel : <axis description>
+		 *  	                       subclass  : <additionalClass>             // optional
+		 *  	            }
+		 *      Notes:
+		 *          o <axis description> is the label for an axis is a
+		 *            whole, i.e. not the tick labels.
+		 *          o <additionalClass>, if present, will be used to
+		 *            class the axis *in addition to* class "axis".
+		 *            Example: <additionalClass> == 'noTicks' will 
+		 *                     cause the axis to be of CSS class axis.noTicks.
+		 *                     
 		 * Returns an object with three properties: xScale, yScale,
 		 * and bandWidth, the width in pixels between two x-axis ticks.
+		 * 
 		 */
 		
 		/* ---------------------------- X AXIS ---------------------------- */		
@@ -269,6 +313,11 @@ ConfidenceViz = function(width, height) {
 		let yScale    = null;
 		let bandWidth = null; // width in pixels between two x-axis ticks.
 
+		let X_AXIS_RIGHT_PAD_CORRECTION = 0;
+		
+		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
+			X_AXIS_RIGHT_PAD_CORRECTION = extentDict.x.rightPadding; 
+		}
 		
 		// X Scale:
 		
@@ -276,13 +325,12 @@ ConfidenceViz = function(width, height) {
 		case 'linear':
 			xScale = d3.scale.linear()
 							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
+							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING - X_AXIS_RIGHT_PAD_CORRECTION]);
 			break;
 		case 'ordinal':
 			xScale = d3.scale.ordinal()
 							 .domain(extentDict.x.domain)
-							 //***** .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
-							 .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
+							 .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING - X_AXIS_RIGHT_PAD_CORRECTION], 0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
@@ -316,16 +364,18 @@ ConfidenceViz = function(width, height) {
 		
 		xAxis = d3.svg.axis()
 				      .scale(xScale)
-				      .tickSize(0)        // No tickmarks.
 				      .orient("bottom");
-		
+				      
 		// Create a group, and call the xAxis function to create the axis.
 		let xAxisGroup = svg.append("g")
 			 .attr("class", "axis")
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 		     .call(xAxis);
 		
-		     
+		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
+			xAxisGroup.classed(extentDict.x.subclass, true)
+		}
+		
 		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
 		if (extentDict.x.scaleType == 'ordinal') {
@@ -357,6 +407,10 @@ ConfidenceViz = function(width, height) {
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
 			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
 		     .call(yAxis);
+
+		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
+			xAxisGroup.classed(extentDict.x.subclass, true)
+		}
 		
 		
 		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
@@ -390,104 +444,14 @@ ConfidenceViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| addDragBehavior 
-	-----------------*/
-	
-	
-	var addDragBehavior = function(dataScales) {
-		/*
-		 * Adds drag behavior to 'this'. In order to 
-		 * have 'this' bound to the object to which the 
-		 * behavior is to be attached, use the addDragBehavior.call(),
-		 * or from a D3 expression: .call(addDragBehavior).
-		 * Does not return anything. 
-		 * 
-		 * :param yScale: the  D3 yScale function of the chart.
-		 * :type yScale: function
-		 * :param xScale: Optionally the x-axis scale, if dots can move both
-		 * 			up/down and left/right. Horizontal motion might be 
-		 *          suppressed, for example, if the X axis is ordinal. 
-		 * :type xScale: { function | undefined }
-		 */
-	
-		let xScale = dataScales.xScale;
-		let yScale = dataScales.yScale;		
-		
-		// Get function barsDragged() 
-		// a chance to see which bar moved, and to mirror
-		// on the correlation chart:
-		let dispatch = d3.dispatch('drag', barPulled);
-		dispatch.on("drag.teenBirthBar", barPulled); //************
-										
-
-		return d3.behavior.drag()
-				.on('dragstart', function(d) {
-					
-					// D3-select the DOM element that's trying
-					// to be dragged:
-					let barSel = d3.select(this);
-					
-					// Is the element one of our bars?
-					if (barSel.attr('class') !== 'teenBirthBar') {
-						// Was running mouse over something other than
-						// one of our bars:
-						return;
-					}
-					
-					// Allow us to style a moving bar if we want:
-					barSel.classed("dragging", true);
-
-					// Remember the bar that's in motion:
-					d3.behavior.drag.currBar = this;
-					
-				})
-				.on('drag', function(d) {
-					let barSel = d3.select(this);
-					if (barSel.empty()) {
-						// Not over a bar:
-						return;
-					} 
-					
-					let mouseY  = d3.event.y;
-					let barX = barSel.attr('x');
-					let barY = barSel.attr('y');
-					
-					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
-						// Mouse got ahead of the bar being resized.
-						// Select the bar we are dragging instead:
-						barSel = d3.select(d3.behavior.drag.currBar);
-						if (barSel.empty()) {
-							// Not over a bar:
-							return;
-						} 
-					}
-					
-					if (! barSel.classed("dragging")) {
-						// Not over something being dragged:
-						return;
-					}
-					
-					dragClickHandler.dragmove(barSel);
-					// Let interested parties know that a bar was resized.
-					// Used to sync (synchronize) CI chart with data chart:
-					dispatch.drag(this, barSel);
-				})
-				.on ('dragend', function(d) {
-					d3.select(this).classed("dragging", false);
-					d3.behavior.drag.currBar = undefined;
-				})
-	}
-
-	/*---------------------------
 	| barPulled
 	-----------------*/
 	
 	var barPulled = function(barObj, dataBarSel) {
 		/*
 		 * Called when a data bar is dragged. Finds the
-		 * corresponding correlation circle, and echoes
-		 * the move. Two data points correspond to one
-		 * correlation point.
+		 * confidence interval chart, and echoes
+		 * the move.
 		 */
 		
 //		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
@@ -633,20 +597,13 @@ ConfidenceViz = function(width, height) {
 
 		switch (stepName) {
 		case 'home':
-			d3.select('#corrDiv')
-				.attr('class', 'corrDiv');
+			d3.select('#allStatesDiv')
 			break;
 		case "step1":
-			d3.select('#corrDiv')
-				.attr('class', 'corrDiv');
+			d3.select('#allStatesDiv')
 			break;
 		case "step2":
-			d3.select('#corrDiv')
-				.attr('class', 'corrDiv.visible')
-				// Need to set background-color when
-				// making visible. Doesn't refresh that
-				// after making visible:
-				.style('background-color', '#F6F6F6')
+			d3.select('#allStatesDiv')
 			break;
 		case "reset":
 			

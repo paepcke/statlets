@@ -52,12 +52,8 @@ h1          { text-align : center;  }
            flex   : 1 1;
            flex-base : 40%;
            background-color : #F6F6F6;
-		   opacity : 0;
+		   opacity : 1;
          }
-
-.allStatesDiv.visible { opacity = 1; 
-				   background-color : #F6F6F6;
-				 }
 
 .largeLabel {font-size : 150%;
    		     font-weight : bold; 
@@ -89,10 +85,6 @@ h1          { text-align : center;  }
 .legend {font-size, 12px;
 		}
 
-#tableDiv    { padding-top : 30px;
-			   margin : auto;
-			 }   		     
-			 
 .axis path,
 .axis line   { fill : none;
 			   stroke : black;
@@ -102,6 +94,9 @@ h1          { text-align : center;  }
 .axis text   { font-family : sans-serif;
                font-size   : 8pt;
                }
+
+.axis.allStates text { display : none; }
+.axis.allStates line { stroke-width : 0; } // controls tickmarks					              
              
 .legendText  { font-size : 10pt; }
 
@@ -135,8 +130,9 @@ h1          { text-align : center;  }
 		           transform: translate(-1.5em, -2em);
 				}
 
-.teenBirthBar       { fill : rgb(144, 12, 63) ; } // Dark red.
-.allStatesBar       { fill : rgb(144, 12, 63) ; } // Dark red.
+.teenBirthBar       { fill : rgb(144, 12, 63) ; } /* Dark red. */
+.allStatesBar       { fill : CornflowerBlue ;
+					}
 
 .controlBarWrapper  { margin-left : 200px;
 			          margin-right : auto;
