@@ -20,11 +20,16 @@ ConfidenceViz = function(width, height) {
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
 	
+	var CI_LEFT_PADDING          = 10; // horizontal distance of conf interval bracket
+									   // from all-states y axis:
+	var CI_SMALL_EDGE_LEN        = 3;  // Small leg of the CI bracket
+	
 	var X_TOOLTIP_PADDING        = 100; // Fixed x position for tooltip
 	
 	var DOT_RADIUS               = 10;  // pixels.
 	
 	var NUM_SAMPLES              = 5;
+	var ALL_STATE_MEAN           = null;
 	
 	var STATE_TBL = {Alabama : 'AL',
 					 California : 'CA',
@@ -175,10 +180,14 @@ ConfidenceViz = function(width, height) {
         			   lineClass : 'meanLineAllStates'
         	});
         
+        // Init the all-states teen birth rate mean var:
+        ALL_STATE_MEAN = ss.sum(Object.values(teenBirthObj)) / Object.values(teenBirthObj).length;
+        
         let ci = computeConfInterval( { dataArr  	  : sampleTeenBirthRates,
         								populationSize: xDomainAllStates.length, // all states
         								makeSmallPopCorrection : true
         						     })		
+        createCIViz(ci, scalesAllStates);        						     
 
         addControlButtons();
 		
@@ -353,7 +362,7 @@ ConfidenceViz = function(width, height) {
 
 		let mean    	  = ss.mean(data);
 		let sd      	  = ss.sampleStandardDeviation(data);
-		let se      	  = sd / Math.sqrt(sd);
+		let se      	  = sd / Math.sqrt(n);
 		
 		let finitePopCorr = 1.0;
 		if ( typeof(ciInfo.makeSmallPopCorrection) === 'undefined' || ciInfo.makeSmallPopCorrection ) { 
@@ -367,7 +376,49 @@ ConfidenceViz = function(width, height) {
 		}
 	}
 	
+	/*---------------------------
+	| updateCIViz 
+	-----------------*/
 
+	var updateCIViz = function(ciObj) {
+		
+		let ciBracketSel = d3.select('#ciBracket');
+
+	}
+	
+	/*---------------------------
+	| createCIViz 
+	-----------------*/
+	
+	var createCIViz = function(ciObj, scalesAllStates) {
+
+		let yScale = scalesAllStates.yScale;
+		
+		let lineData = [ { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING,
+						   y : yScale(ciObj.highBound) },
+		
+						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING + CI_SMALL_EDGE_LEN,
+						   y : yScale(ciObj.highBound) },
+	
+						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING + CI_SMALL_EDGE_LEN,
+						   y : yScale(ciObj.lowBound) },
+						 
+						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING,
+						   y : yScale(ciObj.lowBound) }
+		               ]
+		// Accessor function for each data point:
+		var lineFunction = d3.svg.line()
+		                         .x(function(xyObj) { return xyObj.x; })
+		                         .y(function(xyObj) { return xyObj.y; })
+		                         .interpolate("linear");	
+
+		let lineGraph = d3.select('#allStatesSvg')
+		                    .append("path")
+		                       .attr("d", lineFunction(lineData))
+		                       .attr("id", "#ciViz")
+		                       .attr("class", "confIntLine");
+	}
+	
 	/*---------------------------
 	| makeCoordSys 
 	-----------------*/

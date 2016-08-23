@@ -99,7 +99,13 @@ h1          { text-align : center;  }
 .meanLineAllStates { stroke 	  : Blue;
 					 stroke-width : 2px;
 					 fill 		  : none;
-					}             
+					} 
+					
+.confIntLine       { stroke       : rgb(144, 12, 63); 
+					 stroke-width : 2px;
+					 fill		  : none;
+				   }		
+					            
 .legendText  { font-size : 10pt; }
 
 .allStatesStateLabelTxt {
