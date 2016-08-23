@@ -51,6 +51,17 @@ ConfidenceViz = function(width, height) {
 						"Texas": 8.888449743099713, "Nevada": 6.898859485234656, "Maine": 5.158292644510946, "Rhode Island": 5.451353598817334
 						};
 	
+	// T-table for two-tailed, 95% critical value.
+	// The leading zero is just so that we can index
+	// into the tbl directly with the df:
+	var tTbl2Tailed95 = [0, 12.706, 4.303, 3.182, 2.776, 2.571,
+						 2.447, 2.365, 2.306, 2.262, 2.228, 2.201,
+						 2.179, 2.16, 2.145, 2.131, 2.12, 2.11, 2.101,
+						 2.093, 2.086, 2.08, 2.074, 2.069, 2.064,
+						 2.06, 2.056, 2.052, 2.048, 2.045, 2.042,
+						 2, 1.98
+						 ]
+	
 	/*---------------------------
 	| constructor 
 	-----------------*/
@@ -163,6 +174,11 @@ ConfidenceViz = function(width, height) {
         			   length: width - Y_AXIS_LEFT_PADDING,
         			   lineClass : 'meanLineAllStates'
         	});
+        
+        let ci = computeConfInterval( { dataArr  	  : sampleTeenBirthRates,
+        								populationSize: xDomainAllStates.length, // all states
+        								makeSmallPopCorrection : true
+        						     })		
 
         addControlButtons();
 		
@@ -315,6 +331,42 @@ ConfidenceViz = function(width, height) {
 		                            .attr("d", lineFunction(lineData))
 		                            .attr("class", meanLineDict.lineClass);
 	}
+	
+	/*---------------------------
+	| computeConfInterval 
+	-----------------*/
+	
+	var computeConfInterval = function( ciInfo ) {
+		/*
+		 * Returns object: { lowBound  : lowConfidenceIntervalBound,
+		 * 					 highBound : highConfidenceIntervalBound,
+		 *                 }
+		 *                 
+		 * Makes                
+		 */
+		
+		let data 	= ciInfo.dataArr;
+		let N 		= ciInfo.populationSize;
+		let n       = data.length;
+		let df      = n-1;
+		let t       = tTbl2Tailed95[df]		
+
+		let mean    	  = ss.mean(data);
+		let sd      	  = ss.sampleStandardDeviation(data);
+		let se      	  = sd / Math.sqrt(sd);
+		
+		let finitePopCorr = 1.0;
+		if ( typeof(ciInfo.makeSmallPopCorrection) === 'undefined' || ciInfo.makeSmallPopCorrection ) { 
+			finitePopCorr = Math.sqrt( (N - n) / (N - 1) );
+		}
+		
+		let marginOfError = t * se * finitePopCorr;
+		
+		return { lowBound  : mean - marginOfError, 
+				 highBound : mean + marginOfError
+		}
+	}
+	
 
 	/*---------------------------
 	| makeCoordSys 
