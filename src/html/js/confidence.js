@@ -147,12 +147,24 @@ ConfidenceViz = function(width, height) {
 		// Generate bar chart for the chosen states:
         updateAllStatesChart(xDomainAllStates, teenBirthObj, scalesAllStates);
 		
-		// Move the x-axis label below
-		// the axis:
-		let allStatesXLabelY = parseFloat(d3.select('#allStatesXLabel').attr('y'));
-		d3.select('#allStatesXLabel').attr('y', allStatesXLabelY + 50);
-		
-		addControlButtons();
+        let sampleTeenBirthRates = xDomain.map(function(state) { return teenBirthObj[state] });
+        
+        // Add horizontal mean-lines to both charts:
+        addMeanLine( { svg       : svgData, 
+        			   yData     : sampleTeenBirthRates,
+        			   yScale    : scalesData.yScale,
+        			   length    : width - Y_AXIS_LEFT_PADDING,
+        			   lineClass : 'meanLineSample'
+        	});
+        
+        addMeanLine( { svg   : svgAllStates,
+        			   yData : Object.values(teenBirthObj),
+        			   yScale: scalesData.yScale,
+        			   length: width - Y_AXIS_LEFT_PADDING,
+        			   lineClass : 'meanLineAllStates'
+        	});
+
+        addControlButtons();
 		
 		return {width  : width,
 				height : height,
@@ -267,6 +279,43 @@ ConfidenceViz = function(width, height) {
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
 	}
 	
+	/*---------------------------
+	| addMeanLine
+	-----------------*/
+	
+	var addMeanLine = function( meanLineDict ) {
+		/*
+		 * Add a horizontal meanline from a Y axis
+		 * to either the edge of the svg or the 
+		 * a given length.
+		 * 
+		 *  { svg   	: svgData, 
+		 *    yData 	: Object.values(teenBirthObj),
+		 *    yScale	: yScale,
+		 *    length	: <lineLength>
+		 *    lineClass : <cssLineClass>
+		 *    }
+		 */
+		
+		let length = meanLineDict.length;
+		let mean   = ss.mean(meanLineDict.yData);
+		let meanY  = meanLineDict.yScale(mean);
+		let svgContainer = meanLineDict.svg;
+		
+		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : meanY + Y_AXIS_TOP_PADDING}, 
+		                 { x : length + Y_AXIS_LEFT_PADDING, y : meanY + Y_AXIS_TOP_PADDING }
+		               ]
+		// Accessor function for each data point:
+		var lineFunction = d3.svg.line()
+		                         .x(function(xyObj) { return xyObj.x; })
+		                         .y(function(xyObj) { return xyObj.y; })
+		                         .interpolate("linear");	
+
+		let lineGraph = svgContainer.append("path")
+		                            .attr("d", lineFunction(lineData))
+		                            .attr("class", meanLineDict.lineClass);
+	}
+
 	/*---------------------------
 	| makeCoordSys 
 	-----------------*/

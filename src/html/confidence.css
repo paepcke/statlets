@@ -21,14 +21,12 @@ h1          { text-align : center;  }
 				  display : flex;
 				  flex-direction : row;
 				  flex-wrap : nowrap;
-				  justify-content : center; // Horizontal placement of content divs
-				  align-items : start;      // Vertical align within content divs 
+				  justify-content : center; /* Horizontal placement of content divs */
+				  align-items : start;      /* Vertical align within content divs */
 				  width : 95%;
-	  	    	  // border: 1px solid Azure;
                 }
 
 .instructionsDiv {
-           		  // border: 1px solid green;
            		  padding : 10px;
 			      min-height : 20em;
            		  flex   : 1 1 20%;        /* Get 1 unit of free space for either grow or shrink. */
@@ -39,7 +37,6 @@ h1          { text-align : center;  }
 .instrTxt.visible  { display : inline; }
 
 .dataDiv { 
-           // border : 1px solid orange;
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex : 1 1;
            flex-base : 40%;
@@ -47,7 +44,6 @@ h1          { text-align : center;  }
          }
 
 .allStatesDiv { 
-           // border : 1px solid orange;
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex   : 1 1;
            flex-base : 40%;
@@ -80,8 +76,6 @@ h1          { text-align : center;  }
     border : 1px solid BurlyWood;
 }			
 
-// #svgBackground { fill : #F6F6F6; }
-
 .legend {font-size, 12px;
 		}
 
@@ -96,18 +90,25 @@ h1          { text-align : center;  }
                }
 
 .axis.allStates text { display : none; }
-.axis.allStates line { stroke-width : 0; } // controls tickmarks					              
-             
+.axis.allStates line { stroke-width : 0; } /*  controls tickmarks */
+
+.meanLineSample    { stroke : rgb(144, 12, 63) ;  /* Dark red. */
+					 stroke-width : 2px;
+					 fill 		  : none;					 
+				   }
+.meanLineAllStates { stroke 	  : Blue;
+					 stroke-width : 2px;
+					 fill 		  : none;
+					}             
 .legendText  { font-size : 10pt; }
 
-.allStatesDotGrp     {}
 .allStatesStateLabelTxt {
 				     font-size : 12px;
 				     fill      : White;
 				     opacity   : 0.8;
 				   }
 
-// Tooltip group (of rect and text):				   
+/* Tooltip group (of rect and text): */				   
 .allStatesTooltip *      { 
                       opacity : 0;
 					}
@@ -150,7 +151,7 @@ h1          { text-align : center;  }
  				 margin-bottom : 2px;
 		       }
 
-.button.cntBtn.current { background : LightGray; } // the currently active exercise.              		 
+.button.cntBtn.current { background : LightGray; } /* the currently active exercise. */              		 
 
 .button.cntBtn.reset { margin-left : 35px; }
 
