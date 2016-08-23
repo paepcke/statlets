@@ -16,7 +16,6 @@ ConfidenceViz = function(width, height) {
 	var X_AXIS_LEFT_PADDING      = 0;  // X axis distance left SVG edge
 	var X_AXIS_BOTTOM_PADDING    = 70; // X axis distance bottom SVG edge  50
 	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
-	var X_AXIS_RIGHT_PADDING_CORR_ALL_STATES = - X_AXIS_RIGHT_PADDING + 5; // X axis distance right SVG edge
 	var Y_AXIS_BOTTOM_PADDING    = 80; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
 	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
@@ -134,7 +133,7 @@ ConfidenceViz = function(width, height) {
         				   axisLabel   : 'US States',
         				   axisLabelId : 'allStatesXLabel',
         				   subclass    : 'allStates',          // styled separately.
-        				  rightPadding : X_AXIS_RIGHT_PADDING_CORR_ALL_STATES
+        				  rightPadding : 5
             			  },
             		   y: {scaleType   : 'linear',
             		       domain      : yDomainAllStates,
@@ -313,10 +312,10 @@ ConfidenceViz = function(width, height) {
 		let yScale    = null;
 		let bandWidth = null; // width in pixels between two x-axis ticks.
 
-		let X_AXIS_RIGHT_PAD_CORRECTION = 0;
+		let X_AXIS_RIGHT = X_AXIS_RIGHT_PADDING;
 		
 		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
-			X_AXIS_RIGHT_PAD_CORRECTION = extentDict.x.rightPadding; 
+			X_AXIS_RIGHT = extentDict.x.rightPadding; 
 		}
 		
 		// X Scale:
@@ -325,12 +324,12 @@ ConfidenceViz = function(width, height) {
 		case 'linear':
 			xScale = d3.scale.linear()
 							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING - X_AXIS_RIGHT_PAD_CORRECTION]);
+							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
 			break;
 		case 'ordinal':
 			xScale = d3.scale.ordinal()
 							 .domain(extentDict.x.domain)
-							 .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING - X_AXIS_RIGHT_PAD_CORRECTION], 0.1);
+							 .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT], 0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
