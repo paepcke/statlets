@@ -395,16 +395,16 @@ ConfidenceViz = function(width, height) {
 		let yScale = scalesAllStates.yScale;
 		
 		let lineData = [ { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING,
-						   y : yScale(ciObj.highBound) },
+						   y : yScale(ciObj.highBound) + Y_AXIS_TOP_PADDING },
 		
 						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING + CI_SMALL_EDGE_LEN,
-						   y : yScale(ciObj.highBound) },
+						   y : yScale(ciObj.highBound) + Y_AXIS_TOP_PADDING },
 	
 						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING + CI_SMALL_EDGE_LEN,
-						   y : yScale(ciObj.lowBound) },
+						   y : yScale(ciObj.lowBound) + Y_AXIS_TOP_PADDING },
 						 
 						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING,
-						   y : yScale(ciObj.lowBound) }
+						   y : yScale(ciObj.lowBound) + Y_AXIS_TOP_PADDING }
 		               ]
 		// Accessor function for each data point:
 		var lineFunction = d3.svg.line()
