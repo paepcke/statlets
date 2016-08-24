@@ -85,12 +85,25 @@ h1          { text-align : center;  }
 			   shape-rendering : crispEdges; 
 			 }			 
 
-.axis text   { font-family : sans-serif;
-               font-size   : 8pt;
-               }
-
 .axis.noLabels text { display : none; }
 .axis.noLabels line { stroke-width : 0; } /*  controls tickmarks */
+.axis.noTicks  line { stroke-width : 0; } /*  controls tickmarks */
+
+.axis.y.label { transform   : rotate(-90deg); } 
+
+.axis.x.label { 
+		        /* text-anchor : start; */
+		        text-anchor : start;
+				transform   : translate(1.7em, 3em) rotate(45deg); 		        
+		        color		: black;
+		        font-family : sans-serif;
+		        font-size   : 9pt;
+		        font-weight : bold;
+		        opacity     : 1;    	
+			  }
+				   
+.axis.label.invisible { opacity   : 0; }
+
 
 .meanLineSample    { stroke : rgb(144, 12, 63) ;  /* Dark red. */
 					 stroke-width : 2px;

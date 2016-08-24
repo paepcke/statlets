@@ -56,7 +56,7 @@ ConfidenceViz = function(width, height) {
 						"Alaska": 5.66186797752809, "Kentucky": 8.762684707139043, "Hawaii": 4.814016172506738, "Nebraska": 5.266104351720535, 
 						"Missouri": 7.010350318471337, "Ohio": 6.8783296407035355, "Alabama": 8.537242098885935, "New York": 4.211531454561445, 
 						"South Dakota": 5.983880159570138, "Colorado": 5.172413793103448, "New Jersey": 3.6096994337156962, 
-						"Washington": 4.658802280295761, "North Carolina": 6.932837363091548, "District of Columbia": 5.941739404774424, 
+						"Washington": 4.658802280295761, "North Carolina": 6.932837363091548, "D.C.": 5.941739404774424, 
 						"Texas": 8.888449743099713, "Nevada": 6.898859485234656, "Maine": 5.158292644510946, "Rhode Island": 5.451353598817334
 						};
 	
@@ -485,8 +485,30 @@ ConfidenceViz = function(width, height) {
 		
 		scalesData.xScale = xScale;
 		d3.select('#dataXAxisGrp')
-			.call(dataXAxis);
+			.remove();
 
+		
+		let xAxis = d3.svg.axis()
+				      .scale(xScale)
+				      .orient("bottom");
+				      
+		// Create a group, and call the xAxis function to create the axis.
+		let xAxisGroup = svgData.append("g")
+			 .attr("class", "axis")
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .attr("id", "#dataXAxisGrp")
+			 .classed('noTicks', true)
+		     .call(xAxis);
+		
+		xAxisGroup.selectAll('text')
+		    .attr("class", function(state) {
+				if  (state === newState) {
+					return 'axis label';
+				} else {
+					return "axis label invisible";
+				}
+		    })
+		
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
 		// value:
@@ -634,11 +656,11 @@ ConfidenceViz = function(width, height) {
 			let txtSel     = xAxisGroup.selectAll("text");
 			
 	    	txtSel
-		    	.attr("y", 5)
+		    	.attr("y", 0)
 		    	.attr("x", 0)
-		    	//.attr("dy", "-0.35em")
-		    	.attr("transform", "rotate(45)")
-		    	.style("text-anchor", "start")
+		    	.attr("class", "axis x label");
+		    	//*****.attr("transform", "rotate(45)")
+		    	//*****.style("text-anchor", "start")
 		}
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
@@ -670,7 +692,8 @@ ConfidenceViz = function(width, height) {
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
-						.attr("y", height + 8)
+						//*****.attr("y", height + 8)
+						.attr("y", height + 20)
 						.text(extentDict.x.axisLabel)
 						
 		yAxisLabel = svg.append("text")
