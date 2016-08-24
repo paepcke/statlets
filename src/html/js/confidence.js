@@ -13,6 +13,7 @@ ConfidenceViz = function(width, height) {
 	var scalesAllStates  = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
 	var xDomain 	     = null;
 	var yDomain 	     = null;
+	var dataXAxis		 = null;
 
 	// Constants:
 
@@ -121,6 +122,11 @@ ConfidenceViz = function(width, height) {
                           };
 
 		scalesData = makeCoordSys(extentDict);
+		
+		// Make the sample-chart xAxis object available as 
+		// an instance var, so that we can change/erase the
+		// labels later:
+		dataXAxis = scalesData.xAxis;
 		
 		// Generate bar chart for the chosen states:
         updateDataChart(xDomain, teenBirthObj, scalesData);
@@ -478,6 +484,8 @@ ConfidenceViz = function(width, height) {
 			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
 		
 		scalesData.xScale = xScale;
+		d3.select('#dataXAxisGrp')
+			.call(dataXAxis);
 
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
@@ -541,8 +549,7 @@ ConfidenceViz = function(width, height) {
 		/* ---------------------------- X AXIS ---------------------------- */		
 
 		let svg = extentDict.svg;
-		
-		let xAxis     = null;
+		let xAxis     = null
 		let yAxis     = null;
 		let xScale    = null;
 		let yScale    = null;
@@ -681,6 +688,8 @@ ConfidenceViz = function(width, height) {
 		
 		return {xScale    : xScale,
 				yScale    : yScale,
+				xAxis	  : xAxis,
+				yAxis	  : yAxis,
 				bandWidth : bandWidth,
 			   }
 	}
@@ -799,10 +808,7 @@ ConfidenceViz = function(width, height) {
 		let txtSel      = xAxisGrpSel.selectAll("text");
 		
 			//*****txtSel.remove();
-	    	//*****txtSel = xAxisGrpSel.selectAll("text")
 			txtSel
-	    		//****.data(xDomain) // all states
-	    		//****.append('text')
 		    		.attr('text', function(state) {
 		    			if (state === lastState) {
 		    				return state;
@@ -810,10 +816,6 @@ ConfidenceViz = function(width, height) {
 		    				return '';
 		    			}
 		    		})
-		    		.attr("y", 5)
-		    		.attr("x", 0)
-		    		.attr("transform", "rotate(45)")
-		    		.style("text-anchor", "start")
 	}
 	
 	/*---------------------------
