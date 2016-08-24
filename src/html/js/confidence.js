@@ -161,7 +161,7 @@ ConfidenceViz = function(width, height) {
             		      }
                        };
 
-		let scalesAllStates = makeCoordSys(extentDict);
+		scalesAllStates = makeCoordSys(extentDict);
 
 		// Generate bar chart for the chosen states:
         updateAllStatesChart(xDomainAllStates, teenBirthObj, scalesAllStates);
@@ -190,7 +190,7 @@ ConfidenceViz = function(width, height) {
         								populationSize: xDomainAllStates.length, // all states
         								makeSmallPopCorrection : true
         						     })		
-        createCIViz(ci, scalesAllStates);        						     
+        createCIViz(ci);        						     
 
         addSamplingButtons()
         addControlButtons();
@@ -404,7 +404,7 @@ ConfidenceViz = function(width, height) {
 	| createCIViz 
 	-----------------*/
 	
-	var createCIViz = function(ciObj, scalesAllStates) {
+	var createCIViz = function(ciObj) {
 
 		let yScale = scalesAllStates.yScale;
 		
@@ -435,6 +435,7 @@ ConfidenceViz = function(width, height) {
 				.attr("id", "#ciViz")
 				.attr("class", "confIntLine");
 		} else {
+			ciVizSel.
 			ciVizSel.attr("d", lineFunction(lineData))
 		}
 	}
@@ -474,10 +475,11 @@ ConfidenceViz = function(width, height) {
         			   lineClass : 'meanLineSample'
         });
         
-        computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
-        					   populationSize : xDomain.length,
-        					   makeSmallPopCorrection : true
-        })
+        let ci = computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
+        								populationSize : xDomain.length,
+        								makeSmallPopCorrection : true
+        	})
+        createCIViz(ci);
 	}
 	
 	/*---------------------------
@@ -750,7 +752,7 @@ ConfidenceViz = function(width, height) {
 			.append('input')
 			  .attr("type", "button")
 			  .attr("id", "home")
-			  .attr("value", "Add to sample")
+			  .attr("value", "Add a state")
 			  .attr("class", "button sampleBtn")
 			  .on("click", function() { newSample() } )
 			.append('br')
