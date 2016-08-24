@@ -109,12 +109,14 @@ ConfidenceViz = function(width, height) {
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'US States',
-        					 axisLabelId : 'dataXLabel'        						   
+        					 axisLabelId : 'dataXLabel',
+        					 axisGrpName : 'dataXAxisGrp'
             				  },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
             				   axisLabel : 'Teen Pregnancy Rate',
-            			     axisLabelId : 'dataYLabel'
+            			     axisLabelId : 'dataYLabel',
+            			     axisGrpName : 'dataYAxisGrp'            			    	 
             			      }
                           };
 
@@ -151,13 +153,15 @@ ConfidenceViz = function(width, height) {
         				   domain      : xDomainAllStates,
         				   axisLabel   : 'US States',
         				   axisLabelId : 'allStatesXLabel',
-        				   subclass    : 'allStates',          // styled separately.
-        				  rightPadding : 5
+        				   subclass    : 'noLabels',          // styled separately.
+        				  rightPadding : 5,
+        				  axisGrpName  : 'allStatesXAxisGrp'        				  
             			  },
             		   y: {scaleType   : 'linear',
             		       domain      : yDomainAllStates,
         				   axisLabel   : 'Teen Pregnancies',
-        				   axisLabelId : 'allStatesYLabel'
+        				   axisLabelId : 'allStatesYLabel',
+        				   axisGrpName : 'allStatesYAxisGrp'        				          				   
             		      }
                        };
 
@@ -215,10 +219,12 @@ ConfidenceViz = function(width, height) {
 		let dispatch = d3.dispatch('drag', barPulled);
 		dispatch.on("drag.teenBirthBar", barPulled); //************
 		
-		d3.select('#dataSvg').selectAll('.sampleStateBar')
-			// Data are the teen birth rates:
-			//**** .data(statesToInclude.map(function(state) { return teenBirthObj[state] }))
-			 .data(statesToInclude)
+		d3.select('#dataSvg').selectAll('.teenBirthBar')
+			// Data are the states:
+			.data(statesToInclude)
+			 // Narrow existing bars:
+	      	.attr('x', function(state) { return xScale(state) })
+	      	.attr('width', xScale.rangeBand())
 	      .enter().append('rect')
 	      	.attr('class', 'teenBirthBar')
 	      	.attr('id', function(state) { return 'dataBar' + state })
@@ -297,7 +303,6 @@ ConfidenceViz = function(width, height) {
 		
 		d3.select('#allStatesSvg').selectAll('.allStatesBar')
 			// Data are the teen birth rates:
-			//**** .data(statesToInclude.map(function(state) { return teenBirthObj[state] }))
 			 .data(statesToInclude)
 	      .enter().append('rect')
 	      	.attr('class', 'allStatesBar')
@@ -445,6 +450,11 @@ ConfidenceViz = function(width, height) {
 	-----------------*/
 	
 	var newSample = function() {
+		/*
+		 * Selects one additional state as a sample.
+		 * Updates xScale, xDomain, data mean line,
+		 * and CI. Returns the new state.
+		 */
 
 		let currSampleSize = xDomain.length;
 
@@ -454,14 +464,21 @@ ConfidenceViz = function(width, height) {
 									   return xDomain.indexOf(i) < 0;
 									   });
 		
-		let newState = sampleFromStates(1, remainingStates);
+		if (remainingStates.length === 0) {
+			alert("No additional states: sample is entire population.")
+			return(null);
+		}
+		
+		let newState = sampleFromStates(1, remainingStates)[0];
 
 		xDomain.push(newState);
 
 		xScale = d3.scale.ordinal()
 			.domain(xDomain)
 			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
+		
 		scalesData.xScale = xScale;
+
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
 		// value:
@@ -480,6 +497,8 @@ ConfidenceViz = function(width, height) {
         								makeSmallPopCorrection : true
         	})
         createCIViz(ci);
+        
+        return newState;
 	}
 	
 	/*---------------------------
@@ -494,15 +513,17 @@ ConfidenceViz = function(width, height) {
 		 *  	               x : {scaleType    : <linear | ordinal | time> },
 		 *  	                       domain    : <[min,max]>                   // if linear scale
 		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
-		 *  	                       axisLabel : <axis description>
+		 *  	                     axisLabelId : <axis description>
 		 *  	                       subclass  : <additionalClass>             // optional
 		 *  						 rightPadding: <padding-right px>            // optional
+		 *  						 axisGrpName : <ID for axis group>           // optional
 		 *  	                   },
 		 *  	               y : {scaleType    : <linear | ordinal | time> },
 		 *  	                       domain    : <[min,max]>                   // if linear scale
 		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
-		 *  	                       axisLabel : <axis description>
+		 *  	                     axisLabelId : <axis description>
 		 *  	                       subclass  : <additionalClass>             // optional
+		 *  						 axisGrpName : <ID for axis group>           // optional
 		 *  	            }
 		 *      Notes:
 		 *          o <axis description> is the label for an axis is a
@@ -590,6 +611,10 @@ ConfidenceViz = function(width, height) {
 			xAxisGroup.classed(extentDict.x.subclass, true)
 		}
 		
+		if (typeof(extentDict.x.axisGrpName) !== 'undefined') {
+			xAxisGroup.attr('id', extentDict.x.axisGrpName);
+		}
+		
 		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
 		if (extentDict.x.scaleType == 'ordinal') {
@@ -616,14 +641,18 @@ ConfidenceViz = function(width, height) {
 				      .orient("left");
 		
 		// Create a group, and call the xAxis function to create the axis:
-		svg.append("g")
+		let yAxisGroup = svg.append("g")
 			 .attr("class", "axis")
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
 			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
 		     .call(yAxis);
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
-			xAxisGroup.classed(extentDict.x.subclass, true)
+			yAxisGroup.classed(extentDict.y.subclass, true)
+		}
+		
+		if (typeof(extentDict.y.axisGrpName) !== 'undefined') {
+			yAxisGroup.attr('id', extentDict.y.axisGrpName);
 		}
 		
 		
@@ -634,7 +663,6 @@ ConfidenceViz = function(width, height) {
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
-						//*****.attr("y", height - X_AXIS_BOTTOM_PADDING - 6)
 						.attr("y", height + 8)
 						.text(extentDict.x.axisLabel)
 						
@@ -754,8 +782,38 @@ ConfidenceViz = function(width, height) {
 			  .attr("id", "home")
 			  .attr("value", "Add a state")
 			  .attr("class", "button sampleBtn")
-			  .on("click", function() { newSample() } )
+			  .on("click", function() {
+				  let newState = newSample();
+				  blankDataStateLabels(newState);
+				  })
 			.append('br')
+	}
+	
+	/*---------------------------
+	| blankDataStateLabels 
+	-----------------*/
+	
+	var blankDataStateLabels = function( lastState ) {
+
+		let xAxisGrpSel = d3.select('#dataXAxisGrp'); 
+		let txtSel      = xAxisGrpSel.selectAll("text");
+		
+			//*****txtSel.remove();
+	    	//*****txtSel = xAxisGrpSel.selectAll("text")
+			txtSel
+	    		//****.data(xDomain) // all states
+	    		//****.append('text')
+		    		.attr('text', function(state) {
+		    			if (state === lastState) {
+		    				return state;
+		    			} else {
+		    				return '';
+		    			}
+		    		})
+		    		.attr("y", 5)
+		    		.attr("x", 0)
+		    		.attr("transform", "rotate(45)")
+		    		.style("text-anchor", "start")
 	}
 	
 	/*---------------------------
