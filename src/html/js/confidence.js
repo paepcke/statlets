@@ -17,20 +17,23 @@ var ConfidenceViz = function(width, height) {
 
 	// Constants:
 
-	var X_AXIS_LEFT_PADDING      = 0;  // X axis distance left SVG edge
-	var X_AXIS_BOTTOM_PADDING    = 70; // X axis distance bottom SVG edge  50
-	var X_AXIS_RIGHT_PADDING     = 50; // X axis distance right SVG edge
-	var Y_AXIS_BOTTOM_PADDING    = 80; // Y axis distance from SVG bottom
-	var Y_AXIS_TOP_PADDING       = 10; // Y axis distance from SVG top
-	var Y_AXIS_LEFT_PADDING	     = 60; // Y axis distance from left SVG edge
-	
-	var CI_LEFT_PADDING          = 10; // horizontal distance of conf interval bracket
-									   // from all-states y axis:
-	var CI_SMALL_EDGE_LEN        = 3;  // Small leg of the CI bracket
-	
-	var X_TOOLTIP_PADDING        = 100; // Fixed x position for tooltip
-	
-	var DOT_RADIUS               = 10;  // pixels.
+	var X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
+	var X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
+	var X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
+	var Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
+	var Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
+	//****var Y_AXIS_LEFT_PADDING   	    = 60; // Y axis distance from left SVG edge
+	var Y_AXIS_LEFT_PADDING   	    = 50; // Y axis distance from left SVG edge
+	   
+	var ALL_STATES_LEFT_BAR_PADDING = 5; // For allStates: leave white between Y-axis
+										  // and first bar for conf int bracket.
+	var CI_LEFT_PADDING             = 3; // horizontal distance of conf interval bracket
+								     	  // from all-states y axis:
+	var CI_SMALL_EDGE_LEN           = 3;  // Small leg of the CI bracket
+	   
+	var X_TOOLTIP_PADDING           = 100; // Fixed x position for tooltip
+	   
+	var DOT_RADIUS                  = 10;  // pixels.
 	
 	var NUM_SAMPLES              = 5;
 	var ALL_STATE_MEAN           = null;
@@ -313,7 +316,8 @@ var ConfidenceViz = function(width, height) {
 	      .enter().append('rect')
 	      	.attr('class', 'allStatesBar')
 	      	.attr('id', function(state) { return 'allStatesBar' + state })
-	      	.attr('x', function(state) { return xScale(state) })
+	      	//****.attr('x', function(state) { return xScale(state) })
+	      	.attr('x', function(state) { return xScale(state) + ALL_STATES_LEFT_BAR_PADDING })
 	      	.attr('width', xScale.rangeBand())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })

@@ -89,10 +89,10 @@ h1          { text-align : center;  }
 .axis.noLabels line { stroke-width : 0; } /*  controls tickmarks */
 .axis.noTicks  line { stroke-width : 0; } /*  controls tickmarks */
 
-.axis.y.label { transform   : translate(1.9em, 15em) rotate(-90deg); 		        
+.axis.y.label { transform   : translate(1.8em, 15em) rotate(-90deg); 		        
 		        color		: black;
 		        font-family : sans-serif;
-		        font-size   : 12pt;
+		        font-size   : 11pt;
 		        opacity     : 1;    	
 			  } 
 
