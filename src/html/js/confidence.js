@@ -13,6 +13,7 @@ var ConfidenceViz = function(width, height) {
 	var scalesAllStates  = null;  // {xScale : <xScaleFunc>, yScale : <yScaleFunc>}
 	var xDomain 	     = null;
 	var yDomain 	     = null;
+	var xDomainAllStates = null;
 	var dataXAxis		 = null;
 
 	// Constants:
@@ -22,7 +23,6 @@ var ConfidenceViz = function(width, height) {
 	var X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	var Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
 	var Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
-	//****var Y_AXIS_LEFT_PADDING   	    = 60; // Y axis distance from left SVG edge
 	var Y_AXIS_LEFT_PADDING   	    = 50; // Y axis distance from left SVG edge
 	   
 	var ALL_STATES_LEFT_BAR_PADDING = 5; // For allStates: leave white between Y-axis
@@ -66,12 +66,12 @@ var ConfidenceViz = function(width, height) {
 	// T-table for two-tailed, 95% critical value.
 	// The leading zero is just so that we can index
 	// into the tbl directly with the df:
-	var tTbl2Tailed95 = [0, 12.706, 4.303, 3.182, 2.776, 2.571,
-						 2.447, 2.365, 2.306, 2.262, 2.228, 2.201,
-						 2.179, 2.16, 2.145, 2.131, 2.12, 2.11, 2.101,
-						 2.093, 2.086, 2.08, 2.074, 2.069, 2.064,
-						 2.06, 2.056, 2.052, 2.048, 2.045, 2.042,
-						 2, 1.98
+	var tTbl2Tailed95 = [6.314, 2.920, 2.353, 2.132, 2.015, 1.943, 1.895, 1.860, 1.833, 1.812, 
+	                     1.796, 1.782, 1.771, 1.761, 1.753, 1.746, 1.740, 1.734, 1.729, 1.725, 
+	                     1.721, 1.717, 1.714, 1.711, 1.708, 1.706, 1.703, 1.701, 1.699, 1.697, 
+	                     1.696, 1.694, 1.692, 1.691, 1.690, 1.688, 1.687, 1.686, 1.685, 1.684, 
+	                     1.683, 1.682, 1.681, 1.680, 1.679, 1.679, 1.678, 1.677, 1.677, 1.676, 
+	                     1.675, 1.675, 1.674, 1.674
 						 ]
 	
 	/*---------------------------
@@ -139,7 +139,7 @@ var ConfidenceViz = function(width, height) {
 		
         let yDomainAllStates = [0, Math.max.apply(null, Object.values(teenBirthObj))];
         
-        let xDomainAllStates = Object.keys(teenBirthObj);
+        xDomainAllStates = Object.keys(teenBirthObj);
         
         
 		// The "+40" is a kludge! It makes the 
@@ -443,14 +443,23 @@ var ConfidenceViz = function(width, height) {
 
 		let ciVizSel = d3.select('#ciViz');
 		
+		//******
+		if ( ! ciVizSel.empty() ) {
+			ciVizSel.remove();
+			ciVizSel = d3.select('#ciViz');
+		}
+		//******
+		//*******
+		let penCode = lineFunction(lineData);
+		
+		//*******
 		if ( ciVizSel.empty() ) {
 			d3.select('#allStatesSvg')
 				.append("path")
 				.attr("d", lineFunction(lineData))
-				.attr("id", "#ciViz")
+				.attr("id", "ciViz")
 				.attr("class", "confIntLine");
 		} else {
-			ciVizSel.
 			ciVizSel.attr("d", lineFunction(lineData))
 		}
 	}
@@ -527,7 +536,7 @@ var ConfidenceViz = function(width, height) {
         });
         
         let ci = computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
-        								populationSize : xDomain.length,
+        								populationSize : xDomainAllStates.length,
         								makeSmallPopCorrection : true
         	})
         createCIViz(ci);
