@@ -76,7 +76,7 @@ h1          { text-align : center;  }
     border : 1px solid BurlyWood;
 }			
 
-.legend {font-size, 12px;
+.legend {font-size 12pt;
 		}
 
 .axis path,
@@ -89,7 +89,12 @@ h1          { text-align : center;  }
 .axis.noLabels line { stroke-width : 0; } /*  controls tickmarks */
 .axis.noTicks  line { stroke-width : 0; } /*  controls tickmarks */
 
-.axis.y.label { transform   : rotate(-90deg); } 
+.axis.y.label { transform   : translate(1.9em, 15em) rotate(-90deg); 		        
+		        color		: black;
+		        font-family : sans-serif;
+		        font-size   : 12pt;
+		        opacity     : 1;    	
+			  } 
 
 .axis.x.label { 
 		        /* text-anchor : start; */
@@ -122,7 +127,7 @@ h1          { text-align : center;  }
 .legendText  { font-size : 10pt; }
 
 .allStatesStateLabelTxt {
-				     font-size : 12px;
+				     font-size : 12pt;
 				     fill      : White;
 				     opacity   : 0.8;
 				   }

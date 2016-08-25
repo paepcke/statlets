@@ -1,4 +1,4 @@
-ConfidenceViz = function(width, height) {
+var ConfidenceViz = function(width, height) {
 
 	// Instance variables:
 
@@ -165,7 +165,7 @@ ConfidenceViz = function(width, height) {
             			  },
             		   y: {scaleType   : 'linear',
             		       domain      : yDomainAllStates,
-        				   axisLabel   : 'Teen Pregnancies',
+        				   axisLabel   : 'Teen Pregnancy Rate',
         				   axisLabelId : 'allStatesYLabel',
         				   axisGrpName : 'allStatesYAxisGrp'        				          				   
             		      }
@@ -692,17 +692,12 @@ ConfidenceViz = function(width, height) {
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
-						//*****.attr("y", height + 8)
 						.attr("y", height + 20)
 						.text(extentDict.x.axisLabel)
 						
 		yAxisLabel = svg.append("text")
-						.attr("class", "y label")
+						.attr("class", "axis y label")
 						.attr("id", extentDict.y.axisLabelId)
-						.attr("text-anchor", "end") // I'm still confused about x/y of rotated text:
-						.attr("x", - (height / 4.))  // The "/3." is empirical...
-						.attr("y", Y_AXIS_LEFT_PADDING / 2)
-						.attr("transform", "rotate(-90)")
 						.text(extentDict.y.axisLabel)
 						
 		d3.selectAll('.axis text').classed('unselectable', true);			
