@@ -66,6 +66,10 @@ var StatsBarchartResizeHandler = function(svg) {
 		let newY = parseFloat(d3DomElSel.attr('y')) + dy;
 		let newHeight = parseFloat(d3DomElSel.attr('height')) - dy;
 		
+		if ( newHeight < 0) {
+			return;
+		}
+		
 		d3DomElSel.attr('y', newY);
 		d3DomElSel.attr('height', newHeight);
 			

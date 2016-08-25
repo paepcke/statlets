@@ -1,3 +1,22 @@
+/*
+ * Todo:
+ *    o Legends
+ *    o SD printout
+ *    o Formula
+ *    o Instrumentation
+ *    o All-state tooltips: name, rate, total pop?, num of births?
+ * Text:
+ *    o Move a bar, watch SD and CI
+ *         * Does CI include pop mean?
+ *         * What happens to the width of the CI?
+ *         * Make them all equal height above blue mean (--> CI tiny and not incl. of blue mean)
+ *         * Make them equal height with blue mean; then lower one of them.
+ *    o Add a state watch SD and CI
+ *    o Hit Add-state until all states have been added.
+ *         A popup will show. Compare the two mean-lines
+ *         
+ */
+
 var ConfidenceViz = function(width, height) {
 
 	// Instance variables:
@@ -45,7 +64,7 @@ var ConfidenceViz = function(width, height) {
 					 Mississippi: 'MS'
 	}
 
-	var teenBirthObj = {"Mississippi": 10.132693102023957, "Oklahoma": 9.111531899735652, "Delaware": 5.71454611738972, 
+	var origTeenBirthObj = {"Mississippi": 10.132693102023957, "Oklahoma": 9.111531899735652, "Delaware": 5.71454611738972, 
 						"Minnesota": 3.908216983291371, "Illinois": 6.107621282070688, "Arkansas": 9.932227155877541, 
 						"New Mexico": 9.880239520958083, "Indiana": 7.472645099904852, "Maryland": 4.640088743388212, 
 						"Louisiana": 8.322867730282029, "Idaho": 5.69592586116454, "Wyoming": 7.081600831600832, 
@@ -62,6 +81,10 @@ var ConfidenceViz = function(width, height) {
 						"Washington": 4.658802280295761, "North Carolina": 6.932837363091548, "D.C.": 5.941739404774424, 
 						"Texas": 8.888449743099713, "Nevada": 6.898859485234656, "Maine": 5.158292644510946, "Rhode Island": 5.451353598817334
 						};
+	
+	// A copy that we modify as users
+	// move bars around:
+	var teenBirthObj = JSON.parse(JSON.stringify(origTeenBirthObj));
 	
 	// T-table for two-tailed, 95% critical value.
 	// The leading zero is just so that we can index
@@ -222,7 +245,7 @@ var ConfidenceViz = function(width, height) {
 		let xScale = scalesData.xScale;
 		let yScale = scalesData.yScale;
 		
-		// Get function barsDragged() 
+		// Get function barPulled() 
 		// a chance to see which bar moved, and to mirror
 		// on the confidence interval chart:
 		let dispatch = d3.dispatch('drag', barPulled);
@@ -237,11 +260,16 @@ var ConfidenceViz = function(width, height) {
 	      .enter().append('rect')
 	      	.attr('class', 'teenBirthBar')
 	      	.attr('id', function(state) { return 'dataBar' + state })
+	      	.attr('state', function(state) { return state } )
 	      	.attr('x', function(state) { return xScale(state) })
 	      	.attr('width', xScale.rangeBand())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
 	      	// Attach drag-start behavior to this bar.
+	      	// Couldn't get a separate function to work
+	      	// here: The dragstart/drag/dragend below should
+	      	// be in a function that returns the behavior.
+	      	// Didn't work.
 	      	//*****.call(addDragBehavior, scalesData);
 	      	.call(d3.behavior.drag()
 				.on('dragstart', function(d) {
@@ -732,54 +760,28 @@ var ConfidenceViz = function(width, height) {
 	
 	var barPulled = function(barObj, dataBarSel) {
 		/*
-		 * Called when a data bar is dragged. Finds the
+		 * Called when a data bar is dragged up or down. Finds the
 		 * confidence interval chart, and echoes
 		 * the move.
 		 */
 		
-//		//console.log(`Circle class: ${dataCircleSel.attr('class')}`);
-//		// Given the data point find the correlation point 
-//		// that is the same US state; the data point that
-//		// moved might be a 1996 point or a 2014 pont:
-//		if (["category1Dot", "category2Dot"].some(function(className) { return dataCircleSel.classed(className) })) {
-//
-//			let state = dataCircleSel.attr('state'); // US State
-//			let corrCircleSel     = d3.select(`#${dataCircleSel.attr('state')}`);
-//			let corrCircleGrp     = corrCircleSel.node().parentNode;
-//			let corrLabelSel      = d3.select(corrCircleGrp).select('text');
-//
-//			// Was the 1996 dot of the state moved, 
-//			// or the 2016 dot?
-//			// tblRows will have only one val: the 
-//			// year-row for the data circle. tblRow
-//			// will be something like the string "[1]":
-//			// get the '1' from that string:
-//			let tblRow  	      = JSON.parse(dataCircleSel.attr('tblRows'))[0]; 
-//			let tblCol  	      = parseInt(dataCircleSel.attr('tblCol'));
-//			let targetUserVal     = tblObj.getCell(tblRow, tblCol + 1); // tblCol-0 is year col
-//			let currCx            = parseFloat(corrCircleSel.attr('cx'));
-//			let currCy            = parseFloat(corrCircleSel.attr('cy'));
-//			let currLabelX        = parseFloat(corrLabelSel.attr('x'));
-//			let currLabelY        = parseFloat(corrLabelSel.attr('y'));
-//			let dx                = 0;
-//			let dy                = 0;
-//			if (tblRow == 0) {
-//				// Was 1996-data point, so corr x-axis is affected:
-//				dx = scalesCorr.xScale(targetUserVal) - currCx + X_AXIS_LEFT_PADDING;
-//				let newCircleX = currCx + dx;
-//				let newLabelX  = currLabelX + dx;
-//				corrCircleSel.attr('cx', newCircleX);
-//				corrLabelSel.attr('x', newLabelX)
-//			} else {
-//				dy = scalesCorr.yScale(targetUserVal) - currCy + Y_AXIS_TOP_PADDING;
-//				let newCircleY = currCy + dy;
-//				let newLabelY  = currLabelY + dy;
-//				corrCircleSel.attr('cy', newCircleY);
-//				corrLabelSel.attr('y', newLabelY);
-//			}
-////***			d3.select(corrCircleGrp)
-////***				.attr('transform', `translate(${dx}, ${dy})`);
-//		}
+		let state = dataBarSel.attr("state");
+		let newBirthRate = scalesData.yScale.invert(dataBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
+		teenBirthObj[state] = newBirthRate;
+		
+		updateDataChart(xDomain, teenBirthObj, scalesData);
+        addMeanLine( { svg       : svgData, 
+        			   yData     : xDomain.map(function(state) { return teenBirthObj[state] }),
+        			   yScale    : scalesData.yScale,
+        			   length    : width - Y_AXIS_LEFT_PADDING,
+        			   lineClass : 'meanLineSample'
+        });
+        
+        let ci = computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
+        								populationSize : xDomainAllStates.length,
+        								makeSmallPopCorrection : true
+        	})
+        createCIViz(ci);
 	}
 	
 	
