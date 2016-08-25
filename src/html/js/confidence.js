@@ -260,7 +260,7 @@ var ConfidenceViz = function(width, height) {
 			 // Narrow existing bars:
 	      	.attr('x', function(state) { return xScale(state) })
 	      	.attr('width', xScale.rangeBand())
-	      .enter().append('rect')
+	      .enter().append("rect")
 	      	.attr('class', 'teenBirthBar')
 	      	.attr('id', function(state) { return 'dataBar' + state })
 	      	.attr('state', function(state) { return state } )
@@ -524,28 +524,7 @@ var ConfidenceViz = function(width, height) {
 		xDomain.push(newState);
 
 		// New x axis without tick marks:
-		replaceXAxis( xDomain, false );
-		
-		xScale = d3.scale.ordinal()
-			.domain(xDomain)
-			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
-		
-		scalesData.xScale = xScale;
-		d3.select('#dataXAxisGrp')
-			.remove();
-
-		
-		let xAxis = d3.svg.axis()
-				      .scale(xScale)
-				      .orient("bottom");
-				      
-		// Create a group, and call the xAxis function to create the axis.
-		let xAxisGroup = svgData.append("g")
-			 .attr("class", "axis")
-			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
-			 .attr("id", "dataXAxisGrp")
-			 .classed('noTicks', true) // Suppress X-axis ticks: too busy
-		     .call(xAxis);
+		let xAxisGroup = replaceXAxis( xDomain, false );
 		
 		// Make all but the new state invisible:
 		xAxisGroup.selectAll('text')
@@ -553,29 +532,15 @@ var ConfidenceViz = function(width, height) {
 				if  (state === newState) {
 					return 'axis label';
 				} else {
-					return "axis label invisible";
+					return 'axis label invisible';
+				}
+		    })
+			.attr("y", function(state) {
+				if  (state === newState) {
+					return d3.select(this).attr("y") + 10;
 				}
 		    })
 		
-		// Width between two ticks is (for instance) pixel-pos
-		// at first domain value minus pixel pos at zeroeth domain
-		// value:
-		scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
-		
-		updateDataChart(xDomain, teenBirthObj, scalesData);
-        addMeanLine( { svg       : svgData, 
-        			   yData     : xDomain.map(function(state) { return teenBirthObj[state] }),
-        			   yScale    : scalesData.yScale,
-        			   length    : width - Y_AXIS_LEFT_PADDING,
-        			   lineClass : 'meanLineSample'
-        });
-        
-        let ci = computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
-        								populationSize : xDomainAllStates.length,
-        								makeSmallPopCorrection : true
-        	})
-        createCIViz(ci);
-        
         return newState;
 	}
 	
@@ -584,6 +549,13 @@ var ConfidenceViz = function(width, height) {
 	-----------------*/
 	
 	var replaceXAxis = function( xDomain, keepTicks ) {
+		
+		/*
+		 * Destroys the x-Axis and creates a new one.
+		 * The optional keepTicks determines whether axis
+		 * ticks are drawn, or not. Re-computes and re-draws
+		 * data mean and the CI. Returns the new x-axis group. 
+		 */
 		
 		if (typeof(keepTicks) === 'undefined') {
 			keepTicks
@@ -614,6 +586,14 @@ var ConfidenceViz = function(width, height) {
 		
 		xAxisGroup.call(xAxis);
 		
+		// Class the labels:
+		let txtSel     = xAxisGroup.selectAll("text");
+
+		txtSel
+		.attr("y", 0)
+		.attr("x", 0)
+		.attr("class", "axis x label");
+
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
 		// value:
@@ -632,9 +612,25 @@ var ConfidenceViz = function(width, height) {
         								makeSmallPopCorrection : true
         	})
         createCIViz(ci);
-		
+		return xAxisGroup;
 	}
 	
+	/*---------------------------
+	| ensureRectHeights 
+	-----------------*/
+	
+	var ensureRectHeights = function() {
+		/*
+		 * Go through every rectangle in the data
+		 * chart and ensure its height corresponds
+		 * to the current values in teenBirthObj.
+		 */
+		
+		let yScale = scalesData.yScale;
+		d3.selectAll(".teenBirthBar")
+			.remove();
+		updateDataChart(xDomain, teenBirthObj, scalesData);
+	}
 	
 	/*---------------------------
 	| makeCoordSys 
@@ -1006,8 +1002,9 @@ var ConfidenceViz = function(width, height) {
 			teenBirthObj = JSON.parse(JSON.stringify(origTeenBirthObj));
 			// Restore original state sample:
 			xDomain = xDomainSaved.map(function(el) { return el });
-			updateDataChart()
-			
+			// Remake the X axis, and redraw mean and CI bracket:
+			replaceXAxis( xDomain, true );
+			ensureRectHeights();			
 			break;
 		}
 	}
