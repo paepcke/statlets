@@ -33,6 +33,7 @@ var ConfidenceViz = function(width, height) {
 	var xDomain 	     = null;
 	var yDomain 	     = null;
 	var xDomainAllStates = null;
+	var xDomainSaved     = null;
 	var dataXAxis		 = null;
 
 	// Constants:
@@ -127,9 +128,11 @@ var ConfidenceViz = function(width, height) {
 
 		dragClickHandler = StatsBarchartResizeHandler(svgData);
 		
-        yDomain     = [0, Math.max.apply(null, Object.values(teenBirthObj))];
+        yDomain      = [0, Math.max.apply(null, Object.values(teenBirthObj))];
         
-        xDomain     = sampleFromStates(NUM_SAMPLES); 
+        xDomain      = sampleFromStates(NUM_SAMPLES); 
+        // Remember original samples for resetting (via reset button):
+        xDomainSaved = xDomain.map(function(el) { return el });
         
         // Argument for makeCoordSys:
         let extentDict  = {svg           : svgData, 
@@ -520,6 +523,9 @@ var ConfidenceViz = function(width, height) {
 
 		xDomain.push(newState);
 
+		// New x axis without tick marks:
+		replaceXAxis( xDomain, false );
+		
 		xScale = d3.scale.ordinal()
 			.domain(xDomain)
 			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
@@ -572,6 +578,63 @@ var ConfidenceViz = function(width, height) {
         
         return newState;
 	}
+	
+	/*---------------------------
+	| replaceXAxis 
+	-----------------*/
+	
+	var replaceXAxis = function( xDomain, keepTicks ) {
+		
+		if (typeof(keepTicks) === 'undefined') {
+			keepTicks
+		}
+		
+		let xScale = d3.scale.ordinal()
+			.domain(xDomain)
+			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
+		
+		scalesData.xScale = xScale;
+		d3.select('#dataXAxisGrp')
+			.remove();
+
+		let xAxis = d3.svg.axis()
+				      .scale(xScale)
+				      .orient("bottom");
+				      
+		// Create a group, and call the xAxis function to create the axis.
+		let xAxisGroup = svgData.append("g")
+			 .attr("class", "axis")
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .attr("id", "dataXAxisGrp")
+			 
+	    // Suppress X-axis ticks if requested:
+		if ( ! keepTicks ) {
+			 xAxisGroup.classed('noTicks', true) 
+		}
+		
+		xAxisGroup.call(xAxis);
+		
+		// Width between two ticks is (for instance) pixel-pos
+		// at first domain value minus pixel pos at zeroeth domain
+		// value:
+		scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
+		
+		updateDataChart(xDomain, teenBirthObj, scalesData);
+        addMeanLine( { svg       : svgData, 
+        			   yData     : xDomain.map(function(state) { return teenBirthObj[state] }),
+        			   yScale    : scalesData.yScale,
+        			   length    : width - Y_AXIS_LEFT_PADDING,
+        			   lineClass : 'meanLineSample'
+        });
+        
+        let ci = computeConfInterval( { dataArr : xDomain.map(function(state) { return teenBirthObj[state] }),
+        								populationSize : xDomainAllStates.length,
+        								makeSmallPopCorrection : true
+        	})
+        createCIViz(ci);
+		
+	}
+	
 	
 	/*---------------------------
 	| makeCoordSys 
@@ -939,8 +1002,12 @@ var ConfidenceViz = function(width, height) {
 			d3.select('#allStatesDiv')
 			break;
 		case "reset":
+			// Restore true birth rates:
+			teenBirthObj = JSON.parse(JSON.stringify(origTeenBirthObj));
+			// Restore original state sample:
+			xDomain = xDomainSaved.map(function(el) { return el });
+			updateDataChart()
 			
-			//updateDataChart(scalesData);
 			break;
 		}
 	}
