@@ -509,10 +509,11 @@ var ConfidenceViz = function(width, height) {
 		let xAxisGroup = svgData.append("g")
 			 .attr("class", "axis")
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
-			 .attr("id", "#dataXAxisGrp")
-			 .classed('noTicks', true)
+			 .attr("id", "dataXAxisGrp")
+			 .classed('noTicks', true) // Suppress X-axis ticks: too busy
 		     .call(xAxis);
 		
+		// Make all but the new state invisible:
 		xAxisGroup.selectAll('text')
 		    .attr("class", function(state) {
 				if  (state === newState) {
