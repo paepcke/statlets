@@ -521,8 +521,8 @@ var ConfidenceViz = function(width, height) {
 		let sampleLegendLineClass    = "meanLineSample";
 		let allStatesLegendLineClass = "meanLineAllStates";
 		
-		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : Y_AXIS_TOP_PADDING}, 
-		                 { x : 5, y : Y_AXIS_TOP_PADDING }
+		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : -5}, 
+		                 { x : 5, y : -5 }
 		               ]
 		
 		let dataLegendGrp = d3.select('#dataSvg')
@@ -537,6 +537,7 @@ var ConfidenceViz = function(width, height) {
 		dataLegendGrp
 			.append("text")
 				.text("Sample mean")
+				.attr("x", -10)
 				.attr("class", "legendTxt data");
 	}
 				
