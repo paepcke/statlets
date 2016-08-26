@@ -155,8 +155,8 @@ h1          { text-align : center;  }
 		           transform: translate(-1.5em, -2em);
 				}
 
-.teenBirthBar       { fill : rgb(144, 12, 63) ; } /* Dark red. */
-.allStatesBar       { fill : CornflowerBlue ;
+.teenBirthBar       { fill : rgb(144, 12, 63) ; } /* Dark Red. */
+.allStatesBar       { Fill : CornFlowerBlue ;
 					}
 
 .controlBarWrapper  { margin-left : 200px;
@@ -188,3 +188,14 @@ h1          { text-align : center;  }
 		          }
 .button.sampleBtn:focus { outline : 0 !important };
 
+.sdGrp   { }
+.sdTxt   { transform   : translate(2em, -1em);
+		   font-size   : 12pt;
+		   font-weight : bold;		   
+         }
+.sdTxt.allStates { fill  	   : Blue; }
+.sdTxt.data      { fill  	   : rgb(144, 12, 63); } /* Dark Red. */
+
+.legendGrp       { transform : translate(10em, -1em); }
+.legendTxt       { font-size : 0.9em; }
+.legendTxt.data  { fill      : rgb(144, 12, 63); } /* Dark Red. */

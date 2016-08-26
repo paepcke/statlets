@@ -5,12 +5,15 @@
  *    o Formula
  *    o Instrumentation
  *    o All-state tooltips: name, rate, total pop?, num of births?
+ *    o New state button.
  * Text:
  *    o Move a bar, watch SD and CI
  *         * Does CI include pop mean?
  *         * What happens to the width of the CI?
  *         * Make them all equal height above blue mean (--> CI tiny and not incl. of blue mean)
- *         * Make them equal height with blue mean; then lower one of them.
+ *         * Make them equal height with blue mean
+ *         * Are the SDs of the sample and the population equal?
+ *         * Lower one of the bars to see what happens.
  *    o Add a state watch SD and CI
  *    o Hit Add-state until all states have been added.
  *         A popup will show. Compare the two mean-lines
@@ -138,7 +141,7 @@ var ConfidenceViz = function(width, height) {
         let extentDict  = {svg           : svgData, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
-        					   axisLabel : 'US States',
+        					   axisLabel : 'Sample of US States',
         					 axisLabelId : 'dataXLabel',
         					 axisGrpName : 'dataXAxisGrp'
             				  },
@@ -186,7 +189,7 @@ var ConfidenceViz = function(width, height) {
         extentDict  = {svg             : svgAllStates,
         			   x: {scaleType   : 'ordinal',
         				   domain      : xDomainAllStates,
-        				   axisLabel   : 'US States',
+        				   axisLabel   : 'All US States',
         				   axisLabelId : 'allStatesXLabel',
         				   subclass    : 'noLabels',          // styled separately.
         				  rightPadding : 5,
@@ -225,6 +228,18 @@ var ConfidenceViz = function(width, height) {
         // Init the all-states teen birth rate mean var:
         ALL_STATE_MEAN = ss.sum(Object.values(teenBirthObj)) / Object.values(teenBirthObj).length;
         
+        // Add the allStates SD display:
+        let sd = ss.standardDeviation(Object.values(teenBirthObj));
+        sd = sd.toFixed(2);
+        svgAllStates
+			.append("g")
+			   .attr("class", "sdGrp")
+			.append("text")
+			   .attr("class", "sdTxt allStates unselectable")
+			   .attr("id", "sdAllStatesTxt")
+			   .text(`SD: ${sd}`)
+        
+        
         let ci = computeConfInterval( { dataArr  	  : sampleTeenBirthRates,
         								populationSize: xDomainAllStates.length, // all states
         								makeSmallPopCorrection : true
@@ -233,7 +248,7 @@ var ConfidenceViz = function(width, height) {
 
         addSamplingButtons()
         addControlButtons();
-		
+		addLegends();
 		return {width  : width,
 				height : height,
 			}
@@ -380,23 +395,38 @@ var ConfidenceViz = function(width, height) {
 		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : meanY + Y_AXIS_TOP_PADDING}, 
 		                 { x : length + Y_AXIS_LEFT_PADDING, y : meanY + Y_AXIS_TOP_PADDING }
 		               ]
-		// Accessor function for each data point:
-		var lineFunction = d3.svg.line()
-		                         .x(function(xyObj) { return xyObj.x; })
-		                         .y(function(xyObj) { return xyObj.y; })
-		                         .interpolate("linear");	
 
 		let meanLineSel = d3.select('.' + meanLineDict.lineClass);
 		if ( meanLineSel.empty() ) {
 			// Create new mean line:
 			svgContainer.append("path")
-				.attr("d", lineFunction(lineData))
+				.attr("d", getPathPointAccessor()(lineData))
 				.attr("class", meanLineDict.lineClass);
 		} else {
 			// Move mean line:
-			meanLineSel.attr("d", lineFunction(lineData));
+			meanLineSel.attr("d", getPathPointAccessor()(lineData));
 		}
 	}
+	
+	/*---------------------------
+	| getPathPointAccessor 
+	-----------------*/
+	
+	var getPathPointAccessor = function() {
+		
+		/*
+		 * Returns an accessor function that picks 
+		 * the x and y pairs from a path point obj.
+		 * Used to pass into "path" appends. 
+		 */
+		
+		// Accessor function for each data point:
+		return d3.svg.line()
+				.x(function(xyObj) { return xyObj.x; })
+				.y(function(xyObj) { return xyObj.y; })
+				.interpolate("linear");
+	}
+	
 	
 	/*---------------------------
 	| computeConfInterval 
@@ -437,16 +467,6 @@ var ConfidenceViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| updateCIViz 
-	-----------------*/
-
-	var updateCIViz = function(ciObj) {
-		
-		let ciBracketSel = d3.select('#ciBracket');
-
-	}
-	
-	/*---------------------------
 	| createCIViz 
 	-----------------*/
 	
@@ -474,16 +494,11 @@ var ConfidenceViz = function(width, height) {
 
 		let ciVizSel = d3.select('#ciViz');
 		
-		//******
 		if ( ! ciVizSel.empty() ) {
 			ciVizSel.remove();
 			ciVizSel = d3.select('#ciViz');
 		}
-		//******
-		//*******
-		let penCode = lineFunction(lineData);
 		
-		//*******
 		if ( ciVizSel.empty() ) {
 			d3.select('#allStatesSvg')
 				.append("path")
@@ -493,7 +508,65 @@ var ConfidenceViz = function(width, height) {
 		} else {
 			ciVizSel.attr("d", lineFunction(lineData))
 		}
+		
+		updateSdViz();
 	}
+	
+	/*---------------------------
+	| addLegends 
+	-----------------*/
+	
+	var addLegends = function() {
+		
+		let sampleLegendLineClass    = "meanLineSample";
+		let allStatesLegendLineClass = "meanLineAllStates";
+		
+		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : Y_AXIS_TOP_PADDING}, 
+		                 { x : 5, y : Y_AXIS_TOP_PADDING }
+		               ]
+		
+		let dataLegendGrp = d3.select('#dataSvg')
+			.append('g')
+				.attr("id", "dataSvgGrp")
+				.attr("class", "legendGrp")
+				
+		dataLegendGrp
+			.append("path")
+				.attr("d", getPathPointAccessor()(lineData))
+				.attr("class", sampleLegendLineClass);
+		dataLegendGrp
+			.append("text")
+				.text("Sample mean")
+				.attr("class", "legendTxt data");
+	}
+				
+
+	/*---------------------------
+	| updateSdViz 
+	-----------------*/
+	
+	var updateSdViz = function( ) {
+		
+		let sampleTeenBirthRates = xDomain.map(function(state) { 
+			return teenBirthObj[state] });
+		let sd = ss.sampleStandardDeviation( sampleTeenBirthRates );
+		sd = sd.toFixed(2);
+		
+		let sdTxtSel = d3.select("#sdTxt");
+		if ( sdTxtSel.empty() ) {
+			d3.select("#dataSvg")
+			.append("g")
+			   .attr("id", "svgGrp")
+			   .attr("class", "sdGrp")
+			.append("text")
+			   .attr("class", "sdTxt data unselectable")
+			   .attr("id", "sdTxt")
+			   .text(`SD: ${sd}`)
+		} else {
+			sdTxtSel.text(`SD: ${sd}`)
+		}
+	}
+	
 	
 	/*---------------------------
 	| newSample 
