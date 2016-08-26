@@ -196,14 +196,14 @@ h1          { text-align : center;  }
 .sdTxt.allStates { fill  	   : Blue; }
 .sdTxt.data      { fill  	   : rgb(144, 12, 63); } /* Dark Red. */
 
-.legendGrp       { transform : translate(10em, -1em); }
+.legendGrp       { transform : translate(9em, -1em); }
 .legendTxt       { font-size : 0.9em; }
 
-.legendSampleTxt.data        { fill      : rgb(144, 12, 63); } /* Dark Red. */
-.legendPopulationTxt.data    { fill  : CornFlowerBlue };
+.legendSampleTxt.data        { fill  : rgb(144, 12, 63); } /* Dark Red. */
+.legendPopulationTxt.data    { fill  : CornFlowerBlue; }
   
 .sampleLegendMeanLine        { stroke : rgb(144, 12, 63);  /* Dark Red. */
-						  	   transform : translate(50px, -3px);
+						  	   transform : translate(55px, -3px);
 					  	     }
 
 .populationLegendMeanLine    { stroke : blue;
