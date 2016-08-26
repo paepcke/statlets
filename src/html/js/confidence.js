@@ -521,24 +521,47 @@ var ConfidenceViz = function(width, height) {
 		let sampleLegendLineClass    = "meanLineSample";
 		let allStatesLegendLineClass = "meanLineAllStates";
 		
-		let lineData = [ { x : Y_AXIS_LEFT_PADDING, y : -5}, 
-		                 { x : 5, y : -5 }
+		let lineData = [ { x : 50, y : -2}, 
+		                 { x : 70, y : -2 }
 		               ]
+		
+		
+		// Data chart legend:
 		
 		let dataLegendGrp = d3.select('#dataSvg')
 			.append('g')
-				.attr("id", "dataSvgGrp")
+				.attr("id", "dataLegendGrp")
 				.attr("class", "legendGrp")
-				
+		
 		dataLegendGrp
 			.append("path")
 				.attr("d", getPathPointAccessor()(lineData))
-				.attr("class", sampleLegendLineClass);
+				.attr("class", "sampleLegendMeanLine")
+		
 		dataLegendGrp
 			.append("text")
-				.text("Sample mean")
-				.attr("x", -10)
+				.text("Sample mean: ")
+				.attr("x", -40)
 				.attr("class", "legendTxt data");
+		
+		// Population chart legend:
+		
+		let allStatesLegendGrp = d3.select('#allStatesSvg')
+			.append('g')
+				.attr("id", "dataLegendGrp")
+				.attr("class", "legendGrp")
+		
+		allStatesLegendGrp
+			.append("path")
+				.attr("d", getPathPointAccessor()(lineData))
+				.attr("class", "populationLegendMeanLine")
+		
+		allStatesLegendGrp
+			.append("text")
+				.text("Population mean: ")
+				.attr("x", -40)
+				.attr("class", "legendTxt data");
+		
 	}
 				
 
@@ -557,7 +580,7 @@ var ConfidenceViz = function(width, height) {
 		if ( sdTxtSel.empty() ) {
 			d3.select("#dataSvg")
 			.append("g")
-			   .attr("id", "svgGrp")
+			   .attr("id", "sdGrp")
 			   .attr("class", "sdGrp")
 			.append("text")
 			   .attr("class", "sdTxt data unselectable")

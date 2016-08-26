@@ -199,3 +199,8 @@ h1          { text-align : center;  }
 .legendGrp       { transform : translate(10em, -1em); }
 .legendTxt       { font-size : 0.9em; }
 .legendTxt.data  { fill      : rgb(144, 12, 63); } /* Dark Red. */
+
+.sampleLegendMeanLine { stroke : rgb(144, 12, 63); } /* Dark Red. */
+
+.populationLegendMeanLine { stroke : blue}
+.populationLegendConfIntLine { stroke : rgb(144, 12, 63); } /* Dark Red. */
