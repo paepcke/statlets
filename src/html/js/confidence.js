@@ -521,11 +521,15 @@ var ConfidenceViz = function(width, height) {
 		let sampleLegendLineClass    = "meanLineSample";
 		let allStatesLegendLineClass = "meanLineAllStates";
 		
-		let lineData = [ { x : 50, y : -2}, 
-		                 { x : 70, y : -2 }
-		               ]
-		
-		
+		// The legend stretch of line for mean color.
+		// Coords are relative to a group in which the
+		// legend text and line segment will reside.
+		// The whole line is moved into place in the
+		// CSS via a transform:
+		let lineData = [ { x : 0, y : 0}, 
+		                 { x : 20, y : 0 }
+		]
+
 		// Data chart legend:
 		
 		let dataLegendGrp = d3.select('#dataSvg')
@@ -542,7 +546,7 @@ var ConfidenceViz = function(width, height) {
 			.append("text")
 				.text("Sample mean: ")
 				.attr("x", -40)
-				.attr("class", "legendTxt data");
+				.attr("class", "legendSampleTxt data");
 		
 		// Population chart legend:
 		
@@ -560,7 +564,7 @@ var ConfidenceViz = function(width, height) {
 			.append("text")
 				.text("Population mean: ")
 				.attr("x", -40)
-				.attr("class", "legendTxt data");
+				.attr("class", "legendPopulationTxt data");
 		
 	}
 				

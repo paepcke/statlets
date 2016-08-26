@@ -198,9 +198,15 @@ h1          { text-align : center;  }
 
 .legendGrp       { transform : translate(10em, -1em); }
 .legendTxt       { font-size : 0.9em; }
-.legendTxt.data  { fill      : rgb(144, 12, 63); } /* Dark Red. */
 
-.sampleLegendMeanLine { stroke : rgb(144, 12, 63); } /* Dark Red. */
+.legendSampleTxt.data        { fill      : rgb(144, 12, 63); } /* Dark Red. */
+.legendPopulationTxt.data    { fill  : CornFlowerBlue };
+  
+.sampleLegendMeanLine        { stroke : rgb(144, 12, 63);  /* Dark Red. */
+						  	   transform : translate(50px, -3px);
+					  	     }
 
-.populationLegendMeanLine { stroke : blue}
+.populationLegendMeanLine    { stroke : blue;
+							   transform : translate(75px, -3px);
+						     }
 .populationLegendConfIntLine { stroke : rgb(144, 12, 63); } /* Dark Red. */
