@@ -550,9 +550,11 @@ var ConfidenceViz = function(width, height) {
 		
 		// Population chart legend:
 		
+		
+		// First the mean-line legend entry:
 		let allStatesLegendGrp = d3.select('#allStatesSvg')
 			.append('g')
-				.attr("id", "dataLegendGrp")
+				.attr("id", "populationLegendGrp")
 				.attr("class", "legendGrp")
 		
 		allStatesLegendGrp
@@ -563,9 +565,21 @@ var ConfidenceViz = function(width, height) {
 		allStatesLegendGrp
 			.append("text")
 				.text("Population mean: ")
-				.attr("x", -40)
-				.attr("class", "legendPopulationTxt data");
+				.attr("class", "legendPopulationTxt data ci");
 		
+		// Now the CI bracket legend entry:
+		
+		allStatesLegendGrp
+			.append("text")
+				.text("Confidence interval: ")
+				.attr("id", "ciTxt")
+				.attr("class", "legendPopulationTxt data");	
+		
+		allStatesLegendGrp
+			.append("path")
+				.attr("d", getPathPointAccessor()(lineData))
+				.attr("class", "populationLegendConfIntLine");
+
 	}
 				
 
