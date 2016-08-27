@@ -255,6 +255,7 @@ var ConfidenceViz = function(width, height) {
         addControlButtons();
 		addLegends();
 		createTooltip();
+		createSvgHeaders();		
 		return {width  : width,
 				height : height,
 			}
@@ -1069,6 +1070,31 @@ var ConfidenceViz = function(width, height) {
 						.append("text")
 						  .attr("class", "div tooltip state")
 						  .text("");
+	}
+	
+	/*---------------------------
+	| createSvgHeaders 
+	-----------------*/
+	
+	var createSvgHeaders = function() {
+		
+		// ***** Compute header placement svgData.
+		
+		d3.select("body")
+			.append("div")
+			  .attr("transform", "translate(100, 100")
+			.append("text")
+			  .text("Sample")
+			  .attr("class", "sampleHeader");
+		
+		d3.select("body")
+			.append("div")
+			  .attr("transform", "translate(300, 100")
+			.append("text")
+			  .text("Population")
+			  .attr("class", "populationHeader");
+		
+		
 	}
 	
 	/*---------------------------
