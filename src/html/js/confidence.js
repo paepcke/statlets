@@ -14,6 +14,8 @@
  *         * Make them equal height with blue mean
  *         * Are the SDs of the sample and the population equal?
  *         * Lower one of the bars to see what happens.
+ *         * Get the sample and population SDs exactly equal.
+ *               What happens to the means? To the CIs?
  *    o Add a state watch SD and CI
  *    o Hit Add-state until all states have been added.
  *         A popup will show. Compare the two mean-lines
@@ -38,6 +40,9 @@ var ConfidenceViz = function(width, height) {
 	var xDomainAllStates = null;
 	var xDomainSaved     = null;
 	var dataXAxis		 = null;
+
+	var tooltipDivSel    = null;
+	var tooltipTxtSel	 = null;
 
 	// Constants:
 
@@ -249,6 +254,7 @@ var ConfidenceViz = function(width, height) {
         addSamplingButtons()
         addControlButtons();
 		addLegends();
+		createTooltip();
 		return {width  : width,
 				height : height,
 			}
@@ -362,11 +368,31 @@ var ConfidenceViz = function(width, height) {
 	      .enter().append('rect')
 	      	.attr('class', 'allStatesBar')
 	      	.attr('id', function(state) { return 'allStatesBar' + state })
-	      	//****.attr('x', function(state) { return xScale(state) })
+	      	.attr('state', function(state) { return state })
 	      	.attr('x', function(state) { return xScale(state) + ALL_STATES_LEFT_BAR_PADDING })
 	      	.attr('width', xScale.rangeBand())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
+	      	.on("mouseover", function() {
+	      		let evt     = d3.event;
+	      		let state	= d3.select(this).attr("state");
+	      		
+	      		tooltipTxtSel.text(state);
+	      		let txtWidth = tooltipTxtSel.node().getBoundingClientRect().width;
+	      		
+	      		let tooltipHeight = tooltipDivSel.node().getBoundingClientRect().height;
+	      		tooltipDivSel.style("left", `${evt.pageX}px`)
+	      					 .style("top", `${evt.pageY - tooltipHeight}px`)
+	      					 .style("width", txtWidth);
+	      		
+	      		tooltipDivSel.classed("visible", true);
+	      		tooltipTxtSel.classed("visible", true);
+	      		
+	      	})
+	      	.on("mouseleave", function(evt) {
+	      		tooltipTxtSel.classed("visible", false);
+	      		tooltipDivSel.classed("visible", false);
+	      	})
 	}
 	
 	/*---------------------------
@@ -471,6 +497,9 @@ var ConfidenceViz = function(width, height) {
 	-----------------*/
 	
 	var createCIViz = function(ciObj) {
+		/*
+		 * Creates bracket that shows the CI.
+		 */
 
 		let yScale = scalesAllStates.yScale;
 		
@@ -1015,7 +1044,6 @@ var ConfidenceViz = function(width, height) {
 		let xAxisGrpSel = d3.select('#dataXAxisGrp'); 
 		let txtSel      = xAxisGrpSel.selectAll("text");
 		
-			//*****txtSel.remove();
 			txtSel
 		    		.attr('text', function(state) {
 		    			if (state === lastState) {
@@ -1024,6 +1052,23 @@ var ConfidenceViz = function(width, height) {
 		    				return '';
 		    			}
 		    		})
+	}
+	
+	/*---------------------------
+	| createTooltip 
+	-----------------*/
+	
+	var createTooltip = function() {
+		
+		// Define the div for the tooltip
+		
+		tooltipDivSel = d3.select("body")
+							.append("div")	
+							   .attr("class", "div tooltip");
+		tooltipTxtSel = tooltipDivSel					   
+						.append("text")
+						  .attr("class", "div tooltip state")
+						  .text("");
 	}
 	
 	/*---------------------------

@@ -224,3 +224,20 @@ h1          { text-align : center;  }
 							   stroke-width  : 2px;
 							   transform : translate(6em, -0.2em);
 							 }
+							 
+
+div.tooltip 				 {	
+    						   position: absolute;        
+    						   text-align: center;
+    						   width: 60px;					
+    						   height: 28px;
+    						   padding: 5px;				
+    						   font: 12px sans-serif;		
+    						   background: lightsteelblue;	
+    						   border: 0px;		
+    						   border-radius: 8px;			
+    						   pointer-events: none;
+							 }
+div.tooltip 			 	 { opacity : 0; }   /* Tooltip text: hovered-over state */							 						 
+div.tooltip.visible,
+div.tooltip.state.visible    { opacity : 1; }
