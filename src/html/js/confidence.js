@@ -1091,14 +1091,14 @@ var ConfidenceViz = function(width, height) {
 			  .text("Sample")
 			  .attr("class", "sampleHeader")
 			  .attr("text-anchor", "middle")
-			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgDataWidth / 2}px, ${-4}em)`);
+			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgDataWidth / 2}, -30)`);
 		
 		svgAllStates
 			.append("text")
 			  .text("Population")
 			  .attr("class", "populationHeader")
 			  .attr("text-anchor", "middle")
-			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}px, ${-2}em)`);
+			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -30)`);
 	}
 	
 	/*---------------------------
