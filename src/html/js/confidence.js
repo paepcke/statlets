@@ -1078,14 +1078,17 @@ var ConfidenceViz = function(width, height) {
 	
 	var createSvgHeaders = function() {
 		
-		// ***** Compute header placement svgData.
+		// Compute header placement svgData.
+		
+		let svgsLeft  = d3.select("#dataSvg").node().getBoundingClientRect().left;
+		let svgsRight = d3.select("#allStatesSvg").node().getBoundingClientRect().right;
+		let svgsTop   = d3.select("#allStatesSvg").node().getBoundingClientRect().top;
 		
 		d3.select("body")
-			.append("div")
-			  .attr("transform", "translate(100, 100")
 			.append("text")
 			  .text("Sample")
-			  .attr("class", "sampleHeader");
+			  .attr("class", "sampleHeader")
+			  .attr("transform", `translate(${svgsLeft}, ${svgsTop}`)
 		
 		d3.select("body")
 			.append("div")
