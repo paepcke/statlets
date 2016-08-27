@@ -619,13 +619,16 @@ var ConfidenceViz = function(width, height) {
 	
 	var updateSdViz = function( ) {
 		
+		// Compute SD of just the sample states:
 		let sampleTeenBirthRates = xDomain.map(function(state) { 
 			return teenBirthObj[state] });
+		
 		let sd = ss.sampleStandardDeviation( sampleTeenBirthRates );
 		sd = sd.toFixed(2);
 		
 		let sdTxtSel = d3.select("#sdTxt");
 		if ( sdTxtSel.empty() ) {
+			// First-time call: 
 			d3.select("#dataSvg")
 			.append("g")
 			   .attr("id", "sdGrp")
@@ -1080,24 +1083,22 @@ var ConfidenceViz = function(width, height) {
 		
 		// Compute header placement svgData.
 		
-		let svgsLeft  = d3.select("#dataSvg").node().getBoundingClientRect().left;
-		let svgsRight = d3.select("#allStatesSvg").node().getBoundingClientRect().right;
-		let svgsTop   = d3.select("#allStatesSvg").node().getBoundingClientRect().top;
+		let svgDataWidth      = d3.select("#dataSvg").node().getBoundingClientRect().width;
+		let svgAllStatesWidth = d3.select("#allStatesSvg").node().getBoundingClientRect().width;
 		
-		d3.select("body")
+		svgData
 			.append("text")
 			  .text("Sample")
 			  .attr("class", "sampleHeader")
-			  .attr("transform", `translate(${svgsLeft}, ${svgsTop}`)
+			  .attr("text-anchor", "middle")
+			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgDataWidth / 2}px, ${-4}em)`);
 		
-		d3.select("body")
-			.append("div")
-			  .attr("transform", "translate(300, 100")
+		svgAllStates
 			.append("text")
 			  .text("Population")
-			  .attr("class", "populationHeader");
-		
-		
+			  .attr("class", "populationHeader")
+			  .attr("text-anchor", "middle")
+			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}px, ${-2}em)`);
 	}
 	
 	/*---------------------------
