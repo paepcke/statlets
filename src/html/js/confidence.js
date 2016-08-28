@@ -290,6 +290,29 @@ var ConfidenceViz = function(width, height) {
 	      	.attr('width', xScale.rangeBand())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
+	      	.on("mouseover", function() {
+	      		let evt     = d3.event;
+	      		let state	= d3.select(this).attr("state");
+
+	      		tooltipTxtSel.html(state + '<p><i>Drag me up or down</i>');
+	      		let txtWidth  = tooltipTxtSel.node().getBoundingClientRect().width;
+	      		let txtHeight = tooltipTxtSel.node().getBoundingClientRect().height;	      		
+
+	      		let tooltipHeight = tooltipDivSel.node().getBoundingClientRect().height;
+	      		tooltipDivSel.style("left", `${evt.pageX}px`)
+	      		.style("top", `${evt.pageY - tooltipHeight}px`)
+	      		.style("width", txtWidth)
+	      		.style("height", txtHeight);
+
+	      		tooltipDivSel.classed("visible", true);
+	      		tooltipTxtSel.classed("visible", true);
+
+	      	})
+	      	.on("mouseleave", function(evt) {
+	      		tooltipTxtSel.classed("visible", false);
+	      		tooltipDivSel.classed("visible", false);
+	      	})
+	      	
 	      	// Attach drag-start behavior to this bar.
 	      	// Couldn't get a separate function to work
 	      	// here: The dragstart/drag/dragend below should
@@ -351,7 +374,8 @@ var ConfidenceViz = function(width, height) {
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
 					d3.behavior.drag.currBar = undefined;
-				}))
+				})
+	      	)
 	}
 	
 	/*---------------------------
@@ -379,12 +403,15 @@ var ConfidenceViz = function(width, height) {
 	      		let state	= d3.select(this).attr("state");
 	      		
 	      		tooltipTxtSel.text(state);
-	      		let txtWidth = tooltipTxtSel.node().getBoundingClientRect().width;
+	      		let txtWidth  = tooltipTxtSel.node().getBoundingClientRect().width;
+	      		let txtHeight = tooltipTxtSel.node().getBoundingClientRect().height;	      		
 	      		
 	      		let tooltipHeight = tooltipDivSel.node().getBoundingClientRect().height;
 	      		tooltipDivSel.style("left", `${evt.pageX}px`)
 	      					 .style("top", `${evt.pageY - tooltipHeight}px`)
-	      					 .style("width", txtWidth);
+	      					 .style("width", txtWidth)
+	      					 .style("height", txtHeight);
+
 	      		
 	      		tooltipDivSel.classed("visible", true);
 	      		tooltipTxtSel.classed("visible", true);
