@@ -1,20 +1,8 @@
 /*
  * Todo:
- *    o Formula
+ *    o Make work on Safari
  *    o Instrumentation
  * Text:
- *    o Move a bar, watch SD and CI
- *         * Does CI include pop mean?
- *         * What happens to the width of the CI?
- *         * Make them all equal height above blue mean (--> CI tiny and not incl. of blue mean)
- *         * Make them equal height with blue mean
- *         * Are the SDs of the sample and the population equal?
- *         * Lower one of the bars to see what happens.
- *         * Get the sample and population SDs exactly equal.
- *               What happens to the means? To the CIs?
- *    o Add a state watch SD and CI
- *    o Hit Add-state until all states have been added.
- *         A popup will show. Compare the two mean-lines
  *         
  */
 
@@ -1162,13 +1150,13 @@ var ConfidenceViz = function(width, height) {
 			  .attr("value", "Step 2")
 			  .attr("class", "button cntBtn");
 		
-/*		d3.select(".controlButtonBar")
+		d3.select(".controlButtonBar")
 			.append('input')
 			  .attr("type", "button")
 			  .attr("id", "step3")
 			  .attr("value", "Step 3")
 			  .attr("class", "button cntBtn");
-*/		
+		
 		d3.select(".controlButtonBar")
 			.append('input')
 			  .attr("type", "button")
