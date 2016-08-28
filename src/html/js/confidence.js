@@ -1056,14 +1056,25 @@ var ConfidenceViz = function(width, height) {
 		d3.select("#buttonCol")
 			.append('input')
 			  .attr("type", "button")
-			  .attr("id", "home")
+			  .attr("id", "addState")
 			  .attr("value", "Add a state")
-			  .attr("class", "button sampleBtn")
+			  .attr("class", "button sampleBtn first")
 			  .on("click", function() {
 				  let newState = newSample();
 				  blankDataStateLabels(newState);
 				  })
-			.append('br')
+			// .append('br');
+			
+		d3.select("#buttonCol")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "newSample")
+			  .attr("value", "New sample")
+			  .attr("class", "button sampleBtn")
+			  .on("click", function() {
+				  location.reload();
+				  })
+			//.append('br');
 	}
 	
 	/*---------------------------
