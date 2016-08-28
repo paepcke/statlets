@@ -1,11 +1,7 @@
 /*
  * Todo:
- *    o Legends
- *    o SD printout
  *    o Formula
  *    o Instrumentation
- *    o All-state tooltips: name, rate, total pop?, num of births?
- *    o New state button.
  * Text:
  *    o Move a bar, watch SD and CI
  *         * Does CI include pop mean?
