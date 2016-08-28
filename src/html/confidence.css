@@ -38,14 +38,16 @@ h1          { text-align : center;  }
 .dataDiv { 
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex : 1 1;
-           flex-base : 40%;
+           /* flex-basis : 40%; ***** */
+           flex-basis : 20%;
            background-color : #F6F6F6;
          }
 
 .allStatesDiv { 
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex   : 1 1;
-           flex-base : 40%;
+           /* flex-basis : 40%; ***** */
+           flex-basis: 20%;
            background-color : #F6F6F6;
 		   opacity : 1;
          }
@@ -170,7 +172,7 @@ h1          { text-align : center;  }
  				    margin-bottom : 2px;
 		          }
 .button.sampleBtn.first { margin-top : 40px; }		          
-.button.sampleBtn:focus { outline : 0 !important };
+.button.sampleBtn:focus { outline : 0 !important }
 
 .sdGrp   { }
 .sdTxt   { transform   : translate(1em, -1em);
@@ -180,7 +182,6 @@ h1          { text-align : center;  }
 .sdTxt.allStates { fill  	   : Blue; }
 .sdTxt.data      { fill  	   : rgb(144, 12, 63); } /* Dark Red. */
 
-/* ****** .legendGrp       { transform : translate(9em, -1em); } *****/
 .legendGrp       { transform : translate(8em, 0.3em); }
 .legendTxt       { font-size : 0.9em; }
 
@@ -227,5 +228,4 @@ div.tooltip.visible,
 div.tooltip.state.visible    { opacity : 1; }
 
 .sampleHeader,
-.populationHeader     		 { font-size : 18pt;
-							 };
+.populationHeader     		 { font-size : 18pt; }

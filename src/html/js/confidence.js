@@ -103,6 +103,11 @@ var ConfidenceViz = function(width, height) {
 			
 		width  = chartDiv.clientWidth;
 		height = chartDiv.clientHeight;
+		
+		//*************
+		height = 400;
+		//*************			
+		
 
 		// The "+40" is a kludge! It accounts
 		// for the additional space that the x-axis
@@ -110,11 +115,12 @@ var ConfidenceViz = function(width, height) {
 		// 45 degrees: 
 		d3.select('#dataDiv')
 			.style("height", height + 40)
-		
+					
 		svgData = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
-		.attr("viewBox", `0 0 ${width} ${height}`)
+		//****.attr("viewBox", `0 0 ${width} ${height}`)
+		.attr("viewBox", `0 -60 ${width} 500`)  // Perfect for Chrome
 		.attr("id", "dataSvg")
 		.attr("class", "svgData")
 
@@ -171,7 +177,7 @@ var ConfidenceViz = function(width, height) {
 		svgAllStates = d3.select("#allStatesDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
-		.attr("viewBox", `0 0 ${width} ${height}`)
+		.attr("viewBox", `0 -10 ${width} ${height}`) // Perfect for Chrome
 		.attr("id", "allStatesSvg")
 		.attr("class", "svgAllStates")
 		
