@@ -384,7 +384,8 @@ var ConfidenceViz = function(width, height) {
 					dragClickHandler.dragmove(barSel);
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
-					dispatch.drag(this, barSel);
+					//******dispatch.drag(this, barSel);
+					dispatch.call("drag", this, barSel);
 				})
 				.on ('end', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -405,14 +406,14 @@ var ConfidenceViz = function(width, height) {
 		d3.select('#allStatesSvg').selectAll('.allStatesBar')
 			// Data are the teen birth rates:
 			 .data(statesToInclude)
-	      .enter().append('rect')
-	      	.attr('class', 'allStatesBar')
-	      	.attr('id', function(state) { return 'allStatesBar' + state })
-	      	.attr('state', function(state) { return state })
-	      	.attr('x', function(state) { return xScale(state) + ALL_STATES_LEFT_BAR_PADDING })
-	      	.attr('width', xScale.bandwidth())
-	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
-	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
+	      .enter().append("rect")
+	      	.attr("class", 'allStatesBar')
+	      	.attr("id", function(state) { return 'allStatesBar' + state })
+	      	.attr("state", function(state) { return state })
+	      	.attr("x", function(state) { return xScale(state) + ALL_STATES_LEFT_BAR_PADDING })
+	      	.attr("width", xScale.bandwidth())
+	      	.attr("y", function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
+	      	.attr("height", function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
 	      	.on("mouseover", function() {
 	      		let evt     = d3.event;
 	      		let state	= d3.select(this).attr("state");
@@ -889,7 +890,8 @@ var ConfidenceViz = function(width, height) {
 		case 'ordinal':
 			xScale = d3.scaleBand()
 							 .domain(extentDict.x.domain)
-							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT], 0.1);
+							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT])
+							 .paddingInner(0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
@@ -913,7 +915,8 @@ var ConfidenceViz = function(width, height) {
 		case 'ordinal':
 			yScale = d3.scaleBand()
 							 .domain(extentDict.y.domain)
-							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
+							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING])
+							 .innerPadding(0.1);
 			break;
 		default:
 			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
@@ -1008,8 +1011,7 @@ var ConfidenceViz = function(width, height) {
 	/*---------------------------
 	| barPulled
 	-----------------*/
-	
-	var barPulled = function(barObj, dataBarSel) {
+	var barPulled = function(dataBarSel) {
 		/*
 		 * Called when a data bar is dragged up or down. Finds the
 		 * confidence interval chart, and echoes
