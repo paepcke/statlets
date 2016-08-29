@@ -293,7 +293,8 @@ var ConfidenceViz = function(width, height) {
 	      	.attr('width', xScale.bandwidth())
 	      .enter().append("rect")
 	      	.attr('class', 'teenBirthBar')
-	      	.attr('id', function(state) { return 'dataBar' + state })
+	      	.attr('id', function(state) { 
+	      		return 'dataBar' + state })
 	      	.attr('state', function(state) { return state } )
 	      	.attr('x', function(state) { return xScale(state) })
 	      	.attr('width', xScale.bandwidth())
@@ -789,7 +790,8 @@ var ConfidenceViz = function(width, height) {
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
 		// value:
-		scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
+		//***scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
+		scalesData.bandwidth = xScale.bandwidth();
 		
 		updateDataChart(xDomain, teenBirthObj, scalesData);
         addMeanLine( { svg       : svgData, 
@@ -885,7 +887,7 @@ var ConfidenceViz = function(width, height) {
 							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
 			break;
 		case 'ordinal':
-			xScale = d3.scalePoint()
+			xScale = d3.scaleBand()
 							 .domain(extentDict.x.domain)
 							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT], 0.1);
 							 
@@ -909,7 +911,7 @@ var ConfidenceViz = function(width, height) {
 						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
 			break;
 		case 'ordinal':
-			yScale = d3.scalePoint()
+			yScale = d3.scaleBand()
 							 .domain(extentDict.y.domain)
 							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
 			break;
