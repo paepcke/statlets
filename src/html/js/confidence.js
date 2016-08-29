@@ -551,11 +551,6 @@ var ConfidenceViz = function(width, height) {
 						 { x : Y_AXIS_LEFT_PADDING + CI_LEFT_PADDING,
 						   y : yScale(ciObj.lowBound) + Y_AXIS_TOP_PADDING }
 		               ]
-		// Accessor function for each data point:
-		let lineFunction = d3.line()
-		                         .x(function(xyObj) { return xyObj.x; })
-		                         .y(function(xyObj) { return xyObj.y; })
-		                         .curveLinear;	
 
 		let ciVizSel = d3.select('#ciViz');
 		
@@ -567,8 +562,7 @@ var ConfidenceViz = function(width, height) {
 		if ( ciVizSel.empty() ) {
 			d3.select('#allStatesSvg')
 				.append("path")
-				.data([lineData])
-				.attr("d", lineFunction)
+				.attr("d", getPathPointAccessor()(lineData))
 				.attr("id", "ciViz")
 				.attr("class", "confIntLine");
 		} else {
