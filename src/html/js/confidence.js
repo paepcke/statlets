@@ -23,7 +23,6 @@ var ConfidenceViz = function(width, height) {
 	var yDomain 	     = null;
 	var xDomainAllStates = null;
 	var xDomainSaved     = null;
-	var dataXAxis		 = null;
 
 	var tooltipDivSel    = null;
 	var tooltipTxtSel	 = null;
@@ -155,12 +154,7 @@ var ConfidenceViz = function(width, height) {
                           };
 
 		scalesData = makeCoordSys(extentDict);
-		
-		// Make the sample-chart xAxis object available as 
-		// an instance var, so that we can change/erase the
-		// labels later:
-		dataXAxis = scalesData.xAxis;
-		
+				
 		// Generate bar chart for the chosen states:
         updateDataChart(xDomain, teenBirthObj, scalesData);
 		
@@ -333,7 +327,6 @@ var ConfidenceViz = function(width, height) {
 	      	// here: The dragstart/drag/dragend below should
 	      	// be in a function that returns the behavior.
 	      	// Didn't work.
-	      	//*****.call(addDragBehavior, scalesData);
 	      	.call(d3.drag()
 				.on('start', function(d) {
 					
@@ -755,30 +748,29 @@ var ConfidenceViz = function(width, height) {
 			keepTicks
 		}
 		
-		let xScale = d3.scalePoint()
-			.domain(xDomain)
-			.rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
-		
+		xScale = d3.scaleBand()
+		.domain(xDomain)
+		.rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING])
+		.paddingInner(0.1);
+
+		// Update record of coord sys:
 		scalesData.xScale = xScale;
+		
+		// Any previous >5-states x axis?
 		d3.select('#dataXAxisGrp')
 			.remove();
 
-		let xAxis = d3.svg.axis()
-				      .scale(xScale)
-				      .orient("bottom");
-				      
 		// Create a group, and call the xAxis function to create the axis.
 		let xAxisGroup = svgData.append("g")
 			 .attr("class", "axis")
-			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 			 .attr("id", "dataXAxisGrp")
-			 
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .call(d3.axisBottom(xScale));
+		      
 	    // Suppress X-axis ticks if requested:
 		if ( ! keepTicks ) {
 			 xAxisGroup.classed('noTicks', true) 
 		}
-		
-		xAxisGroup.call(xAxis);
 		
 		// Class the labels:
 		let txtSel     = xAxisGroup.selectAll("text");
@@ -791,7 +783,6 @@ var ConfidenceViz = function(width, height) {
 		// Width between two ticks is (for instance) pixel-pos
 		// at first domain value minus pixel pos at zeroeth domain
 		// value:
-		//***scalesData.bandwidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
 		scalesData.bandwidth = xScale.bandwidth();
 		
 		updateDataChart(xDomain, teenBirthObj, scalesData);
@@ -867,7 +858,6 @@ var ConfidenceViz = function(width, height) {
 		/* ---------------------------- X AXIS ---------------------------- */		
 
 		let svg = extentDict.svg;
-		let xAxis     = null
 		let yAxis     = null;
 		let xScale    = null;
 		let yScale    = null;
@@ -904,7 +894,6 @@ var ConfidenceViz = function(width, height) {
 		}
 		
 
-
 		// Y Scale
 		switch(extentDict.y.scaleType) {
 		case 'linear':
@@ -924,15 +913,15 @@ var ConfidenceViz = function(width, height) {
 		
 		// Make the visual coordinate system:
 		
-		xAxis = d3.select(".axis")
-			      .call(d3.axisBottom(xScale));
-				      
 		// Create a group, and call the xAxis function to create the axis.
 		let xAxisGroup = svg.append("g")
 			 .attr("class", "axis")
+			 .attr("id", "xAxisGrp")
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
-		     //****** ????.call(xAxis);
+			 .call(d3.axisBottom(xScale));
 		
+		//xAxis = d3.select("#xAxisGrp .*******)
+		   
 		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
 			xAxisGroup.classed(extentDict.x.subclass, true)
 		}
@@ -962,15 +951,13 @@ var ConfidenceViz = function(width, height) {
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
 		
-		yAxis = d3.select(".axis")
-				   .call(d3.axisLeft(yScale));
-		
 		// Create a group, and call the xAxis function to create the axis:
 		let yAxisGroup = svg.append("g")
 			 .attr("class", "axis")
+			 .attr("id", "yAxisGrp")
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
 			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
-		     //****** ???.call(yAxis);
+		     .call(d3.axisLeft(yScale));
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
 			yAxisGroup.classed(extentDict.y.subclass, true)
@@ -1002,8 +989,6 @@ var ConfidenceViz = function(width, height) {
 		
 		return {xScale    : xScale,
 				yScale    : yScale,
-				xAxis	  : xAxis,
-				yAxis	  : yAxis,
 				bandWidth : bandWidth,
 			   }
 	}
