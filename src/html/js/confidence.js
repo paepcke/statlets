@@ -283,8 +283,8 @@ var ConfidenceViz = function(width, height) {
 		// a chance to see which bar moved, and to mirror
 		// on the confidence interval chart:
 		let dispatch = d3.dispatch('drag', barPulled);
-		dispatch.on("drag.teenBirthBar", barPulled); //************
-		
+		dispatch.on("drag.teenBirthBar", barPulled);
+				
 		d3.select('#dataSvg').selectAll('.teenBirthBar')
 			// Data are the states:
 			.data(statesToInclude)
@@ -315,7 +315,12 @@ var ConfidenceViz = function(width, height) {
 
 	      		tooltipDivSel.classed("visible", true);
 	      		tooltipTxtSel.classed("visible", true);
-
+	      		
+/*	      		d3.timeout(function(elapsed) {
+	      			tooltipDivSel.classed("visible", false);
+	      			tooltipTxtSel.classed("visible", false);
+	      		}, 1000);
+*/	      		
 	      	})
 	      	.on("mouseleave", function(evt) {
 	      		tooltipTxtSel.classed("visible", false);
