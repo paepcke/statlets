@@ -290,13 +290,13 @@ var ConfidenceViz = function(width, height) {
 			.data(statesToInclude)
 			 // Narrow existing bars:
 	      	.attr('x', function(state) { return xScale(state) })
-	      	.attr('width', xScale.rangeBand())
+	      	.attr('width', xScale.bandwidth())
 	      .enter().append("rect")
 	      	.attr('class', 'teenBirthBar')
 	      	.attr('id', function(state) { return 'dataBar' + state })
 	      	.attr('state', function(state) { return state } )
 	      	.attr('x', function(state) { return xScale(state) })
-	      	.attr('width', xScale.rangeBand())
+	      	.attr('width', xScale.bandwidth())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
 	      	.on("mouseover", function() {
@@ -333,8 +333,8 @@ var ConfidenceViz = function(width, height) {
 	      	// be in a function that returns the behavior.
 	      	// Didn't work.
 	      	//*****.call(addDragBehavior, scalesData);
-	      	.call(d3.behavior.drag()
-				.on('dragstart', function(d) {
+	      	.call(d3.drag()
+				.on('start', function(d) {
 					
 					// D3-select the DOM element that's trying
 					// to be dragged:
@@ -351,7 +351,7 @@ var ConfidenceViz = function(width, height) {
 					barSel.classed("dragging", true);
 
 					// Remember the bar that's in motion:
-					d3.behavior.drag.currBar = this;
+					d3.drag.currBar = this;
 					
 				})
 				.on('drag', function(d) {
@@ -368,7 +368,7 @@ var ConfidenceViz = function(width, height) {
 					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
 						// Mouse got ahead of the bar being resized.
 						// Select the bar we are dragging instead:
-						barSel = d3.select(d3.behavior.drag.currBar);
+						barSel = d3.select(d3.drag.currBar);
 						if (barSel.empty()) {
 							// Not over a bar:
 							return;
@@ -385,9 +385,9 @@ var ConfidenceViz = function(width, height) {
 					// Used to sync (synchronize) CI chart with data chart:
 					dispatch.drag(this, barSel);
 				})
-				.on ('dragend', function(d) {
+				.on ('end', function(d) {
 					d3.select(this).classed("dragging", false);
-					d3.behavior.drag.currBar = undefined;
+					d3.drag.currBar = undefined;
 				})
 	      	)
 	}
@@ -409,7 +409,7 @@ var ConfidenceViz = function(width, height) {
 	      	.attr('id', function(state) { return 'allStatesBar' + state })
 	      	.attr('state', function(state) { return state })
 	      	.attr('x', function(state) { return xScale(state) + ALL_STATES_LEFT_BAR_PADDING })
-	      	.attr('width', xScale.rangeBand())
+	      	.attr('width', xScale.bandwidth())
 	      	.attr('y', function(state) { return yScale(teenBirthObj[state]) + Y_AXIS_TOP_PADDING })
 	      	.attr('height', function(state) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(teenBirthObj[state]) })
 	      	.on("mouseover", function() {
@@ -489,10 +489,9 @@ var ConfidenceViz = function(width, height) {
 		 */
 		
 		// Accessor function for each data point:
-		return d3.svg.line()
+		return d3.line()
 				.x(function(xyObj) { return xyObj.x; })
-				.y(function(xyObj) { return xyObj.y; })
-				.interpolate("linear");
+				.y(function(xyObj) { return xyObj.y; });
 	}
 	
 	
@@ -558,10 +557,10 @@ var ConfidenceViz = function(width, height) {
 						   y : yScale(ciObj.lowBound) + Y_AXIS_TOP_PADDING }
 		               ]
 		// Accessor function for each data point:
-		let lineFunction = d3.svg.line()
+		let lineFunction = d3.line()
 		                         .x(function(xyObj) { return xyObj.x; })
 		                         .y(function(xyObj) { return xyObj.y; })
-		                         .interpolate("linear");	
+		                         .curveLinear;	
 
 		let ciVizSel = d3.select('#ciViz');
 		
@@ -573,7 +572,8 @@ var ConfidenceViz = function(width, height) {
 		if ( ciVizSel.empty() ) {
 			d3.select('#allStatesSvg')
 				.append("path")
-				.attr("d", lineFunction(lineData))
+				.data([lineData])
+				.attr("d", lineFunction)
 				.attr("id", "ciViz")
 				.attr("class", "confIntLine");
 		} else {
@@ -610,7 +610,8 @@ var ConfidenceViz = function(width, height) {
 		
 		dataLegendGrp
 			.append("path")
-				.attr("d", getPathPointAccessor()(lineData))
+				.data([lineData])
+				.attr("d", getPathPointAccessor())
 				.attr("class", "sampleLegendMeanLine")
 		
 		dataLegendGrp
@@ -630,7 +631,8 @@ var ConfidenceViz = function(width, height) {
 		
 		allStatesLegendGrp
 			.append("path")
-				.attr("d", getPathPointAccessor()(lineData))
+				.data([lineData])
+				.attr("d", getPathPointAccessor())
 				.attr("class", "populationLegendMeanLine")
 		
 		allStatesLegendGrp
@@ -648,7 +650,8 @@ var ConfidenceViz = function(width, height) {
 		
 		allStatesLegendGrp
 			.append("path")
-				.attr("d", getPathPointAccessor()(lineData))
+				.data([lineData])
+				.attr("d", getPathPointAccessor())
 				.attr("class", "populationLegendConfIntLine");
 
 	}
@@ -750,9 +753,9 @@ var ConfidenceViz = function(width, height) {
 			keepTicks
 		}
 		
-		let xScale = d3.scale.ordinal()
+		let xScale = d3.scalePoint()
 			.domain(xDomain)
-			.rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
+			.rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 0.1);
 		
 		scalesData.xScale = xScale;
 		d3.select('#dataXAxisGrp')
@@ -877,14 +880,14 @@ var ConfidenceViz = function(width, height) {
 		
 		switch(extentDict.x.scaleType) {
 		case 'linear':
-			xScale = d3.scale.linear()
+			xScale = d3.scaleLinear()
 							 .domain(extentDict.x.domain)
 							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
 			break;
 		case 'ordinal':
-			xScale = d3.scale.ordinal()
+			xScale = d3.scalePoint()
 							 .domain(extentDict.x.domain)
-							 .rangeRoundBands([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT], 0.1);
+							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT], 0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
@@ -901,14 +904,14 @@ var ConfidenceViz = function(width, height) {
 		// Y Scale
 		switch(extentDict.y.scaleType) {
 		case 'linear':
-			yScale = d3.scale.linear()	
+			yScale = d3.scaleLinear()	
 			 			 .domain(extentDict.y.domain)
 						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
 			break;
 		case 'ordinal':
-			yScale = d3.scale.ordinal()
+			yScale = d3.scalePoint()
 							 .domain(extentDict.y.domain)
-							 .rangePoints([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
+							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
 			break;
 		default:
 			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
@@ -916,15 +919,14 @@ var ConfidenceViz = function(width, height) {
 		
 		// Make the visual coordinate system:
 		
-		xAxis = d3.svg.axis()
-				      .scale(xScale)
-				      .orient("bottom");
+		xAxis = d3.select(".axis")
+			      .call(d3.axisBottom(xScale));
 				      
 		// Create a group, and call the xAxis function to create the axis.
 		let xAxisGroup = svg.append("g")
 			 .attr("class", "axis")
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
-		     .call(xAxis);
+		     //****** ????.call(xAxis);
 		
 		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
 			xAxisGroup.classed(extentDict.x.subclass, true)
@@ -955,16 +957,15 @@ var ConfidenceViz = function(width, height) {
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
 		
-		yAxis = d3.svg.axis()
-				      .scale(yScale)
-				      .orient("left");
+		yAxis = d3.select(".axis")
+				   .call(d3.axisLeft(yScale));
 		
 		// Create a group, and call the xAxis function to create the axis:
 		let yAxisGroup = svg.append("g")
 			 .attr("class", "axis")
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
 			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
-		     .call(yAxis);
+		     //****** ???.call(yAxis);
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
 			yAxisGroup.classed(extentDict.y.subclass, true)

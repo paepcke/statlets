@@ -18,7 +18,7 @@ var StatsBarchartResizeHandler = function(svg) {
 		}
 		
 		// Define drag behavior
-        drag = d3.behavior.drag()
+        drag = d3.drag()
            .on("drag", dragmove);
 		
 		return {allowResize			: allowResize,         // getter
