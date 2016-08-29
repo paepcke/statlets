@@ -223,9 +223,15 @@ div.tooltip 				 {
     						   border-radius: 8px;			
     						   pointer-events: none;
 							 }
-div.tooltip 			 	 { opacity : 0; }   /* Tooltip text: hovered-over state */							 						 
+div.tooltip 			 	 { 
+							   opacity : 0;
+							   transition : opacity 2s; 
+							 }   /* Tooltip text: hovered-over state */							 						 
 div.tooltip.visible,
-div.tooltip.state.visible    { opacity : 1; }
+div.tooltip.state.visible    { 
+							   opacity : 1;
+							   transition : opacity 1s;  
+							 }
 
 .sampleHeader,
 .populationHeader     		 { font-size : 18pt; }

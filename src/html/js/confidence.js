@@ -311,11 +311,11 @@ var ConfidenceViz = function(width, height) {
 	      		tooltipDivSel.classed("visible", true);
 	      		tooltipTxtSel.classed("visible", true);
 	      		
-/*	      		d3.timeout(function(elapsed) {
+	      		d3.timeout(function(elapsed) {
 	      			tooltipDivSel.classed("visible", false);
 	      			tooltipTxtSel.classed("visible", false);
 	      		}, 1000);
-*/	      		
+	      		
 	      	})
 	      	.on("mouseleave", function(evt) {
 	      		tooltipTxtSel.classed("visible", false);
