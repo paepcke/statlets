@@ -120,9 +120,15 @@ var ConfidenceViz = function(width, height) {
 		.attr("width", "100%")
 		.attr("height", "100%")
 		//****.attr("viewBox", `0 0 ${width} ${height}`)
-		.attr("viewBox", `0 -60 ${width} 500`)  // Perfect for Chrome
+		//****.attr("viewBox", `0 -60 ${width} 500`)  // Perfect for Chrome and FF
 		.attr("id", "dataSvg")
 		.attr("class", "svgData")
+		
+		if (browserType === 'Firefox1+') {
+			svgData.attr("viewBox", `0 -60 ${width} 500`);
+		} else {
+			svgData.attr("viewBox", `0 -60 ${width} 500`);
+		}
 
 		dragClickHandler = StatsBarchartResizeHandler(svgData);
 		
@@ -177,9 +183,22 @@ var ConfidenceViz = function(width, height) {
 		svgAllStates = d3.select("#allStatesDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
-		.attr("viewBox", `0 -10 ${width} ${height}`) // Perfect for Chrome
 		.attr("id", "allStatesSvg")
 		.attr("class", "svgAllStates")
+						
+		// Adjust viewbox depending on Chrome vs. FF. Yikes!
+		if ( browserType() === 'Firefox1+') {
+			// Viewbox values are strings like: "0 -60 315 500" 
+			// Convert to this: ["0", "-60", "315", "500"]
+			let dataViewBoxArr = d3.select("#dataSvg").attr("viewBox").split(" ");
+			let dataViewBoxY     = dataViewBoxArr[1];
+			let dataViewBoxWidth = dataViewBoxArr[2];
+			//*****svgAllStates.attr("viewBox", `0 -45 ${dataViewBoxWidth} ${height}`) // 
+			//*****svgAllStates.attr("viewBox", `0 -45 ${width} 480`) // 
+			svgAllStates.attr("viewBox", `0 -50 ${width} 480`) // 
+		} else {
+			svgAllStates.attr("viewBox", `0 -10 ${width} ${height}`) // Perfect for Chrome
+		}
 		
         extentDict  = {svg             : svgAllStates,
         			   x: {scaleType   : 'ordinal',
@@ -1121,12 +1140,17 @@ var ConfidenceViz = function(width, height) {
 			  .attr("text-anchor", "middle")
 			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgDataWidth / 2}, -30)`);
 		
-		svgAllStates
+		let headerTxtSel = svgAllStates
 			.append("text")
 			  .text("Population")
 			  .attr("class", "populationHeader")
 			  .attr("text-anchor", "middle")
-			  .attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -30)`);
+	   
+		if ( browserType() == 'Firefox1+') {		
+			headerTxtSel.attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -20)`);
+		} else {
+			headerTxtSel.attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -30)`);
+		}
 	}
 	
 	/*---------------------------
@@ -1227,6 +1251,42 @@ var ConfidenceViz = function(width, height) {
 		}
 	}
 	
+	/*---------------------------
+	| browserType 
+	-----------------*/
+	
+	var browserType = function() {
+
+	    // Opera 8.0+
+		if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) {
+			return 'Opera8+';
+		}
+		    // Firefox 1.0+
+		if ( typeof InstallTrigger !== 'undefined' ) {
+			return 'Firefox1+';
+		}
+		    // At least Safari 3+: "[object HTMLElementConstructor]"
+		if ( Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0 ) {
+			return 'Safari3+';
+		}
+		    // Internet Explorer 6-11
+		let isIE = /*@cc_on!@*/false || !!document.documentMode;
+		if (isIE) {
+			return 'IE6-11';
+		}
+		    // Edge 20+
+		if ( !isIE && !!window.StyleMedia ) {
+			return 'Edge20+';
+		}
+		    // Chrome 1+
+		if ( !!window.chrome && !!window.chrome.webstore ) {
+			return 'Chrome1+';
+		}
+		    // Blink engine detection
+		if ( (isChrome || isOpera) && !!window.CSS ) {
+			return 'Blink';
+		}
+	}
 	
 	return constructor(width, height);
 }
