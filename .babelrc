@@ -1,0 +1,9 @@
+{
+  presets: ["es2015", "react"],
+  only:    ["src/html/js/confidence.js",
+            "src/html/js/tableManager.js",
+            "src/html/js/statsBarchartResizeHandler.js"
+            ],
+  plugins: ["transform-runtime"]            
+}
+

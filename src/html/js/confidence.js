@@ -27,6 +27,8 @@ var ConfidenceViz = function(width, height) {
 	var tooltipDivSel    = null;
 	var tooltipTxtSel	 = null;
 
+	var svgData			 = null;
+	
 	// Constants:
 
 	var X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
