@@ -28,6 +28,7 @@ var ConfidenceViz = function(width, height) {
 	var tooltipTxtSel	 = null;
 
 	var svgData			 = null;
+	var svgAllStates     = null;	
 	
 	// Constants:
 
@@ -744,14 +745,13 @@ var ConfidenceViz = function(width, height) {
 			keepTicks
 		}
 		
-		xScale = d3.scaleBand()
+		scalesData.xScale = d3.scaleBand()
 		.domain(xDomain)
 		.rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING])
 		.paddingInner(0.1);
-
-		// Update record of coord sys:
-		scalesData.xScale = xScale;
 		
+		let xScale = scalesData.xScale;
+
 		// Any previous >5-states x axis?
 		d3.select('#dataXAxisGrp')
 			.remove();
@@ -966,7 +966,7 @@ var ConfidenceViz = function(width, height) {
 		
 		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
 		
-		xAxisLabel = svg.append("text")
+		let xAxisLabel = svg.append("text")
 						.attr("class", "x label")
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
@@ -974,7 +974,7 @@ var ConfidenceViz = function(width, height) {
 						.attr("y", height + 20)
 						.text(extentDict.x.axisLabel)
 						
-		yAxisLabel = svg.append("text")
+		let yAxisLabel = svg.append("text")
 						.attr("class", "axis y label")
 						.attr("id", extentDict.y.axisLabelId)
 						.text(extentDict.y.axisLabel)

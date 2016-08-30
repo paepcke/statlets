@@ -1,4 +1,6 @@
-var StatsBarchartResizeHandler = function(svg) {
+"use strict";
+
+var StatsBarchartResizeHandler = function (svg) {
 	
 	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating.
 	
