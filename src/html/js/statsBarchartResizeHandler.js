@@ -1,5 +1,7 @@
 "use strict";
 
+import * as d3 from "./d3.min";
+
 var StatsBarchartResizeHandler = function (svg) {
 	
 	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating.
@@ -80,3 +82,4 @@ var StatsBarchartResizeHandler = function (svg) {
 	return(constructor());
 	
 }
+export { StatsBarchartResizeHandler };

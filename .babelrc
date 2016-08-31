@@ -1,6 +1,6 @@
 {
   presets: ["es2015", "react"],
-  only:    ["src/html/js/confidence.js",
+  only:    ["src/html/js/confidenceEng.js",
             "src/html/js/tableManager.js",
             "src/html/js/statsBarchartResizeHandler.js"
             ],
