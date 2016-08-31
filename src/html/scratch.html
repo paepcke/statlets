@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scratch</title>
+	<script type="text/javascript" src="js/log4javascript.js"></script>	    	
+
+	<script>
+	    var log = log4javascript.getLogger();
+	    var popUpAppender = new log4javascript.PopUpAppender();
+	    var popUpLayout = new log4javascript.PatternLayout("%d{HH:mm:ss} %-5p - %m%n");
+	    popUpAppender.setLayout(popUpLayout);
+	    log.addAppender(popUpAppender);
+	    
+	    var ajaxAppender = new log4javascript.AjaxAppender("http://localhost:8889");
+	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
+	    log.addAppender(ajaxAppender);
+
+	    var XMLHTTPRequest = function() {
+		    log.debug("Debugging message (appears in pop-up)");
+	    	log.error("Error message (appears in pop-up and in server log)");
+	    }
+	</script>
+    
+</head>
+<body>
+	<div>
+	<button type="button" id="trigger" onclick="XMLHTTPRequest()">XMLHTTPRequest</button>
+	</div>
+</body>
+</html>
