@@ -36,7 +36,9 @@ var ConfidenceViz = function(width, height) {
 	var svgData			 = null;
 	var svgAllStates     = null;	
 	
-	var myIp             = null;
+	var myBrowser        = null;
+	var myUid            = null;
+	var logServerURL     = null;
 	
 	// Constants:
 
@@ -272,13 +274,14 @@ var ConfidenceViz = function(width, height) {
         								makeSmallPopCorrection : true
         						     });		
 
-        initLogging();						     
         createCIViz(ci);        						     
         addSamplingButtons()
         addControlButtons();
 		addLegends();
 		createTooltip();
 		createSvgHeaders();		
+        initLogging();						     
+        
 		return {width  : width,
 				height : height,
 			}
@@ -288,7 +291,22 @@ var ConfidenceViz = function(width, height) {
 	| initLogging 
 	-----------------*/
 	
-	var initLogging = function() {
+	var initLogging = function(uid) {
+		/*
+		 * Initializes write-back of user interactions
+		 * with statlet to server. Assumes that instance
+		 * variables myBrowser and myUid have been set.
+		 * 
+		 */
+		
+		if ( typeof(uid) === 'undefined') {
+			document.getElementById("loginBtn")
+				.addEventListener("click", function(evt) {
+					let uid = document.getElementById("uidFld").value;
+					initLogging(uid);
+				})
+			return;
+		}
 		
 		let originUrl = location.origin;
 		
@@ -303,23 +321,50 @@ var ConfidenceViz = function(width, height) {
 		}
 		
 		let log = log4javascript.getLogger();
-		let logServerURL = `${originUrl}:${LOGGING_PORT}`;
+		logServerURL = `${originUrl}:${LOGGING_PORT}`;
 	    let ajaxAppender = new log4javascript.AjaxAppender(logServerURL);
 	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
 	    log.addAppender(ajaxAppender);
 	    
-	    // Get my own IP address to include in
-	    // logging msgs:
+	    authPromise = authenticate(uid);
 	    
-	    let ipPromise = getFromLogServer('{"reqType" : "myIp"}', logServerURL);
-	    myIp = ipPromise.then(
-	    		function(ipAddrStr) {
-	    			// Success:
-	    			return ipAddrStr;
+	    if ( authPromise.value ) {
+	    	myUid = uid;
+	    	d3.select("#overlayDiv").remove();
+	    	d3.select("#loginDiv").remove();
+	    } else {
+	    	alert("Cannot find this user id in database; please retry.")
+	    }
+
+	}
+	
+	/*---------------------------
+	| authenticate 
+	-----------------*/
+	
+	var authenticate = function(uid) {
+		
+	    let loginPromise = getFromLogServer(
+	    		{"reqType" : "login",
+	    		 "userId"  : uid,
+	    		}, logServerURL);
+
+	    loginPromise.then(
+	    		function(resStr) {
+	    			// Got an answer from logging server:
+	    			if ( resStr === "loginOK") {
+	    				myUid = uid;
+	    				return true;
+	    			} else {
+	    				return false; //***** Causes reload
+	    			}
 	    		},
 	    		function() {
-	    			return "0.0.0.0";
+	    			myUid = "logServerDown*";
+	    			alert ("Logging server seems offline; please email paepcke@cs.stanford.edu");
+	    			return true;
 	    		});
+	    return loginPromise;
 	}
 	
 	/*---------------------------
@@ -343,7 +388,7 @@ var ConfidenceViz = function(width, height) {
 			};
 
 			xmlHttpReq.open("POST", theUrl, true); // true for asynchronous
-			xmlHttpReq.send(reqJson);
+			xmlHttpReq.send(JSON.stringify(reqJson));
 		});
 		return promise;
 	}

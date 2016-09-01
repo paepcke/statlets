@@ -6,6 +6,7 @@ Created on Aug 29, 2016
 
 import json
 import logging
+import os
 
 import tornado.ioloop
 import tornado.web
@@ -17,7 +18,13 @@ class UxRecorder(tornado.web.RequestHandler):
     loggingInitialized = False
     logger = None
     
-    def initialize(self, loggingLevel=logging.INFO, logFile=None):
+    TEST_UID_DB = {"test*" : ''}
+
+    #---------------------------
+    # initialize 
+    #----------------*/
+    
+    def initialize(self, loggingLevel=logging.INFO, logFile=None, uidFile=None):
         '''
         :param loggingLevel: level at which logging output is show. 
         :type loggingLevel: {logging.DEBUG | logging.WARN | logging.INFO | logging.ERROR | logging.CRITICAL}
@@ -27,26 +34,34 @@ class UxRecorder(tornado.web.RequestHandler):
         :type logFile: String
         
         '''
-        
-        self.setupLogging(loggingLevel, logFile)        
-        
 
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.uidDict = self.loadUserIds(uidFile)
+        
+        self.setupLogging(loggingLevel, logFile)
+        self.log = UxRecorder.logger
+        self.loadUserIds(uidFile)
+        
+        print("Started statlet ux recorder.")        
+        
+    #---------------------------
+    # get
+    #----------------*/
 
     def get(self):
         #self.write(self.request.remote_ip)
         #print(self.request.remote_ip);
         pass
+    
+    #---------------------------
+    # post 
+    #----------------*/
         
     def post(self):
         try:
             body = self.request.body
             reqMsg  = json.loads(body)
         except Exception as e:
-            UxRecorder.logger.error("Bad request '%s' (%s)" % (body, `e`))
+            self.log.error("Bad request '%s' (%s)" % (body, `e`))
             return
             
         # Handle requests that want an answer:
@@ -54,12 +69,58 @@ class UxRecorder(tornado.web.RequestHandler):
             reqType = reqMsg['type']
         except KeyError:
             # Msg is just a logging report:
-            UxRecorder.logger.info(reqMsg)
+            self.log.info(reqMsg)
             return
         
         # Answer needed:
         if reqType == "myIp":
             self.write(self.request.remote_ip)
+            
+        elif reqType == "login":
+            try:
+                userId = reqMsg['userId']
+            except KeyError:
+                self.write("Software error: Login request without login name.")
+                return
+            if self.isRegistered(userId):
+                self.write("loginOK")
+            else:
+                self.write("loginNOK")
+
+    #---------------------------
+    # isRegistered 
+    #----------------*/
+            
+    def isRegistered(self, loginId):
+        try:
+            UxRecorder.idDic[loginId]
+            return True
+        except KeyError:
+            return False
+
+    #---------------------------
+    # loadUserIds
+    #----------------*/
+
+    def loadUserIds(self, uidFile):
+
+        uidDict = {}
+        if uidFile is None:
+            return UxRecorder.TEST_UID_DB
+        try:
+            with open(uidFile, 'r') as uidsFd:
+                for uidLine in uidsFd:
+                    uidDict[uidLine.strip()] = ""
+        except:
+            self.log.error("Could not read uid file %s (using stub dict): " % uidFile)
+            return UxRecorder.TEST_UID_DB
+
+        return uidDict    
+    
+    #---------------------------
+    # setupLogging
+    #----------------*/
+    
         
     def setupLogging(self, loggingLevel, logFile):
         if UxRecorder.loggingInitialized:
@@ -91,15 +152,25 @@ class UxRecorder(tornado.web.RequestHandler):
         
         UxRecorder.loggingInitialized = True
 
+    #---------------------------
+    # set_default_headers 
+    #----------------*/
+
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        
+    #---------------------------
+    # options 
+    #----------------*/
         
     def options(self):
         # no body
         self.set_status(204)
         self.finish()
         
-    def log(self, txt):
-        pass        
-
+    # -------------------------------  Startup ------------------        
 def make_app():
     return tornado.web.Application([
         (r"/", UxRecorder),
