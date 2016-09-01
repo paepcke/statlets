@@ -10,7 +10,7 @@ import logging
 import tornado.ioloop
 import tornado.web
 
-
+        
 class UxRecorder(tornado.web.RequestHandler):
 
     # Remember whether logging has been initialized (class var!):
@@ -19,7 +19,13 @@ class UxRecorder(tornado.web.RequestHandler):
     
     TEST_UID_DB = {"test*" : ''}
 
+    #---------------------------
+    # prepare 
+    #----------------*/
 
+    def prepare(self):
+        self.set_default_headers()
+        
     #---------------------------
     # initialize 
     #----------------*/
@@ -50,7 +56,6 @@ class UxRecorder(tornado.web.RequestHandler):
         
         '''
 
-        cls.set_default_headers()
         cls.uidDict = cls.loadUserIds(uidFile)
         cls.setupLogging(loggingLevel, logFile)
                 
@@ -170,15 +175,15 @@ class UxRecorder(tornado.web.RequestHandler):
         
         UxRecorder.loggingInitialized = True
 
+
     #---------------------------
     # set_default_headers 
     #----------------*/
 
-    @classmethod
-    def set_default_headers(cls):
-        cls("Access-Control-Allow-Origin", "*")
-        cls.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        cls.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         
     #---------------------------
     # options 
@@ -188,8 +193,9 @@ class UxRecorder(tornado.web.RequestHandler):
         # no body
         self.set_status(204)
         self.finish()
-        
+
     # -------------------------------  Startup ------------------        
+    
 def make_app():
     return tornado.web.Application([
         (r"/", UxRecorder),

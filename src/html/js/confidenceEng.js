@@ -339,7 +339,11 @@ var ConfidenceViz = function(width, height) {
 	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
 	    log.addAppender(ajaxAppender);
 	    
-	    if ( authenticate(uid) ) {
+	    //*********
+	    let authRes = authenticate(uid, logServerURL) ; 
+	    //*********	    
+	    
+	    if ( authRes ) {
 	    	myUid = uid;
 	    	d3.select("#loginLabel").classed("wrong", false);
 	    	d3.select("#overlayDiv").remove();
@@ -354,25 +358,28 @@ var ConfidenceViz = function(width, height) {
 	| authenticate 
 	-----------------*/
 	
-	var authenticate = function(uid, successFn, failureFn) {
+	var authenticate = function(uid, originUrl) {
 		
 		return getFromLogServer(
 				{"reqType" : "login",
 				 "userId"  : uid,
 				},
-				'http://example.com'
+				originUrl
 				)
 				.then(function (reqRes) {
 					if ( reqRes === "loginOK" ) {
 						return true;
-					} else {
+					} else if (reqRes === "loginNOK") {
 						return false;
+					} else {
+						myUid = "logServerDown*";
+						return true;
 					}
 				})
 				.catch(function (errObj) {
 					myUid = "logServerDown*";
 					//console.error('Augh, there was an error!', err.statusText);
-					return false;
+					return true;
 				});
 	}
 	
