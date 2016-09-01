@@ -243,6 +243,8 @@ div.tooltip.state.visible    {
  				   margin-right : 20px;
  				   margin-bottom : 2px;
 		          }
+p.login  		{ color : black; }
+p.login.wrong   { color : red; }
 
 .overlay {
     position:fixed;

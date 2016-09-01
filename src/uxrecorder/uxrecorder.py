@@ -6,7 +6,6 @@ Created on Aug 29, 2016
 
 import json
 import logging
-import os
 
 import tornado.ioloop
 import tornado.web
@@ -20,11 +19,27 @@ class UxRecorder(tornado.web.RequestHandler):
     
     TEST_UID_DB = {"test*" : ''}
 
+
     #---------------------------
     # initialize 
     #----------------*/
+
+    def initialize(self):
+        '''
+        Called for each incoming request.
+        Just makes the class variable 'logger'
+        conveniently available as shortened
+        instance var.
+        
+        '''
+        self.log = UxRecorder.logger
+        
+    #---------------------------
+    # initializeOnce 
+    #----------------*/
     
-    def initialize(self, loggingLevel=logging.INFO, logFile=None, uidFile=None):
+    @classmethod
+    def initializeOnce(cls, loggingLevel=logging.INFO, logFile=None, uidFile=None):
         '''
         :param loggingLevel: level at which logging output is show. 
         :type loggingLevel: {logging.DEBUG | logging.WARN | logging.INFO | logging.ERROR | logging.CRITICAL}
@@ -35,13 +50,12 @@ class UxRecorder(tornado.web.RequestHandler):
         
         '''
 
-        self.uidDict = self.loadUserIds(uidFile)
-        
-        self.setupLogging(loggingLevel, logFile)
-        self.log = UxRecorder.logger
-        self.loadUserIds(uidFile)
-        
+        cls.set_default_headers()
+        cls.uidDict = cls.loadUserIds(uidFile)
+        cls.setupLogging(loggingLevel, logFile)
+                
         print("Started statlet ux recorder.")        
+
         
     #---------------------------
     # get
@@ -66,7 +80,7 @@ class UxRecorder(tornado.web.RequestHandler):
             
         # Handle requests that want an answer:
         try:
-            reqType = reqMsg['type']
+            reqType = reqMsg['reqType']
         except KeyError:
             # Msg is just a logging report:
             self.log.info(reqMsg)
@@ -84,8 +98,10 @@ class UxRecorder(tornado.web.RequestHandler):
                 return
             if self.isRegistered(userId):
                 self.write("loginOK")
+                self.log.info('{login : "%s"}' % userId)
             else:
                 self.write("loginNOK")
+                self.log.info('{loginFail : "%s"}' % userId)
 
     #---------------------------
     # isRegistered 
@@ -93,7 +109,7 @@ class UxRecorder(tornado.web.RequestHandler):
             
     def isRegistered(self, loginId):
         try:
-            UxRecorder.idDic[loginId]
+            self.uidDict[loginId]
             return True
         except KeyError:
             return False
@@ -102,6 +118,7 @@ class UxRecorder(tornado.web.RequestHandler):
     # loadUserIds
     #----------------*/
 
+    @classmethod
     def loadUserIds(self, uidFile):
 
         uidDict = {}
@@ -122,6 +139,7 @@ class UxRecorder(tornado.web.RequestHandler):
     #----------------*/
     
         
+    @classmethod        
     def setupLogging(self, loggingLevel, logFile):
         if UxRecorder.loggingInitialized:
             # Remove previous file- or console-handlers,
@@ -156,10 +174,11 @@ class UxRecorder(tornado.web.RequestHandler):
     # set_default_headers 
     #----------------*/
 
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    @classmethod
+    def set_default_headers(cls):
+        cls("Access-Control-Allow-Origin", "*")
+        cls.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        cls.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         
     #---------------------------
     # options 
@@ -178,5 +197,6 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
+    UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=None, uidFile=None)
     app.listen(8889)
     tornado.ioloop.IOLoop.current().start()

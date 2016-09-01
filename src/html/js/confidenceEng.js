@@ -45,6 +45,7 @@ var ConfidenceViz = function(width, height) {
 	// Where usage activity and heartbeat go:
 	
 	const LOGGING_PORT                = 8889;
+	const ADMIN_EMAIL                 = "paepcke@cs.stanford.edu";
 	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
@@ -66,6 +67,8 @@ var ConfidenceViz = function(width, height) {
 	const NUM_SAMPLES                 = 5;
 	
 	const LOG_SERVER_TIMEOUT          = 1000; // msecs: timeout for logging server to respond.
+	
+	const ENTER_KEY					  = 13;
 	
 	// Will be set later, then stays constant.
 	var ALL_STATE_MEAN                = null;
@@ -300,10 +303,20 @@ var ConfidenceViz = function(width, height) {
 		 */
 		
 		if ( typeof(uid) === 'undefined') {
-			document.getElementById("loginBtn")
-				.addEventListener("click", function(evt) {
+			d3.select("#loginBtn")
+				.on("click", function() {
+					// d3.select() does not find el in this context:
 					let uid = document.getElementById("uidFld").value;
 					initLogging(uid);
+				});
+			
+			d3.select("#uidFld")
+				.on("keyup", function() {
+					let evt = d3.event;
+					evt.preventDefault();
+					if ( evt.which === ENTER_KEY ) {
+						d3.select("#loginBtn").node().click();
+					}
 				})
 			return;
 		}
@@ -326,74 +339,76 @@ var ConfidenceViz = function(width, height) {
 	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
 	    log.addAppender(ajaxAppender);
 	    
-	    authPromise = authenticate(uid);
-	    
-	    if ( authPromise.value ) {
+	    if ( authenticate(uid) ) {
 	    	myUid = uid;
+	    	d3.select("#loginLabel").classed("wrong", false);
 	    	d3.select("#overlayDiv").remove();
 	    	d3.select("#loginDiv").remove();
 	    } else {
-	    	alert("Cannot find this user id in database; please retry.")
+	    	// Indicate failure:
+	    	d3.select("#loginLabel").classed("wrong", true);
 	    }
+	}	    
 
-	}
-	
 	/*---------------------------
 	| authenticate 
 	-----------------*/
 	
-	var authenticate = function(uid) {
+	var authenticate = function(uid, successFn, failureFn) {
 		
-	    let loginPromise = getFromLogServer(
-	    		{"reqType" : "login",
-	    		 "userId"  : uid,
-	    		}, logServerURL);
-
-	    loginPromise.then(
-	    		function(resStr) {
-	    			// Got an answer from logging server:
-	    			if ( resStr === "loginOK") {
-	    				myUid = uid;
-	    				return true;
-	    			} else {
-	    				return false; //***** Causes reload
-	    			}
-	    		},
-	    		function() {
-	    			myUid = "logServerDown*";
-	    			alert ("Logging server seems offline; please email paepcke@cs.stanford.edu");
-	    			return true;
-	    		});
-	    return loginPromise;
+		return getFromLogServer(
+				{"reqType" : "login",
+				 "userId"  : uid,
+				},
+				'http://example.com'
+				)
+				.then(function (reqRes) {
+					if ( reqRes === "loginOK" ) {
+						return true;
+					} else {
+						return false;
+					}
+				})
+				.catch(function (errObj) {
+					myUid = "logServerDown*";
+					//console.error('Augh, there was an error!', err.statusText);
+					return false;
+				});
 	}
 	
 	/*---------------------------
 	| getFromLogServer 
 	-----------------*/
+		
 	
 	var getFromLogServer = function(reqJson, theUrl) {
 
-		let xmlHttpReq = new XMLHttpRequest();
-		xmlHttpReq.timeout = LOG_SERVER_TIMEOUT;
-
-		let promise = new Promise(function(resolve, reject) {
-			xmlHttpReq.onload = function () {
+		let xhr     = new XMLHttpRequest();
+		xhr.timeout = LOG_SERVER_TIMEOUT;
+		
+		return new Promise(function (resolve, reject) {
+			xhr.open("POST", theUrl, true); // true for async; the default anyway
+			xhr.onload = function () {
 				if (this.status >= 200 && this.status < 300) {
-					// Performs the function "resolve" when this.status is equal to 2xx
-					resolve(this.response);
+					resolve(xhr.response);
 				} else {
-					// Performs the function "reject" when this.status is different than 2xx
-					reject(this.statusText);
+					reject({
+						status: this.status,
+						statusText: xhr.statusText
+					});
 				}
 			};
-
-			xmlHttpReq.open("POST", theUrl, true); // true for asynchronous
-			xmlHttpReq.send(JSON.stringify(reqJson));
+			
+			xhr.onerror = function () {
+				reject({
+					status: this.status,
+					statusText: xhr.statusText
+				});
+			};
+			xhr.send(JSON.stringify(reqJson));
 		});
-		return promise;
-	}
-
-
+	}		
+		
 	/*---------------------------
 	| updateDataChart
 	-----------------*/
