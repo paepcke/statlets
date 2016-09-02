@@ -45,7 +45,7 @@ var ConfidenceViz = function(width, height) {
 	// Where usage activity and heartbeat go:
 	
 	const LOGGING_PORT                = 8889;
-	const ADMIN_EMAIL                 = "paepcke@cs.stanford.edu";
+	const ADMIN_EMAIL = '<a href="mailto:paepcke@cs.stanford.edu?Subject=Statlet%20Login%20Server%20Down" target="_top">please email admin</a>'; 
 	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
@@ -69,6 +69,8 @@ var ConfidenceViz = function(width, height) {
 	const LOG_SERVER_TIMEOUT          = 1000; // msecs: timeout for logging server to respond.
 	
 	const ENTER_KEY					  = 13;
+	
+	const SERVER_NOT_REACHED          = 'Server unreachable';
 	
 	// Will be set later, then stays constant.
 	var ALL_STATE_MEAN                = null;
@@ -339,20 +341,61 @@ var ConfidenceViz = function(width, height) {
 	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
 	    log.addAppender(ajaxAppender);
 	    
-	    //*********
-	    let authRes = authenticate(uid, logServerURL) ; 
-	    //*********	    
+	    let authPromise = authenticate(uid, logServerURL) ;
+	    authPromise
+	   	    .then(function (reqRes) {
+	   	    	if ( reqRes === "loginOK" ) {
+	   	    		allowAccess(uid);
+	   	    	} else if (reqRes === "loginNOK") {
+	   	    		denyAccess(uid);
+	   	    	} else {
+	   	    		myUid = "logServerDown*";
+	   	    		alert(`Login server unreachable; ${ADMIN_EMAIL}, then proceed.`);
+	   	    		allowAccess(myUid);
+	   	    	}
+	   	    })
+	   	    .catch(function (errObj) {
+	   	    	myUid = "logServerDown*";
+	   	    	alert(`Login server unreachable; ${ADMIN_EMAIL}, then proceed.`);
+	   	    	allowAccess(myUid);
+	   	    });
+	}
 	    
-	    if ( authRes ) {
-	    	myUid = uid;
-	    	d3.select("#loginLabel").classed("wrong", false);
-	    	d3.select("#overlayDiv").remove();
-	    	d3.select("#loginDiv").remove();
-	    } else {
-	    	// Indicate failure:
-	    	d3.select("#loginLabel").classed("wrong", true);
-	    }
-	}	    
+	/*---------------------------
+	| allowAccess 
+	-----------------*/
+	   
+	var allowAccess = function(uid) {
+		myUid = uid;
+		d3.select("#loginLabel").classed("wrong", false);
+		d3.select("#overlayDiv").remove();
+		d3.select("#loginDiv").remove();
+	}
+	
+	/*---------------------------
+	| denyAccess 
+	-----------------*/
+	
+	var denyAccess = function(uid) {
+		
+		let entryLabel  = document.getElementById("loginLabel")
+		let origLabel   = entryLabel.innerHTML; 
+
+		let loginTxtFld = document.getElementById("uidFld")
+		
+		entryLabel.innerHTML = `${uid} not found in database:`
+		entryLabel.className = "p login wrong";
+
+		let loginFldFocusFn = function() {
+			entryLabel.innerHTML = origLabel;
+			entryLabel.className = "p login";
+			loginTxtFld.removeEventListener("focus", loginFldFocusFn);
+			loginTxtFld.removeEventListener("keyup", loginFldFocusFn);
+		}
+		
+		loginTxtFld.addEventListener("focus", loginFldFocusFn); 
+		loginTxtFld.addEventListener("keyup", loginFldFocusFn); 
+	}
 
 	/*---------------------------
 	| authenticate 
@@ -366,21 +409,6 @@ var ConfidenceViz = function(width, height) {
 				},
 				originUrl
 				)
-				.then(function (reqRes) {
-					if ( reqRes === "loginOK" ) {
-						return true;
-					} else if (reqRes === "loginNOK") {
-						return false;
-					} else {
-						myUid = "logServerDown*";
-						return true;
-					}
-				})
-				.catch(function (errObj) {
-					myUid = "logServerDown*";
-					//console.error('Augh, there was an error!', err.statusText);
-					return true;
-				});
 	}
 	
 	/*---------------------------
@@ -407,10 +435,8 @@ var ConfidenceViz = function(width, height) {
 			};
 			
 			xhr.onerror = function () {
-				reject({
-					status: this.status,
-					statusText: xhr.statusText
-				});
+				// Connection error:
+				reject(SERVER_NOT_REACHED);
 			};
 			xhr.send(JSON.stringify(reqJson));
 		});
