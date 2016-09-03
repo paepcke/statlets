@@ -10,6 +10,8 @@ var SoftAlert = function() {
 	// For remembering event listeners to remove:
 	var savedButtonFn	   = null;
     var savedTxtEntryFldFn = null;
+    
+    var savedInfoTxt       = null;
 	
 	const FORCE_CLICK_TXT_ON  = true;
 	const FORCE_CLICK_TXT_OFF = false;
@@ -37,7 +39,8 @@ var SoftAlert = function() {
 					evt.preventDefault();
 					// Always style alert box's info text
 					// as "user is not wrong" once user
-					// types:
+					// types, and set to original txt:
+					changeInfoTxt(savedInfoTxt);
 					userWrong(false);
 					// If user hit ENTER, cause btn click:
 					if ( evt.which === ENTER_KEY ) {
@@ -171,6 +174,7 @@ var SoftAlert = function() {
 		
 		// Main prose:
 		document.getElementById("softAlertTxt").innerHTML = txt;
+		savedInfoTxt = txt;
 
 		// Customize button label, and button listener:
 		
@@ -240,23 +244,23 @@ var SoftAlert = function() {
 		let entryFld = document.getElementById("softAlertEntryFld")
 		entryFld.className = "softAlertEntryFld";
 		
-		// ... if a keyUp event listener was installed, remove it: 
-		if ( savedTxtEntryFldFn !== null ) {
-			entryFld.removeEventListener("keyup", savedTxtEntryFldFn);
-			savedTxtEntryFldFn = null;
-		}
-		
 		// Get what's in the txt entry field:
 		let enteredTxt = entryFld.value;
 		
 		// If requested, call client's passed-in button-pushed-fn:
 		if ( savedButtonFn !== null ) {
-			setTimeout(savedButtonFn(enteredTxt));
-			savedButtonFn = null;
+			let userDecision = savedButtonFn(enteredTxt);
+			if ( userDecision === false ) {
+				// Leave the alert up:
+				return;
+			}
 		}
+		// User is OK with taking down the alert:
+		savedButtonFn = null;
 		
 		showingAlert = false;
 		
+		// Put up next alert box in line, if any:
 		if ( alertQueue.length > 0 ) {
 			setTimeout(alertQueue.pop(), 1);
 			return;
@@ -341,6 +345,20 @@ var SoftAlert = function() {
 		} else {
 			infoTxt.className = "softAlertTxt";
 		}
+	}
+	
+	/*---------------------------
+	| changeInfoTxt 
+	-----------------*/
+	
+	var changeInfoTxt = function(newTxt) {
+		/*
+		 * Changes the info in the alert box. 
+		 * BUT: any typing in entry box (if it's visible)
+		 * reverts to original txt.
+		 */
+		let infoTxt = document.getElementsById("softAlertTxt");
+		infoTxt.innerHTML = newTxt;
 	}
 		
 	return constructor();

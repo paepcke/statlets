@@ -3,6 +3,7 @@
  *    o softAlert OK button not being styled, at least when button disabled:
  *    		background is white, type is black. Should be white text on green
  *    		background.
+ *    o Instead of logServerDown* user, make a session ID.
  *    o Instrumentation
  * Text:
  *         
@@ -326,22 +327,16 @@ var ConfidenceViz = function(width, height) {
 		// Show login dialog. Second call will be triggered
 		// from the dialog button push. 
 		if ( typeof(uid) === 'undefined') {
-			
-			
-//					  promptTxt,
-//				      buttonLabel,
-//				      buttonFn,
-//				      entryFldKeyupFn,
-//				      FORCE_CLICK_TXT_OFF, 
-//				      TXT_ENTRY_BOX_ON);			
 
 			alerter.entryBox("Please enter your sunet ID:",
-			                 "Log in",
+			                 "Log in",            // Button label
 			                 function(uid) {      // Called on btn click
-								initLogging(uid);
+								initLogging(uid); // Recursive call when alert btn clicked.
 			                 },
-	
-			return;
+			                 undefined, // ****** GOES AWAY when entry fld key fn removed from softAlert.js
+			                 alerter.FORCE_CLICK_TXT_OFF,
+			                 alerter.TXT_ENTRY_BOX_ON
+			                 );
 		}
 		
 		let originUrl = location.origin;
@@ -366,19 +361,25 @@ var ConfidenceViz = function(width, height) {
 	    authPromise
 	   	    .then(function (reqRes) {
 	   	    	if ( reqRes === "loginOK" ) {
-	   	    		allowAccess(uid);
+	   	    		return allowAccess(uid);
 	   	    	} else if (reqRes === "loginNOK") {
-	   	    		denyAccess(uid);
+	   	    		return denyAccess(uid);
 	   	    	} else {
+	   	    		// Some server trouble; use special
+	   	    		// uid and let user proceed:
 	   	    		myUid = "logServerDown*";
+	   	    		// Queue another alert: server 
+	   	    		// down, please email admin:
 	   	    		serverDownAlert(uid)
-	   	    		allowAccess(myUid);
+	   	    		return allowAccess(myUid);
 	   	    	}
 	   	    })
 	   	    .catch(function (errObj) {
 	   	    	myUid = "logServerDown*";
+	   	    	// Queue another alert: server 
+	   	    	// down, please email admin:
 	   	    	serverDownAlert(uid);
-	   	    	allowAccess(myUid);
+	   	    	return allowAccess(myUid);
 	   	    });
 	}
 	
@@ -388,12 +389,9 @@ var ConfidenceViz = function(width, height) {
 	
 	var serverDownAlert = function(uid) {
 		if (! sentServerDwnMail ) {
-			//****alert(`Login server unreachable. Please send the email from the upcoming popup, then proceed.`);
-			//****window.open('mailto:paepcke@cs.stanford.edu?subject=Login%20Server%20Down!&body=regards from ' + uid);
 			alerter.note(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
 					      true); /* Force clicking on one of the links in the text. */
 		}
-		
 		// Don't send more than once:
 		sentServerDwnMail = true;
 	}
@@ -415,23 +413,9 @@ var ConfidenceViz = function(width, height) {
 		
 		// Login dialog is still up:
 		
-		let entryLabel  = document.getElementById("loginLabel")
-		let origLabel   = entryLabel.innerHTML; 
-
-		let loginTxtFld = document.getElementById("uidFld")
-		
-		entryLabel.innerHTML = `'${uid}' not found in database:`
-		entryLabel.className = "p login wrong";
-
-		let loginFldFocusFn = function() {
-			entryLabel.innerHTML = origLabel;
-			entryLabel.className = "p login";
-			loginTxtFld.removeEventListener("focus", loginFldFocusFn);
-			loginTxtFld.removeEventListener("keyup", loginFldFocusFn);
-		}
-		
-		loginTxtFld.addEventListener("focus", loginFldFocusFn); 
-		loginTxtFld.addEventListener("keyup", loginFldFocusFn); 
+		alerter.changeInfoTxt(`'${uid}' not found in database:`);
+		alerter.userWrong(true);
+		return false;
 	}
 
 	/*---------------------------
