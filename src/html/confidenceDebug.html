@@ -2,6 +2,7 @@
 <head>
 <meta charset="UTF-8" />
 <link rel="stylesheet" type="text/css" href="confidence.css">
+<link rel="stylesheet" type="text/css" href="softAlerts.css">
 
 
 <!-- LaTex Math (easiest to get from them : -->
@@ -19,18 +20,11 @@
 <body>
 	<h1><i>Statlet</i>: Exploring Confidence Intervals</h1>
 	
-	<div class="overlay" id="overlayDiv"></div>
-	<div class="login" id="loginDiv">
-		<p class="loginLabel" id="loginLabel">Please enter your sunet ID:</p>
-		<p>
-		<input type="text" class="login" id="uidFld" autofocus
-			size="30">
-		<button class="login" id="loginBtn">Log in</button>
-		</p>
-	</div>
-	<div class="softAlert" id="softAlertDiv">
+	<div class="overlayDiv" id="overlayDiv"></div>
+	<div class="softAlertDiv" id="softAlertDiv">
 		<p class="softAlertHeader" id="softAlertHeader">Note:</p>
 		<p class="softAlertTxt" id="softAlertTxt"></p>
+		<input type="text" class="softAlertEntryFld" id="softAlertEntryFld" autofocus>
 		<button class="softAlert" id="softAlertOkBtn">OK</button>
 	</div>
 	
