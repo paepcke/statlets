@@ -40,12 +40,15 @@ var ConfidenceViz = function(width, height) {
 	var myUid            = null;
 	var logServerURL     = null;
 	
+	var sentServerDwnMail= false;
+	
 	// Constants:
 
 	// Where usage activity and heartbeat go:
 	
 	const LOGGING_PORT                = 8889;
-	const ADMIN_EMAIL = '<a href="mailto:paepcke@cs.stanford.edu?Subject=Statlet%20Login%20Server%20Down" target="_top">please email admin</a>'; 
+	const ADMIN_EMAIL = 
+		'<a class="forceClick" href="mailto:paepcke@cs.stanford.edu?Subject=Statlet%20Login%20Server%20Down" target="_top">Please email admin</a>'; 
 	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
@@ -144,8 +147,6 @@ var ConfidenceViz = function(width, height) {
 		svgData = d3.select("#dataDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
-		//****.attr("viewBox", `0 0 ${width} ${height}`)
-		//****.attr("viewBox", `0 -60 ${width} 500`)  // Perfect for Chrome and FF
 		.attr("id", "dataSvg")
 		.attr("class", "svgData")
 		
@@ -213,8 +214,6 @@ var ConfidenceViz = function(width, height) {
 			let dataViewBoxArr = d3.select("#dataSvg").attr("viewBox").split(" ");
 			let dataViewBoxY     = dataViewBoxArr[1];
 			let dataViewBoxWidth = dataViewBoxArr[2];
-			//*****svgAllStates.attr("viewBox", `0 -45 ${dataViewBoxWidth} ${height}`) // 
-			//*****svgAllStates.attr("viewBox", `0 -45 ${width} 480`) // 
 			svgAllStates.attr("viewBox", `0 -50 ${width} 480`) // 
 		} else {
 			svgAllStates.attr("viewBox", `0 -10 ${width} ${height}`) // Perfect for Chrome
@@ -284,8 +283,12 @@ var ConfidenceViz = function(width, height) {
         addControlButtons();
 		addLegends();
 		createTooltip();
-		createSvgHeaders();		
-        initLogging();						     
+		createSvgHeaders();
+		// Dim viz and show login:
+		d3.select("#overlayDiv").classed("visible", true);
+		d3.select("#loginDiv").classed("visible", true);
+		
+        initLogging();
         
 		return {width  : width,
 				height : height,
@@ -350,15 +353,29 @@ var ConfidenceViz = function(width, height) {
 	   	    		denyAccess(uid);
 	   	    	} else {
 	   	    		myUid = "logServerDown*";
-	   	    		alert(`Login server unreachable; ${ADMIN_EMAIL}, then proceed.`);
+	   	    		serverDownAlert(uid)
 	   	    		allowAccess(myUid);
 	   	    	}
 	   	    })
 	   	    .catch(function (errObj) {
 	   	    	myUid = "logServerDown*";
-	   	    	alert(`Login server unreachable; ${ADMIN_EMAIL}, then proceed.`);
+	   	    	serverDownAlert(uid);
 	   	    	allowAccess(myUid);
 	   	    });
+	}
+	
+	/*---------------------------
+	| serverDownAlert 
+	-----------------*/
+	
+	var serverDownAlert = function(uid) {
+		if (! sentServerDwnMail ) {
+			alert(`Login server unreachable. Please send the email from the upcoming popup, then proceed.`);
+			window.open('mailto:paepcke@cs.stanford.edu?subject=Login%20Server%20Down!&body=regards from ' + uid);
+		}
+		
+		// Don't send more than once:
+		sentServerDwnMail = true;
 	}
 	    
 	/*---------------------------
@@ -368,8 +385,14 @@ var ConfidenceViz = function(width, height) {
 	var allowAccess = function(uid) {
 		myUid = uid;
 		d3.select("#loginLabel").classed("wrong", false);
-		d3.select("#overlayDiv").remove();
-		d3.select("#loginDiv").remove();
+		d3.select("#overlayDiv").classed("visible", false);
+		d3.select("#loginDiv").classed("visible", false);
+		
+        //**********
+        //softAlertShow(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
+        //			  true); /* Force clicking on one of the links in the text. */
+        //**********
+		
 	}
 	
 	/*---------------------------
@@ -1453,6 +1476,145 @@ var ConfidenceViz = function(width, height) {
 			return 'Blink';
 		}
 	}
+	
+	/* --------------------------  Soft Alerts ------------------- */
+	
+	/*---------------------------
+	| softAlertNote 
+	-----------------*/
+	
+	var softAlertNote = function(txt, forceClickInTxt) {
+		/*
+		 * Show a note above the onscreen material.
+		 * Required parameter txt is the (HTML) text of the 
+		 * note. If forceClickInTxt is truthy, then 
+		 * the OK button is disabled, and the user needs to
+		 * click on any link in the text that is classed
+		 * "forceClick". If no such text is found, the 
+		 * OK button will stay enabled. Otherwise the OK
+		 * button is only enabled once the user clicked on
+		 * one of the links in the text.
+		 * 
+		 * :param txt: text of note.
+		 * :type txt: string
+		 * :param forceClickInTxt: If forceClickInTxt is truthy, then 
+		 *  	  the OK button is disabled, and the user needs to
+		 *  	  click on any link in the text that is classed
+		 *  	  "forceClick". If no such text is found, the 
+		 *  	  OK button will stay enabled. Otherwise the OK
+		 *  	  button is only enabled once the user clicked on
+		 *  	  one of the links in the text.
+		 *  :type forceClickInTxt: bool
+		 * 
+		 */
+		
+		
+		softAlertShow(txt, forceClickInTxt, 'OK');
+	}
+	
+	/*---------------------------
+	| softAlertShow
+	-----------------*/
+	
+	var softAlertShow = function(txt, forceClickInTxt, buttonLabel) {
+		/*
+		 * Show a note above the onscreen material.
+		 * Required parameter txt is the (HTML) text of the 
+		 * note. 
+		 * 
+		 * :param txt: text of note.
+		 * :type txt: string
+		 * :param forceClickInTxt: If forceClickInTxt is truthy, then 
+		 *  	  the OK button is disabled, and the user needs to
+		 *  	  click on any link in the text that is classed
+		 *  	  "forceClick". If no such text is found, the 
+		 *  	  OK button will stay enabled. Otherwise the OK
+		 *  	  button is only enabled once the user clicked on
+		 *  	  one of the links in the text.
+		 *  :type forceClickInTxt: bool
+		 *  
+		 *  :param buttonLabel: label on the button. If not provided,
+		 *  	  the label will be the string "OK".
+		 *  :type buttonLabel: {string | undefined}
+		 */
+		
+		d3.select("#softAlertTxt").node().innerHTML = txt;
+
+		let btn = document.getElementById("softAlertOkBtn");
+		if ( typeof(buttonLabel) === "string" ) {
+			btn.innerHTML = buttonLabel;
+		} else {
+			// Default button txt:
+			btn.innerHTML = 'OK';
+		}
+		
+		d3.select("#softAlertOKBtn")
+			.on("click", softAlertHide);
+		if ( typeof(forceClickInTxt) !== 'undefined' && forceClickInTxt ) {
+			softAlertForceClickInTxt()
+		}
+			 
+		d3.select("#overlayDiv").classed("visible", true);
+		d3.select("#softAlertDiv").classed("visible", true);
+		d3.select("#softAlertDiv").classed("visible", true);
+	}
+	
+	/*---------------------------
+	| softAlertHide
+	-----------------*/
+	
+	var softAlertHide = function() {
+		/*
+		 * Remove a softAlert from the screen.
+		 */
+		d3.select("#softAlertDiv").classed("visible", false);
+		d3.select("#overlayDiv").classed("visible", false);
+	}
+	
+	/*---------------------------
+	| softAlertOkButtonEnabled 
+	-----------------*/
+	
+	var softAlertOkButtonEnabled = function(isEnabled) {
+		/*
+		 * Enable or disable use of a softAlert's button.
+		 * 
+		 * :param isEnabled: whether or not to enable the button:
+		 * :type isEnabled: bool
+		 */
+		let btn = document.getElementById("softAlertOkBtn");
+		if ( isEnabled ) {
+			btn.disabled = false;
+			//*****btn.style.opacity  = 1;
+			btn.className = "button.softAlert";
+		} else {
+			btn.disabled = true;
+			btn.className = "button.softAlert.disabled";
+			//*****btn.style.opacity  = 0.5;
+		}
+	}
+
+	/*---------------------------
+	| softAlertForceClickInTxt
+	-----------------*/
+	
+	var softAlertForceClickInTxt = function() {
+		/*
+		 * Look for links in an existing softAlert's note
+		 * that is classed "forceClick". If found, button is
+		 * disabled, and the links receive a listener that
+		 * re-enables the button.
+		 * 
+		 */
+		let links = document.getElementsByClassName("forceClick");
+		for ( let link of links ) {
+			link.addEventListener("click", softAlertOkButtonEnabled, true);
+		}
+		if ( links.length > 0 ) {
+			softAlertOkButtonEnabled(false);
+		}
+	}
+	
 	
 	return constructor(width, height);
 }

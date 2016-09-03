@@ -238,11 +238,13 @@ div.tooltip.state.visible    {
 
 /* -------------  Log-in Div -------------- */
 
-.button.login, textarea    { background-color : green;
- 				   border-radius : 25px;
- 				   margin-right : 20px;
- 				   margin-bottom : 2px;
-		          }
+button.login  { background-color : rgb(0, 102, 0); /* dark green */
+                color : white;
+ 			    border-radius : 25px;
+ 				margin-right : 20px;
+ 				margin-bottom : 2px;
+ 				margin-top : 5px;
+		      }
 p.login  		{ color : black; }
 p.login.wrong   { color : red; }
 
@@ -253,18 +255,75 @@ p.login.wrong   { color : red; }
     left:0;
     right:0;
     background-color:#fff;
-    opacity:0.8;
-    z-index:1001;
-}
-div.login {
-    position: fixed;
-    top:30px;
-    left:30px;
-    width:500px;
-    height:40px;
-    background-color:#fff;
-    opacity:1;
-    z-index:1002;
+    opacity:0;
+    z-index:-1;
 }
 
-	   	   
+.overlay.visible { z-index : 1001;
+				   opacity : 0.8;
+				 }    
+
+div.login {
+    position: fixed;
+    top:40%;
+    left:40%;
+    width:200px;
+    height:40px;
+    background-color:#fff;
+	border : 1px solid rgb(0, 102, 0); /* dark green */    
+    opacity:0;
+    z-index:-2;
+}
+
+div.login.visible {
+	z-index:1002;
+	opacity : 1;
+}
+
+/* --------------------------- SoftAlert Facility --------------- */
+
+div.softAlert {    
+	position: fixed;
+    top:40%;
+    left:40%;
+    width:200px;
+    height:100px;
+    background-color: rgb(204, 255, 204); /* light green */
+    opacity:0;
+    z-index:-2;
+}
+
+div.softAlert.visible {
+	z-index:1002;
+	opacity : 1;
+	border : 1px solid rgb(0, 102, 0); /* dark green */
+}
+
+.softAlertHeader {
+	font-size : 18pt;
+	font-weight : bold;
+	color : rgb(0, 102, 0); /* dark green */
+	margin-left : 10px;
+	margin-top : -1px;
+}
+
+.softAlertTxt {
+	font-size : 12pt;
+	margin-left : 10px;
+	margin-top : -15px;
+}
+
+button.softAlert {
+	background-color : rgb(0, 102, 0); /* dark green */
+    color : white;
+ 	border-radius : 25px;
+ 	margin-right : 20px;
+ 	margin-left : 10px;
+ 	margin-top : 5px;
+ 	margin-bottom : -3px;
+ 	opacity : 1;
+}
+
+button.softAlert.disabled {
+	opacity : 0.5;
+}
