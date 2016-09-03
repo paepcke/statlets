@@ -1,6 +1,5 @@
 /*
  * Todo:
- *    o Logging to file not happening in uxrecorder
  *    o softAlert OK button not being styled, at least when button disabled:
  *    		background is white, type is black. Should be white text on green
  *    		background.
@@ -11,6 +10,7 @@
 
 /* *************
 import { StatsBarchartResizeHandler } from "./statsBarchartResizeHandler";
+import * as alerts from "./softAlerts";
 import * as ss from "./simple-statistics.min";
 import * as d3 from "./d3.min";
 import * as logging from "./log4javascript.min";
@@ -44,6 +44,8 @@ var ConfidenceViz = function(width, height) {
 	var logServerURL     = null;
 	
 	var sentServerDwnMail= false;
+	
+	var alerter          = null;
 	
 	// Constants:
 
@@ -127,9 +129,16 @@ var ConfidenceViz = function(width, height) {
 	
 	var constructor = function() {
 		
+		// For non-modal alerts:
+		alerter = SoftAlert();
+		
 		// Find the div in which the chart is to reside,
 		// and its dimensions:
 
+		//*****************
+		alerter.note('<a href="">Foobar</a>', true);
+		//*****************		
+		
 		let chartDiv = document.getElementById('dataDiv');
 			
 		width  = chartDiv.clientWidth;
@@ -1622,4 +1631,5 @@ var ConfidenceViz = function(width, height) {
 	return constructor(width, height);
 }
 var ciViz = ConfidenceViz(700, 400);
+
 var bar = 10;	

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 '''
 Created on Aug 29, 2016
 
@@ -8,6 +10,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import time
 
 import tornado.ioloop
@@ -36,12 +39,9 @@ class UxRecorder(tornado.web.RequestHandler):
     def initialize(self):
         '''
         Called for each incoming request.
-        Just makes the class variable 'logger'
-        conveniently available as shortened
-        instance var.
-        
+      
         '''
-        self.log = UxRecorder.logger
+        pass
         
     #---------------------------
     # initializeOnce 
@@ -59,18 +59,27 @@ class UxRecorder(tornado.web.RequestHandler):
         
         '''
 
+        logDest = cls.setupLogging(loggingLevel, logFile, utc=True)
+        # Regex pattern for excaping CSV separator in log entries:
+        cls.csvSeparatorRe = re.compile(r'\|')
         cls.uidDict = cls.loadUserIds(uidFile)
-        logDest = cls.setupLogging(loggingLevel, logFile)
+        
+        timeNow = datetime.datetime.now().isoformat()
+        numUids = len(cls.uidDict.keys())
+        # This being a class method we don't
+        # yet have self.logInfo(), which would
+        # add separator ('|') and quotes around txt.
+        # So do that here:
+        cls.logger.info('|Start logging UTC times at %s (local time), numUids: %s.' %\
+                        (timeNow, numUids))
                 
         print('''Started statlet ux recorder at %s
                 Time zone: UTC-logging 
                 To: %s
                 Number of login names found: %s
                 ''' % \
-              (datetime.datetime.now().isoformat(), logDest, len(cls.uidDict.keys())))
-
-
-        
+              (timeNow, logDest, numUids))
+              
     #---------------------------
     # get
     #----------------*/
@@ -85,11 +94,12 @@ class UxRecorder(tornado.web.RequestHandler):
     #----------------*/
         
     def post(self):
+    
         try:
             body = self.request.body
             reqMsg  = json.loads(body)
         except Exception as e:
-            self.log.error("Bad request '%s' (%s)" % (body, `e`))
+            self.logError("Bad request '%s' (%s)" % (body, `e`))
             return
             
         # Handle requests that want an answer:
@@ -97,7 +107,7 @@ class UxRecorder(tornado.web.RequestHandler):
             reqType = reqMsg['reqType']
         except KeyError:
             # Msg is just a logging report:
-            self.log.info(reqMsg)
+            self.logInfo(reqMsg)
             return
         
         # Answer needed:
@@ -112,10 +122,10 @@ class UxRecorder(tornado.web.RequestHandler):
                 return
             if self.isRegistered(userId):
                 self.write("loginOK")
-                self.log.info('{login : "%s"}' % userId)
+                self.logInfo('{login : "%s"}' % userId)
             else:
                 self.write("loginNOK")
-                self.log.info('{loginFail : "%s"}' % userId)
+                self.logInfo('{loginFail : "%s"}' % userId)
 
     #---------------------------
     # isRegistered 
@@ -143,7 +153,7 @@ class UxRecorder(tornado.web.RequestHandler):
                 for uidLine in uidsFd:
                     uidDict[uidLine.strip()] = ""
         except:
-            self.log.error("Could not read uid file %s (using stub dict): " % uidFile)
+            self.logError("Could not read uid file %s (using stub dict): " % uidFile)
             return UxRecorder.TEST_UID_DB
 
         return uidDict    
@@ -166,7 +176,12 @@ class UxRecorder(tornado.web.RequestHandler):
                    then:
             log.info(...)
             log.warn(...)
-            etc. 
+            etc.
+            
+        Even better move (potentially):
+            write instance methods logInfo(), logWarn(), etc.,
+            which might add quotes around txt, and a record
+            separator for easy CSV reading later on.
         
         :param loggingLevel: one of logging.INFO, logging.WARN, logging.ERROR.
                 For more option see Python logging doc.
@@ -187,6 +202,7 @@ class UxRecorder(tornado.web.RequestHandler):
             
         # Set up logging:
         UxRecorder.logger = logging.getLogger('uxlogging')
+        UxRecorder.logger.setLevel(loggingLevel)
 
         # Create file handler if requested:
         if logFile is not None:
@@ -201,7 +217,6 @@ class UxRecorder(tornado.web.RequestHandler):
         else:
             # Create console handler:
             handler = logging.StreamHandler()
-        handler.setLevel(loggingLevel)
         
         if utc:
             logging.Formatter.converter = time.gmtime
@@ -220,6 +235,49 @@ class UxRecorder(tornado.web.RequestHandler):
         else:
             return "concole"
 
+    #---------------------------
+    # logInfo, logError, logWarn 
+    #----------------*/
+
+    def logInfo(self, txt):
+        '''
+        Convenience method for logging. 
+        Prepends record separator '|'.
+        Escapes any occurrences of '|'
+        in text.
+        
+        :param txt: text to log
+        :type txt: string
+        '''
+        
+        UxRecorder.logger.info('|%s' % UxRecorder.csvSeparatorRe.sub("\|", txt))
+        
+    def logError(self, txt):
+        '''
+        Convenience method for logging.
+        Adds "error" to standard logging line header. 
+        Prepends record separator '|'.
+        Escapes any occurrences of '|'
+        in text.
+        
+        :param txt: text to log
+        :type txt: string
+        '''
+        UxRecorder.logger.error('(error)|%s' % UxRecorder.csvSeparatorRe.sub("\|", txt))
+
+    def logWarn(self, txt):
+        '''
+        Convenience method for logging.
+        Adds "warn" to standard logging line header. 
+        Prepends record separator '|'.
+        Escapes any occurrences of '|'
+        in text.
+        
+        :param txt: text to log
+        :type txt: string
+        '''
+        UxRecorder.logger.warn('(warn)|%s' % UxRecorder.csvSeparatorRe.sub("\|", txt))
+    
     #---------------------------
     # set_default_headers 
     #----------------*/
@@ -247,8 +305,9 @@ def make_app():
 
 if __name__ == "__main__":
     # File holding acceptable login names, one per line:
-    logPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Uids.log")
+    logPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Statlets.log")
+    uidPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Uids.txt")
     app = make_app()
-    UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=logPath, uidFile=None)
+    UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=logPath, uidFile=uidPath)
     app.listen(8889)
     tornado.ioloop.IOLoop.current().start()
