@@ -314,30 +314,33 @@ var ConfidenceViz = function(width, height) {
 		 * with statlet to server. Assumes that instance
 		 * variables myBrowser and myUid have been set.
 		 * 
+		 * Shows login dialog.
+		 * 
+		 * Returns true if access allowed, else returns
+		 * false. In latter case the login dialog stays
+		 * up.
+		 * 
 		 */
 		
 		// On first call, uid will be undefined.
-		// Show login dialog
+		// Show login dialog. Second call will be triggered
+		// from the dialog button push. 
 		if ( typeof(uid) === 'undefined') {
+			
+			
+//					  promptTxt,
+//				      buttonLabel,
+//				      buttonFn,
+//				      entryFldKeyupFn,
+//				      FORCE_CLICK_TXT_OFF, 
+//				      TXT_ENTRY_BOX_ON);			
 
 			alerter.entryBox("Please enter your sunet ID:",
-			                 "Log in");
-			
-			d3.select("#loginBtn")
-				.on("click", function() {
-					// d3.select() does not find el in this context:
-					let uid = document.getElementById("uidFld").value;
-					initLogging(uid);
-				});
-			
-			d3.select("#uidFld")
-				.on("keyup", function() {
-					let evt = d3.event;
-					evt.preventDefault();
-					if ( evt.which === ENTER_KEY ) {
-						d3.select("#loginBtn").node().click();
-					}
-				})
+			                 "Log in",
+			                 function(uid) {      // Called on btn click
+								initLogging(uid);
+			                 },
+	
 			return;
 		}
 		
@@ -401,9 +404,7 @@ var ConfidenceViz = function(width, height) {
 	   
 	var allowAccess = function(uid) {
 		myUid = uid;
-		d3.select("#loginLabel").classed("wrong", false);
-		d3.select("#overlayDiv").classed("visible", false);
-		d3.select("#loginDiv").classed("visible", false);
+		return true; // access OK
 	}
 	
 	/*---------------------------
@@ -411,6 +412,8 @@ var ConfidenceViz = function(width, height) {
 	-----------------*/
 	
 	var denyAccess = function(uid) {
+		
+		// Login dialog is still up:
 		
 		let entryLabel  = document.getElementById("loginLabel")
 		let origLabel   = entryLabel.innerHTML; 

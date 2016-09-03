@@ -25,14 +25,28 @@ var SoftAlert = function() {
 			return instance;
 		}
 		
-		// Clicking the softAlert button always
+		// Clicking the softAlert button by default
 		// dismisses the dialog:
-		document.getElementById("softAlertOkBtn")
-			.addEventListener("click", softAlertHide);
+		let btn = document.getElementById("softAlertOkBtn"); 
+		btn.addEventListener("click", btnClicked);
+		
+		// ENTER button on text entry clicks the button:
+		let txtEntryFld = document.getElementById("softAlertEntryFld"); 
+		
+		txtEntryFld.addEventListener("keyup", function(evt) {
+					evt.preventDefault();
+					// Always style alert box's info text
+					// as "user is not wrong" once user
+					// types:
+					userWrong(false);
+					// If user hit ENTER, cause btn click:
+					if ( evt.which === ENTER_KEY ) {
+						btn.click();
+					}
+		})
 		
 		// Hide entry fld by default:
-		document.getElementById("softAlertEntryFld")
-			.className = "softAlertEntryFld visible";
+		txtEntryFld.className = "softAlertEntryFld";
 		
 		return {
 			note     : softAlertNote,
@@ -145,6 +159,7 @@ var SoftAlert = function() {
 		 *  :type showTxtEntryBox: bool
 		 */
 		
+		// If already showing an alert, queue this one:
 		if ( showingAlert ) {
 			alertQueue.push(function() {
 				softAlertShow(txt, forceClickInTxt, buttonLabel, showTxtEntryBox);
@@ -154,11 +169,13 @@ var SoftAlert = function() {
 
 		showingAlert = true;
 		
+		// Main prose:
 		document.getElementById("softAlertTxt").innerHTML = txt;
 
 		// Customize button label, and button listener:
 		
 		let btn = document.getElementById("softAlertOkBtn");
+		
 		if ( typeof(buttonLabel) === "string" ) {
 			btn.innerHTML = buttonLabel;
 		} else {
@@ -167,25 +184,32 @@ var SoftAlert = function() {
 		}
 		
 		if ( typeof(buttonFn) === 'function' ) {
-			btn.on("click", buttonFn);
-			// Remember fn so that softAlertHide() can
-			// remove the listener:
+			// Remember fn so that btnClicked() can
+			// invoke it:
 			savedButtonFn = buttonFn;
+		} else {
+			savedButtonFn = null;
 		}
 		
-		if ( typeof(txtEntryFldFn) === 'function' ) {
-			document.getElementById("softAlertEntryFld")
-				.addEventListener("keyUp", txtEntryFldFn);
-			// Remember function so that softAlertHide() can
-			// remove the listener:
-			savedTxtEntryFldFn = txtEntryFldFn;
-		}
+		// Reveal txt entry box (or not): 
 		
-		if ( typeof(showTxtEntryBox) !== "undefined" ) {
+		if ( typeof(showTxtEntryBox) !== 'undefined' && showTxtEntryBox ) {
 			document.getElementById("softAlertEntryFld")
 				.className = "softAlertEntryFld visible";
 		}
+
+		// ... and the txt entry's keyUp: 
+		if ( typeof(txtEntryFldFn) === 'function' ) {
+			document.getElementById("softAlertEntryFld")
+				.addEventListener("keyUp", txtEntryFldFn);
+			// Remember function so that btnClicked() can
+			// remove the listener:
+			savedTxtEntryFldFn = txtEntryFldFn;
+		} else {
+			savedTxtEntryFldFn = null;
+		}
 		
+		// Force user to click a link in the text field?
 		if ( typeof(forceClickInTxt) !== 'undefined' && forceClickInTxt ) {
 			softAlertForceClickInTxt()
 		}
@@ -193,11 +217,6 @@ var SoftAlert = function() {
 		// Turn on veil:
 		veilVisible(true);
 
-		// If requested, turn on txt entry box: 
-		if ( typeof(showTxtEntryBox) !== 'undefined' && showTxtEntryBox ) {
-			document.getElementById("softAlertEntryFld")
-				.className = "softAlertEntryFld visible";
-		}
 		
 		// Finally: turn on the dialog box:
 		document.getElementById("softAlertDiv")
@@ -205,11 +224,12 @@ var SoftAlert = function() {
 	}
 	
 	/*---------------------------
-	| softAlertHide
+	| btnClicked
 	-----------------*/
 	
-	var softAlertHide = function() {
+	var btnClicked = function() {
 		/*
+		 * Called when alert's button is pushed:
 		 * Remove a softAlert from the screen.
 		 */
 		
@@ -219,14 +239,19 @@ var SoftAlert = function() {
 		// Turn off the text entry fld:
 		let entryFld = document.getElementById("softAlertEntryFld")
 		entryFld.className = "softAlertEntryFld";
+		
+		// ... if a keyUp event listener was installed, remove it: 
 		if ( savedTxtEntryFldFn !== null ) {
 			entryFld.removeEventListener("keyup", savedTxtEntryFldFn);
 			savedTxtEntryFldFn = null;
 		}
 		
-		// If needed, remove extra listener from button:
+		// Get what's in the txt entry field:
+		let enteredTxt = entryFld.value;
+		
+		// If requested, call client's passed-in button-pushed-fn:
 		if ( savedButtonFn !== null ) {
-			document.getElementById("softAlertOkBtn").removeEventListener(savedButtonFn);
+			setTimeout(savedButtonFn(enteredTxt));
 			savedButtonFn = null;
 		}
 		
@@ -297,7 +322,26 @@ var SoftAlert = function() {
 				      FORCE_CLICK_TXT_OFF, 
 				      TXT_ENTRY_BOX_ON);
 	}
+
+	/*---------------------------
+	| userWrong 
+	-----------------*/
 	
+	var userWrong = function(userIsWrong) {
+		/*
+		 * If passed true, information text of the 
+		 * alert box is turned red. Note that 
+		 * any typing in the txt entry box will
+		 * return the txt to non-wrong style:
+		 */
+
+		let infoTxt = document.getElementsById("softAlertTxt"); 
+		if ( userIsWrong ) {
+			infoTxt.className = "softAlertTxt wrong";
+		} else {
+			infoTxt.className = "softAlertTxt";
+		}
+	}
 		
 	return constructor();
 }
