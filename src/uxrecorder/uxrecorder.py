@@ -4,13 +4,16 @@ Created on Aug 29, 2016
 @author: paepcke
 '''
 
+import datetime
 import json
 import logging
+import os
+import time
 
 import tornado.ioloop
 import tornado.web
 
-        
+
 class UxRecorder(tornado.web.RequestHandler):
 
     # Remember whether logging has been initialized (class var!):
@@ -57,9 +60,15 @@ class UxRecorder(tornado.web.RequestHandler):
         '''
 
         cls.uidDict = cls.loadUserIds(uidFile)
-        cls.setupLogging(loggingLevel, logFile)
+        logDest = cls.setupLogging(loggingLevel, logFile)
                 
-        print("Started statlet ux recorder.")        
+        print('''Started statlet ux recorder at %s
+                Time zone: UTC-logging 
+                To: %s
+                Number of login names found: %s
+                ''' % \
+              (datetime.datetime.now().isoformat(), logDest, len(cls.uidDict.keys())))
+
 
         
     #---------------------------
@@ -145,7 +154,32 @@ class UxRecorder(tornado.web.RequestHandler):
     
         
     @classmethod        
-    def setupLogging(self, loggingLevel, logFile):
+    def setupLogging(self, loggingLevel=logging.INFO, logFile=None, utc=False):
+        '''
+
+        Example use raw:
+        	UxRecorder.logger.info("Info for you")
+        	UxRecorder.logger.warn("Warning for you")
+        	UxRecorder.logger.debug("Debug for you")
+        	
+        Good move: set self.log to UxRecorder.logger
+                   then:
+            log.info(...)
+            log.warn(...)
+            etc. 
+        
+        :param loggingLevel: one of logging.INFO, logging.WARN, logging.ERROR.
+                For more option see Python logging doc.
+        :type loggingLevel: int
+        :param logFile: if a path, append to that file. If None, log to console.
+        :type logFile: { string | None }
+        :param utc: if true, time included in log entries is in Coordinated Universal Time
+                (formerly GMT)
+        :type utc: bool
+        :return passed-in file path, or "console" if logFile is None.
+        :raise IOError if logging to file is requested, but file not writeable.
+        '''
+        
         if UxRecorder.loggingInitialized:
             # Remove previous file- or console-handlers,
             # else we get logging output doubled:
@@ -153,28 +187,38 @@ class UxRecorder(tornado.web.RequestHandler):
             
         # Set up logging:
         UxRecorder.logger = logging.getLogger('uxlogging')
-        UxRecorder.logger.setLevel(loggingLevel)
+
         # Create file handler if requested:
         if logFile is not None:
+            # If the file does not exist, create it:
+            if not os.access(logFile, os.F_OK):
+                with open(logFile, 'a') as fd:  # @UnusedVariable
+                    pass
+            if not os.access(logFile, os.W_OK):
+                raise IOError("Requested log file location not writable: %s" % logFile)
+            
             handler = logging.FileHandler(logFile)
         else:
             # Create console handler:
             handler = logging.StreamHandler()
         handler.setLevel(loggingLevel)
-#         # create formatter and add it to the handlers
-#         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#         fh.setFormatter(formatter)
-#         ch.setFormatter(formatter)
+        
+        if utc:
+            logging.Formatter.converter = time.gmtime
+            
+        # Create formatter and add it to the handlers
+        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s: %(message)s')
+        handler.setFormatter(formatter)
+
         # Add the handler to the logger
         UxRecorder.logger.addHandler(handler)
-        #**********************
-        #UxRecorder.logger.info("Info for you")
-        #UxRecorder.logger.warn("Warning for you")
-        #UxRecorder.logger.debug("Debug for you")
-        #**********************
         
         UxRecorder.loggingInitialized = True
-
+        if logFile is not None:
+            return logFile
+        else:
+            return "concole"
 
     #---------------------------
     # set_default_headers 
@@ -202,7 +246,9 @@ def make_app():
     ])
 
 if __name__ == "__main__":
+    # File holding acceptable login names, one per line:
+    logPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Uids.log")
     app = make_app()
-    UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=None, uidFile=None)
+    UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=logPath, uidFile=None)
     app.listen(8889)
     tornado.ioloop.IOLoop.current().start()

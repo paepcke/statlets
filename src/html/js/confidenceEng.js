@@ -1,6 +1,9 @@
 /*
  * Todo:
- *    o Make work on Safari
+ *    o Logging to file not happening in uxrecorder
+ *    o softAlert OK button not being styled, at least when button disabled:
+ *    		background is white, type is black. Should be white text on green
+ *    		background.
  *    o Instrumentation
  * Text:
  *         
@@ -370,8 +373,10 @@ var ConfidenceViz = function(width, height) {
 	
 	var serverDownAlert = function(uid) {
 		if (! sentServerDwnMail ) {
-			alert(`Login server unreachable. Please send the email from the upcoming popup, then proceed.`);
-			window.open('mailto:paepcke@cs.stanford.edu?subject=Login%20Server%20Down!&body=regards from ' + uid);
+			//****alert(`Login server unreachable. Please send the email from the upcoming popup, then proceed.`);
+			//****window.open('mailto:paepcke@cs.stanford.edu?subject=Login%20Server%20Down!&body=regards from ' + uid);
+			softAlertNote(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
+        			  true); /* Force clicking on one of the links in the text. */
 		}
 		
 		// Don't send more than once:
@@ -406,7 +411,7 @@ var ConfidenceViz = function(width, height) {
 
 		let loginTxtFld = document.getElementById("uidFld")
 		
-		entryLabel.innerHTML = `${uid} not found in database:`
+		entryLabel.innerHTML = `'${uid}' not found in database:`
 		entryLabel.className = "p login wrong";
 
 		let loginFldFocusFn = function() {
@@ -1575,22 +1580,20 @@ var ConfidenceViz = function(width, height) {
 	| softAlertOkButtonEnabled 
 	-----------------*/
 	
-	var softAlertOkButtonEnabled = function(isEnabled) {
+	var softAlertOkButtonEnabled = function(doEnable) {
 		/*
 		 * Enable or disable use of a softAlert's button.
 		 * 
-		 * :param isEnabled: whether or not to enable the button:
-		 * :type isEnabled: bool
+		 * :param doEnable: whether or not to enable the button:
+		 * :type doEnable: bool
 		 */
 		let btn = document.getElementById("softAlertOkBtn");
-		if ( isEnabled ) {
+		if ( doEnable ) {
 			btn.disabled = false;
-			//*****btn.style.opacity  = 1;
 			btn.className = "button.softAlert";
 		} else {
 			btn.disabled = true;
 			btn.className = "button.softAlert.disabled";
-			//*****btn.style.opacity  = 0.5;
 		}
 	}
 
