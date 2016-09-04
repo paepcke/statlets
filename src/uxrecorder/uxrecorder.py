@@ -102,12 +102,16 @@ class UxRecorder(tornado.web.RequestHandler):
             self.logError("Bad request '%s' (%s)" % (body, `e`))
             return
             
-        # Handle requests that want an answer:
         try:
             reqType = reqMsg['reqType']
+            if reqType == "log":
+                try:
+                    self.logInfo(reqMsg["info"])
+                except KeyError:
+                    self.logError("Log request w/o body '%s'" % body)
+                return        
         except KeyError:
-            # Msg is just a logging report:
-            self.logInfo(reqMsg)
+            self.logError("Log request w/o request type: '%s'" % body)
             return
         
         # Answer needed:

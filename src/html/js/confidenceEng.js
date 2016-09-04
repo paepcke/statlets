@@ -77,8 +77,6 @@ var ConfidenceViz = function(width, height) {
 	
 	const LOG_SERVER_TIMEOUT          = 1000; // msecs: timeout for logging server to respond.
 	
-	const ENTER_KEY					  = 13;
-	
 	const SERVER_NOT_REACHED          = 'Server unreachable';
 	
 	// Will be set later, then stays constant.
@@ -137,7 +135,8 @@ var ConfidenceViz = function(width, height) {
 		// and its dimensions:
 
 		//*****************
-		alerter.note('<a href="">Foobar</a>', true);
+		// Test of early alerter note:
+		//alerter.note('<a href="">Foobar</a>', true);
 		//*****************		
 		
 		let chartDiv = document.getElementById('dataDiv');
@@ -333,10 +332,10 @@ var ConfidenceViz = function(width, height) {
 			                 function(uid) {      // Called on btn click
 								initLogging(uid); // Recursive call when alert btn clicked.
 			                 },
-			                 undefined, // ****** GOES AWAY when entry fld key fn removed from softAlert.js
 			                 alerter.FORCE_CLICK_TXT_OFF,
 			                 alerter.TXT_ENTRY_BOX_ON
 			                 );
+			return;
 		}
 		
 		let originUrl = location.origin;
@@ -389,10 +388,9 @@ var ConfidenceViz = function(width, height) {
 	
 	var serverDownAlert = function(uid) {
 		if (! sentServerDwnMail ) {
-			alerter.note(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
-					      true); /* Force clicking on one of the links in the text. */
+			alerter.changeInfoTxt(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`);
 		}
-		// Don't send more than once:
+		// Don't send more than once in same session:
 		sentServerDwnMail = true;
 	}
 	    
@@ -427,6 +425,7 @@ var ConfidenceViz = function(width, height) {
 		return getFromLogServer(
 				{"reqType" : "login",
 				 "userId"  : uid,
+				 "browser" : browserType(),
 				},
 				originUrl
 				)
@@ -461,7 +460,28 @@ var ConfidenceViz = function(width, height) {
 			};
 			xhr.send(JSON.stringify(reqJson));
 		});
-	}		
+	}
+	
+	/*---------------------------
+	| log 
+	-----------------*/
+	
+	var log = function(txt) {
+		/*
+		 * Logs given txt to logging server. For this
+		 * application, legal JSON is expected, but not
+		 * verified. This is best effort. No check made
+		 * whether info arrives. 
+		 */
+		
+		 getFromLogServer(
+				{"reqType" : "log",
+				 "info"  : txt,
+				},
+				logServerURL
+				)
+		
+	}
 		
 	/*---------------------------
 	| updateDataChart

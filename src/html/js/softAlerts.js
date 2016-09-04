@@ -10,11 +10,16 @@ var SoftAlert = function() {
 	// For remembering event listeners to remove:
 	var savedButtonFn	   = null;
     var savedInfoTxt       = null;
+    var savedAllowEmptyFld = false;
 	
 	const FORCE_CLICK_TXT_ON  = true;
 	const FORCE_CLICK_TXT_OFF = false;
 	const TXT_ENTRY_BOX_ON    = true;
 	const TXT_ENTRY_BOX_OFF   = false;
+	const ALLOW_EMPTY_FLD_ON  = true;
+	const ALLOW_EMPTY_FLD_OFF = false;
+	
+	const ENTER_KEY					  = 13;
 
 	/*---------------------------
 	| constructor 
@@ -60,6 +65,8 @@ var SoftAlert = function() {
 			FORCE_CLICK_TXT_OFF : FORCE_CLICK_TXT_OFF,
 			TXT_ENTRY_BOX_ON    : TXT_ENTRY_BOX_ON,
 			TXT_ENTRY_BOX_OFF   : TXT_ENTRY_BOX_OFF,
+			ALLOW_EMPTY_FLD_ON  : ALLOW_EMPTY_FLD_ON,
+			ALLOW_EMPTY_FLD_OFF : ALLOW_EMPTY_FLD_OFF,
 		}
 	}
 	
@@ -107,8 +114,9 @@ var SoftAlert = function() {
 		
 		
 		softAlertShow(txt,
-				      undefined,    	 // buttonLabel
-				      undefined,    	 // buttonFn,
+				      undefined,    	  // buttonLabel
+				      undefined,    	  // buttonFn,
+				      ALLOW_EMPTY_FLD_OFF,
 				      forceClickInTxt,
 				      TXT_ENTRY_BOX_OFF);
 		
@@ -121,6 +129,7 @@ var SoftAlert = function() {
 	var softAlertShow = function(txt,
 				                 buttonLabel,
 				                 buttonFn,
+				                 allowEmptyEntry,
 				                 forceClickInTxt,
 				                 showTxtEntryBox
 				                 ) {
@@ -140,6 +149,10 @@ var SoftAlert = function() {
 		 * :param buttonFn: if provided, this function is made a 
 		 * 		listener to click of the soft alert's button.
 		 * :type buttonFn: function
+		 * 
+		 * :param allowEmptyEntry: if true, (and txt entry fld is showing),
+		 * 		honor OK button with empty fld. Else refuse.
+		 * :type allowEmptyEntry: bool.
 		 * 
 		 * :param forceClickInTxt: If forceClickInTxt is truthy, then 
 		 *  	  the OK button is disabled, and the user needs to
@@ -163,6 +176,8 @@ var SoftAlert = function() {
 		}
 
 		showingAlert = true;
+		
+		savedAllowEmptyFld = allowEmptyEntry;
 		
 		// Main prose:
 		document.getElementById("softAlertTxt").innerHTML = txt;
@@ -218,15 +233,17 @@ var SoftAlert = function() {
 		 * Remove a softAlert from the screen.
 		 */
 		
-		document.getElementById("softAlertDiv")
-			.className = "softAlertDiv";
+		// Get what's in the txt entry field:
+		let entryFld = document.getElementById("softAlertEntryFld")
+		let enteredTxt = entryFld.value;
+		if ( enteredTxt.length === 0 && ! savedAllowEmptyFld ) {
+			changeInfoTxt("Please enter a value...");
+			userWrong(true);
+			return;
+		}
 		
 		// Turn off the text entry fld:
-		let entryFld = document.getElementById("softAlertEntryFld")
 		entryFld.className = "softAlertEntryFld";
-		
-		// Get what's in the txt entry field:
-		let enteredTxt = entryFld.value;
 		
 		// If requested, call client's passed-in button-pushed-fn:
 		if ( savedButtonFn !== null ) {
@@ -319,7 +336,7 @@ var SoftAlert = function() {
 		 * return the txt to non-wrong style:
 		 */
 
-		let infoTxt = document.getElementsById("softAlertTxt"); 
+		let infoTxt = document.getElementById("softAlertTxt"); 
 		if ( userIsWrong ) {
 			infoTxt.className = "softAlertTxt wrong";
 		} else {
@@ -337,7 +354,7 @@ var SoftAlert = function() {
 		 * BUT: any typing in entry box (if it's visible)
 		 * reverts to original txt.
 		 */
-		let infoTxt = document.getElementsById("softAlertTxt");
+		let infoTxt = document.getElementById("softAlertTxt");
 		infoTxt.innerHTML = newTxt;
 	}
 		
