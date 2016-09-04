@@ -170,8 +170,13 @@ var SoftAlert = function() {
 		// If already showing an alert, queue this one:
 		if ( showingAlert ) {
 			alertQueue.push(function() {
-				softAlertShow(txt, forceClickInTxt, buttonLabel, showTxtEntryBox);
-				})
+				softAlertShow(txt,
+				              buttonLabel,
+				              buttonFn,
+				              allowEmptyEntry,
+				              forceClickInTxt,
+				              showTxtEntryBox)				
+			})
 			return;
 		}
 
@@ -207,6 +212,9 @@ var SoftAlert = function() {
 		if ( typeof(showTxtEntryBox) !== 'undefined' && showTxtEntryBox ) {
 			document.getElementById("softAlertEntryFld")
 				.className = "softAlertEntryFld visible";
+		} else {
+			document.getElementById("softAlertEntryFld")
+				.className = "softAlertEntryFld";
 		}
 
 		// Force user to click a link in the text field?
@@ -250,25 +258,34 @@ var SoftAlert = function() {
 		if ( savedButtonFn !== null ) {
 			let userPromise = savedButtonFn(enteredTxt);
 			userPromise.then(
-					function(userPassed) {
-						shutdownAlert();
+					function( allDone ) {
+						if ( allDone ) {
+							shutDownTheAlert();
+						} else {
+							return;
+						}
 					},
-					function(userFailed) {
-						return;
+					function( rejectedPromise ) {
+						// Should not happen!
+						shutdownTheAlert();
 					})
 		} else {
-			shutdownAlert();
+			shutDownTheAlert();
 		}
 	}
 	
 	/*---------------------------
-	| shutdownAlert
+	| shutDownTheAlert
 	-----------------*/
 	
-	var shutDownAlert = function(){
+	var shutDownTheAlert = function(){
 	
 		// User is OK with taking down the alert:
 		savedButtonFn = null;
+		
+		// Turn off the dialog box:
+		document.getElementById("softAlertDiv")
+			.className = "softAlertDiv";
 		
 		showingAlert = false;
 		
@@ -329,12 +346,18 @@ var SoftAlert = function() {
 	| entryBox 
 	-----------------*/
 
-	var entryBox = function(promptTxt, buttonLabel, buttonFn) {
-		
+	var entryBox = function(promptTxt,
+				      		buttonLabel,
+				      		buttonFn,
+				        	allowEmptyEntryFld,
+				        	forceClickTxt
+				        	) {
+			
 		softAlertShow(promptTxt,
 				      buttonLabel,
 				      buttonFn,
-				      FORCE_CLICK_TXT_OFF, 
+				      allowEmptyEntryFld,
+				      forceClickTxt,
 				      TXT_ENTRY_BOX_ON);
 	}
 

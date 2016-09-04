@@ -332,8 +332,8 @@ var ConfidenceViz = function(width, height) {
 			                 function(uid) {
 								return initLogging(uid); // recursive call, this time
 							 },                          // with UID from alert box.
-			                 alerter.FORCE_CLICK_TXT_OFF,
-			                 alerter.TXT_ENTRY_BOX_ON
+							 alerter.ALLOW_EMPTY_FLD_OFF,
+			                 alerter.FORCE_CLICK_TXT_OFF
 			                 );
 			return;
 		}
@@ -359,8 +359,8 @@ var ConfidenceViz = function(width, height) {
 	    let authPromise = authenticate(uid, logServerURL) ;
 	    return authPromise
 	    	.then(
-	    		function (reqRes) {                    // resolved (server answered)
-	    			if ( reqRes === "loginOK" ) {
+	    		function (reqRes) {                    // resolved: server answered
+	    			if ( reqRes === "loginOK" ) {      // with loginOK or loginNOK.
 	    				return allowAccess(uid);
 	    			} else if (reqRes === "loginNOK") {
 	    				return denyAccess(uid);
@@ -370,37 +370,34 @@ var ConfidenceViz = function(width, height) {
 	    			// Some server trouble; use special
 	    			// uid and let user proceed:
 	    			myUid = "logServerDown*";
-	    			// Queue another alert: server 
-	    			// down, please email admin:
+	    			// Change same alert to notice that
+	    			// login server down, and to please 
+	    			// email admin:
 	    			serverDownAlert(uid)
-	    			return allowAccess(myUid);
+	    			// Returning false will take down the 
+	    			// login softAlert:
+	    			return true;
 	    		});
 	}
 	
-	/*---------------------------
-	| authResultPromise 
-	-----------------*/
-	
-	//***** GO AWAY?
-	var authResultPromise = function(uid) {
-		let authRes = new Promise(function(resolve, reject) {
-			let authRes = initLogging(uid); 
-			if ( authRes ) {  // Recursive call when alert btn clicked.
-				resolve(true);
-			}  else {
-				reject(false);
-			} 
-				
-		})
-	}
 	
 	/*---------------------------
 	| serverDownAlert 
 	-----------------*/
 	
 	var serverDownAlert = function(uid) {
+		
 		if (! sentServerDwnMail ) {
-			alerter.changeInfoTxt(`Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`);
+			// Queue next dialog box without entry fld,
+			// but forcing user to click email link before
+			// Continue button is enabled:
+			alerter.fancy( `Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
+			               "Continue",                   // Button label
+			               undefined,                    // No special button function
+			               alerter.ALLOW_EMPTY_FLD_OFF,
+			               alerter.FORCE_CLICK_TXT_ON,   // Must click on email link before
+			               alerter.TXT_ENTRY_BOX_OFF     // ... button is available.
+			               );
 		}
 		// Don't send more than once in same session:
 		sentServerDwnMail = true;
