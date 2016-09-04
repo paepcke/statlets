@@ -250,9 +250,6 @@ var SoftAlert = function() {
 			return;
 		}
 		
-		// Turn off the text entry fld:
-		entryFld.className = "softAlertEntryFld";
-
 		// If requested, call client's passed-in button-pushed-fn,
 		// expecting a promise:
 		if ( savedButtonFn !== null ) {
