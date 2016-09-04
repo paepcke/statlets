@@ -244,20 +244,18 @@ var SoftAlert = function() {
 		
 		// Turn off the text entry fld:
 		entryFld.className = "softAlertEntryFld";
-		
+
 		// If requested, call client's passed-in button-pushed-fn,
 		// expecting a promise:
 		if ( savedButtonFn !== null ) {
 			let userPromise = savedButtonFn(enteredTxt);
-			userPromise.then(function(userDecision) {
-				if ( userDecision === false ) {
-					// Leave the alert up:
-					return;
-				} else {
-					shutdownAlert();
-				}
-			})
-			return;
+			userPromise.then(
+					function(userPassed) {
+						shutdownAlert();
+					},
+					function(userFailed) {
+						return;
+					})
 		} else {
 			shutdownAlert();
 		}
