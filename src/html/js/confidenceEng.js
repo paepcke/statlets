@@ -357,30 +357,24 @@ var ConfidenceViz = function(width, height) {
 	    log.addAppender(ajaxAppender);
 	    
 	    let authPromise = authenticate(uid, logServerURL) ;
-	    authPromise
-	   	    .then(function (reqRes) {
-	   	    	if ( reqRes === "loginOK" ) {
-	   	    		return allowAccess(uid);
-	   	    	} else if (reqRes === "loginNOK") {
-	   	    		return denyAccess(uid);
-	   	    	} else {
-	   	    		// Some server trouble; use special
-	   	    		// uid and let user proceed:
-	   	    		myUid = "logServerDown*";
-	   	    		// Queue another alert: server 
-	   	    		// down, please email admin:
-	   	    		serverDownAlert(uid)
-	   	    		return allowAccess(myUid);
-	   	    	}
-	   	    })
-	   	    .catch(function (errObj) {
-	   	    	myUid = "logServerDown*";
-	   	    	// Queue another alert: server 
-	   	    	// down, please email admin:
-	   	    	serverDownAlert(uid);
-	   	    	return allowAccess(myUid);
-	   	    });
-	    return authPromise;
+	    return authPromise
+	    	.then(
+	    		function (reqRes) {                    // resolved (server answered)
+	    			if ( reqRes === "loginOK" ) {
+	    				return allowAccess(uid);
+	    			} else if (reqRes === "loginNOK") {
+	    				return denyAccess(uid);
+	    			}
+	    		}, 
+	    		function(errorObj) {                   // rejected (server didn't answer)
+	    			// Some server trouble; use special
+	    			// uid and let user proceed:
+	    			myUid = "logServerDown*";
+	    			// Queue another alert: server 
+	    			// down, please email admin:
+	    			serverDownAlert(uid)
+	    			return allowAccess(myUid);
+	    		});
 	}
 	
 	/*---------------------------
