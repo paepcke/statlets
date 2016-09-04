@@ -9,8 +9,6 @@ var SoftAlert = function() {
 
 	// For remembering event listeners to remove:
 	var savedButtonFn	   = null;
-    var savedTxtEntryFldFn = null;
-    
     var savedInfoTxt       = null;
 	
 	const FORCE_CLICK_TXT_ON  = true;
@@ -52,9 +50,11 @@ var SoftAlert = function() {
 		txtEntryFld.className = "softAlertEntryFld";
 		
 		return {
-			note     : softAlertNote,
-			fancy  	 : softAlertShow,
-			entryBox : entryBox,
+			note          : softAlertNote,
+			fancy         : softAlertShow,
+			entryBox      : entryBox,
+			changeInfoTxt : changeInfoTxt,
+			userWrong	  : userWrong,
 			
 			FORCE_CLICK_TXT_ON  : FORCE_CLICK_TXT_ON,
 			FORCE_CLICK_TXT_OFF : FORCE_CLICK_TXT_OFF,
@@ -109,7 +109,6 @@ var SoftAlert = function() {
 		softAlertShow(txt,
 				      undefined,    	 // buttonLabel
 				      undefined,    	 // buttonFn,
-				      undefined, 		 // entryFldKeyupFn,
 				      forceClickInTxt,
 				      TXT_ENTRY_BOX_OFF);
 		
@@ -122,7 +121,6 @@ var SoftAlert = function() {
 	var softAlertShow = function(txt,
 				                 buttonLabel,
 				                 buttonFn,
-				                 txtEntryFldFn,
 				                 forceClickInTxt,
 				                 showTxtEntryBox
 				                 ) {
@@ -143,12 +141,6 @@ var SoftAlert = function() {
 		 * 		listener to click of the soft alert's button.
 		 * :type buttonFn: function
 		 * 
-		 * :param txtEntryFldFn: if provided, this function is made a 
-		 * 	    listener to keyUp of the text input field. If
-		 * 		showTxtEntryBox is undefined, this parameter has
-		 * 	    no effect.
-		 * :type txtEntryFldFn: function
-		 *  
 		 * :param forceClickInTxt: If forceClickInTxt is truthy, then 
 		 *  	  the OK button is disabled, and the user needs to
 		 *  	  click on any link in the text that is classed
@@ -202,17 +194,6 @@ var SoftAlert = function() {
 				.className = "softAlertEntryFld visible";
 		}
 
-		// ... and the txt entry's keyUp: 
-		if ( typeof(txtEntryFldFn) === 'function' ) {
-			document.getElementById("softAlertEntryFld")
-				.addEventListener("keyUp", txtEntryFldFn);
-			// Remember function so that btnClicked() can
-			// remove the listener:
-			savedTxtEntryFldFn = txtEntryFldFn;
-		} else {
-			savedTxtEntryFldFn = null;
-		}
-		
 		// Force user to click a link in the text field?
 		if ( typeof(forceClickInTxt) !== 'undefined' && forceClickInTxt ) {
 			softAlertForceClickInTxt()
@@ -317,12 +298,11 @@ var SoftAlert = function() {
 	| entryBox 
 	-----------------*/
 
-	var entryBox = function(promptTxt, buttonLabel, buttonFn, entryFldKeyupFn) {
+	var entryBox = function(promptTxt, buttonLabel, buttonFn) {
 		
 		softAlertShow(promptTxt,
 				      buttonLabel,
 				      buttonFn,
-				      entryFldKeyupFn,
 				      FORCE_CLICK_TXT_OFF, 
 				      TXT_ENTRY_BOX_ON);
 	}
