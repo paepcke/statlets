@@ -328,10 +328,10 @@ var ConfidenceViz = function(width, height) {
 		if ( typeof(uid) === 'undefined') {
 
 			alerter.entryBox("Please enter your sunet ID:",
-			                 "Log in",            // Button label
-			                 function(uid) {      // Called on btn click
-								initLogging(uid); // Recursive call when alert btn clicked.
-			                 },
+			                 "Log in",                   // Button label
+			                 function(uid) {
+								return initLogging(uid); // recursive call, this time
+							 },                          // with UID from alert box.
 			                 alerter.FORCE_CLICK_TXT_OFF,
 			                 alerter.TXT_ENTRY_BOX_ON
 			                 );
@@ -380,6 +380,24 @@ var ConfidenceViz = function(width, height) {
 	   	    	serverDownAlert(uid);
 	   	    	return allowAccess(myUid);
 	   	    });
+	    return authPromise;
+	}
+	
+	/*---------------------------
+	| authResultPromise 
+	-----------------*/
+	
+	//***** GO AWAY?
+	var authResultPromise = function(uid) {
+		let authRes = new Promise(function(resolve, reject) {
+			let authRes = initLogging(uid); 
+			if ( authRes ) {  // Recursive call when alert btn clicked.
+				resolve(true);
+			}  else {
+				reject(false);
+			} 
+				
+		})
 	}
 	
 	/*---------------------------
