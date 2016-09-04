@@ -6,11 +6,15 @@ Created on Aug 29, 2016
 @author: paepcke
 '''
 
+import argparse
 import datetime
 import json
 import logging
 import os
 import re
+import signal
+import subprocess
+import sys
 import time
 
 import tornado.ioloop
@@ -21,7 +25,9 @@ class UxRecorder(tornado.web.RequestHandler):
 
     # Remember whether logging has been initialized (class var!):
     loggingInitialized = False
-    logger = None
+    logger  = None
+    uidDict = None
+    uidFile = None
     
     TEST_UID_DB = {"test*" : ''}
 
@@ -62,6 +68,7 @@ class UxRecorder(tornado.web.RequestHandler):
         logDest = cls.setupLogging(loggingLevel, logFile, utc=True)
         # Regex pattern for excaping CSV separator in log entries:
         cls.csvSeparatorRe = re.compile(r'\|')
+        cls.uidFile = uidFile
         cls.uidDict = cls.loadUserIds(uidFile)
         
         timeNow = datetime.datetime.now().isoformat()
@@ -72,6 +79,9 @@ class UxRecorder(tornado.web.RequestHandler):
         # So do that here:
         cls.logger.info('|Start logging UTC times at %s (local time), numUids: %s.' %\
                         (timeNow, numUids))
+        
+        # React to SIGUSR1 by reloading UID db:
+        signal.signal(signal.SIGUSR1, cls.handle_sig_usr1)
                 
         print('''Started statlet ux recorder at %s
                 Time zone: UTC-logging 
@@ -137,7 +147,7 @@ class UxRecorder(tornado.web.RequestHandler):
             
     def isRegistered(self, loginId):
         try:
-            self.uidDict[loginId]
+            UxRecorder.uidDict[loginId]
             return True
         except KeyError:
             return False
@@ -147,7 +157,7 @@ class UxRecorder(tornado.web.RequestHandler):
     #----------------*/
 
     @classmethod
-    def loadUserIds(self, uidFile):
+    def loadUserIds(cls, uidFile):
 
         uidDict = {}
         if uidFile is None:
@@ -157,7 +167,7 @@ class UxRecorder(tornado.web.RequestHandler):
                 for uidLine in uidsFd:
                     uidDict[uidLine.strip()] = ""
         except:
-            self.logError("Could not read uid file %s (using stub dict): " % uidFile)
+            print("Could not read uid file %s (using stub dict): " % uidFile)
             return UxRecorder.TEST_UID_DB
 
         return uidDict    
@@ -300,6 +310,30 @@ class UxRecorder(tornado.web.RequestHandler):
         self.set_status(204)
         self.finish()
 
+    #---------------------------
+    # handleSigUsr1 
+    #----------------*/
+    
+    @classmethod
+    def handle_sig_usr1(cls, sig, frame):
+        if sig == signal.SIGUSR1:
+            UxRecorder.uidDict = cls.loadUserIds(UxRecorder.uidFile)
+            print('Reloaded %s' % UxRecorder.uidFile)
+        else:
+            print('Received uncaught signal %s' % sig)
+        
+
+    #---------------------------
+    # getUxRecorderPid 
+    #----------------*/
+
+    @classmethod
+    def get_ux_recorder_pid(cls):
+        this_prog = os.path.basename(__file__)
+        child = subprocess.Popen(['pgrep', '-f', this_prog], stdout=subprocess.PIPE)
+        pid   = child.communicate()[0].strip()
+        return pid
+
     # -------------------------------  Startup ------------------        
     
 def make_app():
@@ -308,9 +342,39 @@ def make_app():
     ])
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version',
+                        action='store_true',
+                        help='Current version of login server.'
+                        )
+    parser.add_argument('-r', '--reload',
+                        dest='reload',
+                        action='store_true',
+                        help="Reloads user id database."
+                        )
+    
+    args = parser.parse_args()
+    if args.version:
+        print('Version 1.0')
+        sys.exit()
+
+    uidPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Uids.txt")
+        
+    # Reload UID db?
+    if args.reload:
+        # Find the (hopefully already running) uxrecorder's pid:
+        try:
+            ux_recorder_pid = int(UxRecorder.get_ux_recorder_pid())
+        except ValueError:
+            print('Could not find PID of a running uxrecorder.py process.')
+            sys.exit()
+        os.kill(ux_recorder_pid, signal.SIGUSR1)
+        print('Done signalling process to trigger reload.')
+        sys.exit()    
+        
     # File holding acceptable login names, one per line:
     logPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Statlets.log")
-    uidPath = os.path.join(os.getenv("HOME"), ".ssh", "stats60Uids.txt")
     app = make_app()
     UxRecorder.initializeOnce(loggingLevel=logging.INFO, logFile=logPath, uidFile=uidPath)
     app.listen(8889)
