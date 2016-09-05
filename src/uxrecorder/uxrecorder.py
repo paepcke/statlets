@@ -176,30 +176,10 @@ class UxRecorder(tornado.web.RequestHandler):
         :type msgBody: { string : {string | number }
         '''
 
-        # Login action is special:
-        try:
-            reqType = reqBody["reqType"]
-        except KeyError:
-            reqType = None
-        if reqType == "login":
-            try:
-                browser = reqBody["action"]
-            except KeyError:
-                browser = "unknown"
-            reqBody["action"] = '{ login : "%s" }' % browser
-        
-        try:
-            uid = reqBody["uid"]
-        except KeyError:
-            uid = "unknown"
-        try:
-            context = reqBody["context"]
-        except KeyError:
-            context = "unknown"
-        try:
-            action = reqBody["action"]
-        except KeyError:
-            action = "unknown"
+        uid = reqBody.get("uid", "unknown")
+        context = reqBody.get("context", "unknown")
+        action = reqBody.get("action", "unknown")
+
         
         # Escape any CSV fld separators in the action value:     
         action = UxRecorder.csvSeparatorRe.sub("\|", action)

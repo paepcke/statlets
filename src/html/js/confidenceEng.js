@@ -51,6 +51,9 @@ var ConfidenceViz = function(width, height) {
 	
 	var cookieMonster    = null;
 	
+	// Ability to suppress logging temporarily:
+	var loggingSuppressed = false;
+	
 	// Constants:
 
 	// Where usage activity and heartbeat go:
@@ -448,8 +451,8 @@ var ConfidenceViz = function(width, height) {
 		return getFromLogServer(
 				{"reqType" : "login",
 				 "context" : "confidence",
-				 "userId"  : uid,
-				 "action"  : browserType(),
+				 "uid"     : uid,
+				 "action"  : `loginBrowser : "${browserType()}"`,
 				},
 				originUrl
 				)
@@ -465,16 +468,14 @@ var ConfidenceViz = function(width, height) {
 		let xhr     = new XMLHttpRequest();
 		xhr.timeout = LOG_SERVER_TIMEOUT;
 		
-		return new Promise(function (resolve, reject) {
+		let actionPromise = new Promise(function (resolve, reject) {
 			xhr.open("POST", theUrl, true); // true for async; the default anyway
 			xhr.onload = function () {
 				if (this.status >= 200 && this.status < 300) {
 					resolve(xhr.response);
 				} else {
-					reject({
-						status: this.status,
-						statusText: xhr.statusText
-					});
+					let resJson = `{status: "${this.status}", statusText: "${xhr.statusText}"}`;
+					reject(resJson);
 				}
 			};
 			
@@ -484,6 +485,11 @@ var ConfidenceViz = function(width, height) {
 			};
 			xhr.send(JSON.stringify(reqJson));
 		});
+		
+		actionPromise.catch(function(err) {
+			console.log(`Error during server request '${reqJson}/${theUrl}': ${err}`);
+		});
+		return actionPromise;
 	}
 	
 	/*---------------------------
@@ -497,16 +503,19 @@ var ConfidenceViz = function(width, height) {
 		 * verified. This is best effort. No check made
 		 * whether info arrives. 
 		 */
-		
-		 getFromLogServer(
+
+		if ( loggingSuppressed ) {
+			return;
+		}
+		getFromLogServer(
 				{"reqType" : "log",
-				 "context" : "confidence",
-				 "uid"     : myUid,
-				 "action"  : txtJsonValue,
+					"context" : "confidence",
+					"uid"     : myUid,
+					"action"  : txtJsonValue,
 				},
 				logServerURL
-				)
-		
+		)
+
 	}
 		
 	/*---------------------------
@@ -1450,7 +1459,15 @@ var ConfidenceViz = function(width, height) {
 		let homeBtn = d3.select('#home').node();
 		//****d3.select(homeBtn).attr('class', 'button cntBtn current');
 		currBtn = homeBtn;
-		goToStep(homeBtn);
+		// The following would log
+		// a "user clicked Home button
+		// event. Suppress that:
+		try {
+			loggingSuppressed = true;
+			goToStep(homeBtn);
+		} finally {
+			loggingSuppressed = false;
+		}
 	}
 	
 	/*---------------------------
