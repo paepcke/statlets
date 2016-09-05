@@ -452,7 +452,7 @@ var ConfidenceViz = function(width, height) {
 				{"reqType" : "login",
 				 "context" : "confidence",
 				 "uid"     : uid,
-				 "action"  : `loginBrowser : "${browserType()}"`,
+				 "action"  : `{ "loginBrowser" : "${browserType()}" }`,
 				},
 				originUrl
 				)
@@ -468,7 +468,7 @@ var ConfidenceViz = function(width, height) {
 		let xhr     = new XMLHttpRequest();
 		xhr.timeout = LOG_SERVER_TIMEOUT;
 		
-		let actionPromise = new Promise(function (resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			xhr.open("POST", theUrl, true); // true for async; the default anyway
 			xhr.onload = function () {
 				if (this.status >= 200 && this.status < 300) {
@@ -485,11 +485,6 @@ var ConfidenceViz = function(width, height) {
 			};
 			xhr.send(JSON.stringify(reqJson));
 		});
-		
-		actionPromise.catch(function(err) {
-			console.log(`Error during server request '${reqJson}/${theUrl}': ${err}`);
-		});
-		return actionPromise;
 	}
 	
 	/*---------------------------
