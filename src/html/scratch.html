@@ -2,29 +2,32 @@
 <html>
 <head>
     <title>Scratch</title>
-	<script type="text/javascript" src="js/log4javascript.js"></script>	    	
-
-	<script>
-	    var log = log4javascript.getLogger();
-	    var popUpAppender = new log4javascript.PopUpAppender();
-	    var popUpLayout = new log4javascript.PatternLayout("%d{HH:mm:ss} %-5p - %m%n");
-	    popUpAppender.setLayout(popUpLayout);
-	    log.addAppender(popUpAppender);
-	    
-	    var ajaxAppender = new log4javascript.AjaxAppender("http://localhost:8889");
-	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
-	    log.addAppender(ajaxAppender);
-
-	    var XMLHTTPRequest = function() {
-		    log.debug("Debugging message (appears in pop-up)");
-	    	log.error("Error message (appears in pop-up and in server log)");
-	    }
-	</script>
+	<script type="text/javascript" src="js/cookieMonster.js"></script>	    	
     
 </head>
 <body>
 	<div>
-	<button type="button" id="trigger" onclick="XMLHTTPRequest()">XMLHTTPRequest</button>
+	
 	</div>
+	<script>
+	var monster = new CookieMonster();
+	var cookie  = monster.getCookie("test");
+ 	alert(cookie); // null
+	monster.setCookie("test", "My un:safe=string");
+	alert(monster.getCookie("test")); // "My un:safe=string"
+	monster.delCookie("test")
+	alert(monster.getCookie("test"));  // null
+/	
+	monster.setCookie("test", "firstCookie");
+	monster.setCookie("test1", "secondCookie");
+	alert(monster.getCookie("test1")); // "secondCookie"
+	alert(monster.getCookie("test"));  // "firstCookie"
+	monster.delCookie("test1");        
+	alert(monster.getCookie("test1")); // null
+	monster.delCookie("test");
+	alert(monster.getCookie("test"));  // null
+	
+	</script>
+	
 </body>
 </html>

@@ -12,6 +12,7 @@
 /* *************
 import { StatsBarchartResizeHandler } from "./statsBarchartResizeHandler";
 import * as alerts from "./softAlerts";
+import * as cookieMonster from "./cookieMonster";
 import * as ss from "./simple-statistics.min";
 import * as d3 from "./d3.min";
 import * as logging from "./log4javascript.min";
@@ -47,6 +48,8 @@ var ConfidenceViz = function(width, height) {
 	var sentServerDwnMail= false;
 	
 	var alerter          = null;
+	
+	var cookieMonster    = null;
 	
 	// Constants:
 
@@ -130,7 +133,7 @@ var ConfidenceViz = function(width, height) {
 		
 		// For non-modal alerts:
 		alerter = SoftAlert();
-		
+		cookieMonster = CookieMonster();
 		// Find the div in which the chart is to reside,
 		// and its dimensions:
 
@@ -297,7 +300,18 @@ var ConfidenceViz = function(width, height) {
 		createTooltip();
 		createSvgHeaders();
 		
-        initLogging();
+		// If this access to the page is just
+		// the result of user clicking the New Sample
+		// button, then don't ask for login again.
+		// The button handler will have set a cookie:
+		
+		let uid = cookieMonster.getCookie("stats60Uid");
+		if ( uid !== null ) {
+			initLogging(uid);
+			cookieMonster.delCookie("stats60Uid");
+		} else {
+			initLogging();
+		}
         
 		return {width  : width,
 				height : height,
@@ -1303,6 +1317,9 @@ var ConfidenceViz = function(width, height) {
 			  .attr("value", "New sample")
 			  .attr("class", "button sampleBtn")
 			  .on("click", function() {
+				  // Prevent re-asking for UID after the
+				  // following reload:
+				  cookieMonster.setCookie("stats60Uid", myUid);
 				  location.reload();
 				  log("reload");
 				  })
