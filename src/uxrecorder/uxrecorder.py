@@ -116,7 +116,9 @@ class UxRecorder(tornado.web.RequestHandler):
             reqType = reqMsg['reqType']
             if reqType == "log":
                 try:
-                    self.logInfo(reqMsg["info"])
+                    # Most frequent branch: an interaction with the statlet
+                    # other than login:
+                    self.logInteraction(reqMsg)
                 except KeyError:
                     self.logError("Log request w/o body '%s'" % body)
                 return        
@@ -136,10 +138,73 @@ class UxRecorder(tornado.web.RequestHandler):
                 return
             if self.isRegistered(userId):
                 self.write("loginOK")
-                self.logInfo('{login : "%s"}' % userId)
+                reqMsg["action"] = '{"login" : "OK", "browser" : "%s"}' % reqMsg.get("browser", "unknown")
+                self.logInteraction(reqMsg) # Log the login
             else:
                 self.write("loginNOK")
-                self.logInfo('{loginFail : "%s"}' % userId)
+                reqMsg["action"] = '{"login" : "NOK", "browser" : "%s"}' % reqMsg.get("browser", "unknown")
+                self.logInfo(reqMsg)
+
+    #---------------------------
+    # logInteraction 
+    #----------------*/
+
+    def logInteraction(self, reqBody):
+        '''
+        Write to disk log. Requests look like this:
+                {
+                 "reqType" : "log",
+				 "context" : "confidence",
+				 "uid"     : myUid,
+				 "action"  : txtJsonValue,
+				 }
+				 
+        Logins are special:
+                {
+                 "reqType" : "login",
+				 "context" : "confidence",
+				 "uid"     : myUid,
+				 "action"  : browser
+				 }
+               
+				 
+		Create record:
+		   <date> <time>: |uid|statlet|action
+		where action is a JSON description what user did.
+				 
+        :param reqBody: the 'request', usually action report from clients.
+        :type msgBody: { string : {string | number }
+        '''
+
+        # Login action is special:
+        try:
+            reqType = reqBody["reqType"]
+        except KeyError:
+            reqType = None
+        if reqType == "login":
+            try:
+                browser = reqBody["action"]
+            except KeyError:
+                browser = "unknown"
+            reqBody["action"] = '{ login : "%s" }' % browser
+        
+        try:
+            uid = reqBody["uid"]
+        except KeyError:
+            uid = "unknown"
+        try:
+            context = reqBody["context"]
+        except KeyError:
+            context = "unknown"
+        try:
+            action = reqBody["action"]
+        except KeyError:
+            action = "unknown"
+        
+        # Escape any CSV fld separators in the action value:     
+        action = UxRecorder.csvSeparatorRe.sub("\|", action)
+        
+        UxRecorder.logger.info('|%s|%s|%s' % (uid, context, action))
 
     #---------------------------
     # isRegistered 

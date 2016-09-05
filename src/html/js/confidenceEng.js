@@ -1,8 +1,8 @@
 /*
  * Todo:
- *    o softAlert OK button not being styled, at least when button disabled:
- *    		background is white, type is black. Should be white text on green
- *    		background.
+ *    o New Sample shouldn't require login
+ *    o Change the logInteraction() in uxrecorder to dict.get(key,default)
+ *    o Test that login OK/NOK still works in uxrecorder.
  *    o Instead of logServerDown* user, make a session ID.
  *    o Instrumentation
  * Text:
@@ -433,8 +433,9 @@ var ConfidenceViz = function(width, height) {
 		
 		return getFromLogServer(
 				{"reqType" : "login",
+				 "context" : "confidence",
 				 "userId"  : uid,
-				 "browser" : browserType(),
+				 "action"  : browserType(),
 				},
 				originUrl
 				)
@@ -475,7 +476,7 @@ var ConfidenceViz = function(width, height) {
 	| log 
 	-----------------*/
 	
-	var log = function(txt) {
+	var log = function(txtJsonValue) {
 		/*
 		 * Logs given txt to logging server. For this
 		 * application, legal JSON is expected, but not
@@ -485,7 +486,9 @@ var ConfidenceViz = function(width, height) {
 		
 		 getFromLogServer(
 				{"reqType" : "log",
-				 "info"  : txt,
+				 "context" : "confidence",
+				 "uid"     : myUid,
+				 "action"  : txtJsonValue,
 				},
 				logServerURL
 				)
@@ -611,6 +614,7 @@ var ConfidenceViz = function(width, height) {
 				.on ('end', function(d) {
 					d3.select(this).classed("dragging", false);
 					d3.drag.currBar = undefined;
+					log("dragState")
 				})
 	      	)
 	}
@@ -924,7 +928,8 @@ var ConfidenceViz = function(width, height) {
 									   });
 		
 		if (remainingStates.length === 0) {
-			alert("No additional states: sample is entire population.")
+			alert("No additional states: sample is entire population.");
+			log("sampledAll");
 			return(null);
 		}
 		
@@ -1287,6 +1292,7 @@ var ConfidenceViz = function(width, height) {
 			  .on("click", function() {
 				  let newState = newSample();
 				  blankDataStateLabels(newState);
+				  log("addState");
 				  })
 			// .append('br');
 			
@@ -1298,6 +1304,7 @@ var ConfidenceViz = function(width, height) {
 			  .attr("class", "button sampleBtn")
 			  .on("click", function() {
 				  location.reload();
+				  log("reload");
 				  })
 			//.append('br');
 	}
@@ -1307,6 +1314,13 @@ var ConfidenceViz = function(width, height) {
 	-----------------*/
 	
 	var blankDataStateLabels = function( lastState ) {
+		/*
+		 * Given the name of the last state in
+		 * a sample (i.e. the left-most state label
+		 * on the X axis of the sample chart), set
+		 * all the state-name X-labels to blank, except
+		 * for that last one.
+		 */
 
 		let xAxisGrpSel = d3.select('#dataXAxisGrp'); 
 		let txtSel      = xAxisGrpSel.selectAll("text");
@@ -1445,6 +1459,8 @@ var ConfidenceViz = function(width, height) {
 			d3.select('#' + stepName + 'Txt').classed('visible', true);
 		}
 
+		log(stepName);
+		
 		switch (stepName) {
 		case 'home':
 			d3.select('#allStatesDiv')
