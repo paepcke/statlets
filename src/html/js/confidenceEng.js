@@ -16,7 +16,6 @@ import { Logger } from "./logging";
 import { CookieMonster } from "./cookieMonster";
 import * as ss from "./simple-statistics.min";
 import * as d3 from "./d3.min";
-import * as log4javascript from "./log4javascript.min";
 
 var ConfidenceViz = function(width, height) {
 
