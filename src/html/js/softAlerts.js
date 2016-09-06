@@ -392,4 +392,4 @@ var SoftAlert = function() {
 	return constructor();
 }
 
-// export {softAlert}
+export {SoftAlert}

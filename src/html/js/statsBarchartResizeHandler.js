@@ -1,8 +1,6 @@
 "use strict";
 
-/* **********
 import * as d3 from "./d3.min";
-*/
 
 var StatsBarchartResizeHandler = function (svg) {
 	
@@ -84,6 +82,5 @@ var StatsBarchartResizeHandler = function (svg) {
 	return(constructor());
 	
 }
-/* ***********
+
 export { StatsBarchartResizeHandler };
-*********/

@@ -9,14 +9,15 @@
  *         
  */
 
-/* *************
+
 import { StatsBarchartResizeHandler } from "./statsBarchartResizeHandler";
-import * as alerts from "./softAlerts";
-import * as cookieMonster from "./cookieMonster";
+import { SoftAlert } from "./softAlerts";
+import { Logger } from "./logging";
+import { CookieMonster } from "./cookieMonster";
 import * as ss from "./simple-statistics.min";
 import * as d3 from "./d3.min";
-import * as logging from "./log4javascript.min";
-********/
+import * as log4javascript from "./log4javascript.min";
+
 var ConfidenceViz = function(width, height) {
 
 	// Instance variables:

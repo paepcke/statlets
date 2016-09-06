@@ -2,7 +2,10 @@
   presets: ["es2015", "react"],
   only:    ["src/html/js/confidenceEng.js",
             "src/html/js/tableManager.js",
-            "src/html/js/statsBarchartResizeHandler.js"
+            "src/html/js/statsBarchartResizeHandler.js",
+            "src/html/js/softAlerts.js",
+            "src/html/js/cookieMonster.js",
+            "src/html/js/logging.js"
             ],
   plugins: ["transform-runtime"]            
 }
