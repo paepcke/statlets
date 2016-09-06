@@ -1118,7 +1118,7 @@ var ConfidenceViz = function(width, height) {
 			  .on("click", function() {
 				  // Prevent re-asking for UID after the
 				  // following reload:
-				  cookieMonster.setCookie("stats60Uid", myUid);
+				  cookieMonster.setCookie("stats60Uid", logger.userId);
 				  location.reload();
 				  log("reload");
 				  })
