@@ -128,8 +128,9 @@ var ConfidenceViz = function(width, height) {
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = Logger(alerter, uid, false);    // false: don't solicitSrvDwnEmail
-			cookieMonster.delCookie("stats60Uid");   // if server is down.
+			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
+			logger.setUserId(uid);
+			cookieMonster.delCookie("stats60Uid");
 		} else {
 			logger = Logger(alerter);
 		}
@@ -1118,9 +1119,9 @@ var ConfidenceViz = function(width, height) {
 			  .on("click", function() {
 				  // Prevent re-asking for UID after the
 				  // following reload:
-				  cookieMonster.setCookie("stats60Uid", logger.userId);
+				  cookieMonster.setCookie("stats60Uid", logger.userId());
 				  location.reload();
-				  log("reload");
+				  log("newSample");
 				  })
 			//.append('br');
 	}
