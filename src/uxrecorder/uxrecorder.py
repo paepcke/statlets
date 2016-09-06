@@ -134,23 +134,25 @@ class UxRecorder(tornado.web.RequestHandler):
             try:
                 userId = reqMsg['uid']
             except KeyError:
+                # These attempts to signal error to browser-client aren't working:
                 #******self.send_error("Software error: Login request without login name.")
                 self.send_error(status_code=422, reason="Software error: Login request without login name.") # Unprocessabel Entity
                 return
+            action = reqMsg.get("action", None)
+            if action is not None:
+                try:
+                    browser = json.loads(action)['loginBrowser']
+                except (ValueError, AttributeError):
+                    browser = "unknown"
+            
             if self.isRegistered(userId):
                 self.write("loginOK")
-                action = reqMsg.get("action", None)
-                if action is not None:
-                    try:
-                        browser = json.loads(action)['loginBrowser']
-                    except (ValueError, AttributeError):
-                        browser = "unknown"
                 reqMsg["action"] = '{"login" : "OK", "browser" : "%s"}' % browser
                 self.logInteraction(reqMsg) # Log the login
             else:
                 self.write("loginNOK")
-                reqMsg["action"] = '{"login" : "NOK", "browser" : "%s"}' % reqMsg.get("browser", "unknown")
-                self.logInfo(reqMsg)
+                reqMsg["action"] = '{"login" : "NOK", "browser" : "%s"}' % browser
+                self.logInteraction(reqMsg)
 
     #---------------------------
     # logInteraction 

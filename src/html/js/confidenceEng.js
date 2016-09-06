@@ -41,27 +41,15 @@ var ConfidenceViz = function(width, height) {
 	var svgData			 = null;
 	var svgAllStates     = null;	
 	
-	var myBrowser        = null;
-	var myUid            = null;
-	var logServerURL     = null;
-	
 	var sentServerDwnMail= false;
+	var browserType      = null;
 	
 	var alerter          = null;
-	
+	var logger           = null;
 	var cookieMonster    = null;
-	
-	// Ability to suppress logging temporarily:
-	var loggingSuppressed = false;
-	
+		
 	// Constants:
 
-	// Where usage activity and heartbeat go:
-	
-	const LOGGING_PORT                = 8889;
-	const ADMIN_EMAIL = 
-		'<a class="forceClick" href="mailto:paepcke@cs.stanford.edu?Subject=Statlet%20Login%20Server%20Down" target="_top">Please email admin</a>'; 
-	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
@@ -80,11 +68,7 @@ var ConfidenceViz = function(width, height) {
 	const DOT_RADIUS                  = 10;  // pixels.
 	
 	const NUM_SAMPLES                 = 5;
-	
-	const LOG_SERVER_TIMEOUT          = 1000; // msecs: timeout for logging server to respond.
-	
-	const SERVER_NOT_REACHED          = 'Server unreachable';
-	
+
 	// Will be set later, then stays constant.
 	var ALL_STATE_MEAN                = null;
 	
@@ -135,8 +119,23 @@ var ConfidenceViz = function(width, height) {
 	var constructor = function() {
 		
 		// For non-modal alerts:
-		alerter = SoftAlert();
-		cookieMonster = CookieMonster();
+		alerter     = new SoftAlert();
+		// If this access to the page is just
+		// the result of user clicking the New Sample
+		// button, then don't ask for login again.
+		// The button handler will have set a cookie:
+		
+		cookieMonster = new  CookieMonster();
+		
+		let uid = cookieMonster.getCookie("stats60Uid");
+		if ( uid !== null ) {
+			logger = new Logger(uid);
+			cookieMonster.delCookie("stats60Uid");
+		} else {
+			logger = new Logger();
+		}
+		browserType = logger.browserType();
+		
 		// Find the div in which the chart is to reside,
 		// and its dimensions:
 
@@ -226,7 +225,7 @@ var ConfidenceViz = function(width, height) {
 		.attr("class", "svgAllStates")
 						
 		// Adjust viewbox depending on Chrome vs. FF. Yikes!
-		if ( browserType() === 'Firefox1+') {
+		if ( browserType === 'Firefox1+') {
 			// Viewbox values are strings like: "0 -60 315 500" 
 			// Convert to this: ["0", "-60", "315", "500"]
 			let dataViewBoxArr = d3.select("#dataSvg").attr("viewBox").split(" ");
@@ -303,215 +302,12 @@ var ConfidenceViz = function(width, height) {
 		createTooltip();
 		createSvgHeaders();
 		
-		// If this access to the page is just
-		// the result of user clicking the New Sample
-		// button, then don't ask for login again.
-		// The button handler will have set a cookie:
-		
-		let uid = cookieMonster.getCookie("stats60Uid");
-		if ( uid !== null ) {
-			initLogging(uid);
-			cookieMonster.delCookie("stats60Uid");
-		} else {
-			initLogging();
-		}
         
 		return {width  : width,
 				height : height,
 			}
 	}
 	
-	/*---------------------------
-	| initLogging 
-	-----------------*/
-	
-	var initLogging = function(uid) {
-		/*
-		 * Initializes write-back of user interactions
-		 * with statlet to server. Assumes that instance
-		 * variables myBrowser and myUid have been set.
-		 * 
-		 * Shows login dialog.
-		 * 
-		 * Returns true if access allowed, else returns
-		 * false. In latter case the login dialog stays
-		 * up.
-		 * 
-		 */
-		
-		// On first call, uid will be undefined.
-		// Show login dialog. Second call will be triggered
-		// from the dialog button push. 
-		if ( typeof(uid) === 'undefined') {
-
-			alerter.entryBox("Please enter your sunet ID:",
-			                 "Log in",                   // Button label
-			                 function(uid) {
-								return initLogging(uid); // recursive call, this time
-							 },                          // with UID from alert box.
-							 alerter.ALLOW_EMPTY_FLD_OFF,
-			                 alerter.FORCE_CLICK_TXT_OFF
-			                 );
-			return;
-		}
-		
-		let originUrl = location.origin;
-		
-		// If origin is from a particular port,
-		// chop that port off. The square-bracketed
-		// expression gets past the http://:
-		
-		let re = /http:[^:]*:/g;
-		let match = re.exec(originUrl);
-		if ( match !== null ) {
-			originUrl = originUrl.slice(0, re.lastIndex - 1);
-		}
-		
-		let log = log4javascript.getLogger();
-		logServerURL = `${originUrl}:${LOGGING_PORT}`;
-	    let ajaxAppender = new log4javascript.AjaxAppender(logServerURL);
-	    ajaxAppender.setThreshold(log4javascript.Level.ERROR);
-	    log.addAppender(ajaxAppender);
-	    
-	    let authPromise = authenticate(uid, logServerURL) ;
-	    return authPromise
-	    	.then(
-	    		function (reqRes) {                    // resolved: server answered
-	    			if ( reqRes === "loginOK" ) {      // with loginOK or loginNOK.
-	    				return allowAccess(uid);
-	    			} else if (reqRes === "loginNOK") {
-	    				return denyAccess(uid);
-	    			}
-	    		}, 
-	    		function(errorObj) {                   // rejected (server didn't answer)
-	    			// Some server trouble; use special
-	    			// uid and let user proceed:
-	    			myUid = "logServerDown*";
-	    			// Change same alert to notice that
-	    			// login server down, and to please 
-	    			// email admin:
-	    			serverDownAlert(uid)
-	    			// Returning false will take down the 
-	    			// login softAlert:
-	    			return true;
-	    		});
-	}
-	
-	
-	/*---------------------------
-	| serverDownAlert 
-	-----------------*/
-	
-	var serverDownAlert = function(uid) {
-		
-		if (! sentServerDwnMail ) {
-			// Queue next dialog box without entry fld,
-			// but forcing user to click email link before
-			// Continue button is enabled:
-			alerter.fancy( `Login server unreachable. Please ${ADMIN_EMAIL}, then proceed to the statlet.`,
-			               "Continue",                   // Button label
-			               undefined,                    // No special button function
-			               alerter.ALLOW_EMPTY_FLD_OFF,
-			               alerter.FORCE_CLICK_TXT_ON,   // Must click on email link before
-			               alerter.TXT_ENTRY_BOX_OFF     // ... button is available.
-			               );
-		}
-		// Don't send more than once in same session:
-		sentServerDwnMail = true;
-	}
-	    
-	/*---------------------------
-	| allowAccess 
-	-----------------*/
-	   
-	var allowAccess = function(uid) {
-		myUid = uid;
-		return true; // access OK
-	}
-	
-	/*---------------------------
-	| denyAccess 
-	-----------------*/
-	
-	var denyAccess = function(uid) {
-		
-		// Login dialog is still up:
-		
-		alerter.changeInfoTxt(`'${uid}' not found in database:`);
-		alerter.userWrong(true);
-		return false;
-	}
-
-	/*---------------------------
-	| authenticate 
-	-----------------*/
-	
-	var authenticate = function(uid, originUrl) {
-		
-		return getFromLogServer(
-				{"reqType" : "login",
-				 "context" : "confidence",
-				 "uid"     : uid,
-				 "action"  : `{ "loginBrowser" : "${browserType()}" }`,
-				},
-				originUrl
-				)
-	}
-	
-	/*---------------------------
-	| getFromLogServer 
-	-----------------*/
-		
-	
-	var getFromLogServer = function(reqJson, theUrl) {
-
-		let xhr     = new XMLHttpRequest();
-		xhr.timeout = LOG_SERVER_TIMEOUT;
-		
-		return new Promise(function (resolve, reject) {
-			xhr.open("POST", theUrl, true); // true for async; the default anyway
-			xhr.onload = function () {
-				if (this.status >= 200 && this.status < 300) {
-					resolve(xhr.response);
-				} else {
-					let resJson = `{status: "${this.status}", statusText: "${xhr.statusText}"}`;
-					reject(resJson);
-				}
-			};
-			
-			xhr.onerror = function () {
-				// Connection error:
-				reject(SERVER_NOT_REACHED);
-			};
-			xhr.send(JSON.stringify(reqJson));
-		});
-	}
-	
-	/*---------------------------
-	| log 
-	-----------------*/
-	
-	var log = function(txtJsonValue) {
-		/*
-		 * Logs given txt to logging server. For this
-		 * application, legal JSON is expected, but not
-		 * verified. This is best effort. No check made
-		 * whether info arrives. 
-		 */
-
-		if ( loggingSuppressed ) {
-			return;
-		}
-		getFromLogServer(
-				{"reqType" : "log",
-					"context" : "confidence",
-					"uid"     : myUid,
-					"action"  : txtJsonValue,
-				},
-				logServerURL
-		)
-
-	}
 		
 	/*---------------------------
 	| updateDataChart
@@ -1397,7 +1193,7 @@ var ConfidenceViz = function(width, height) {
 			  .attr("class", "populationHeader")
 			  .attr("text-anchor", "middle")
 	   
-		if ( browserType() == 'Firefox1+') {		
+		if ( browserType == 'Firefox1+') {		
 			headerTxtSel.attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -20)`);
 		} else {
 			headerTxtSel.attr("transform", `translate(${Y_AXIS_LEFT_PADDING + svgAllStatesWidth / 2}, -30)`);
@@ -1458,10 +1254,10 @@ var ConfidenceViz = function(width, height) {
 		// a "user clicked Home button
 		// event. Suppress that:
 		try {
-			loggingSuppressed = true;
+			logger.allowLogging(false);
 			goToStep(homeBtn);
 		} finally {
-			loggingSuppressed = false;
+			logger.allowLogging(true);
 		}
 	}
 	
@@ -1513,41 +1309,14 @@ var ConfidenceViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| browserType 
+	| log 
 	-----------------*/
 	
-	var browserType = function() {
-
-	    // Opera 8.0+
-		if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) {
-			return 'Opera8+';
-		}
-		    // Firefox 1.0+
-		if ( typeof InstallTrigger !== 'undefined' ) {
-			return 'Firefox1+';
-		}
-		    // At least Safari 3+: "[object HTMLElementConstructor]"
-		if ( Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0 ) {
-			return 'Safari3+';
-		}
-		    // Internet Explorer 6-11
-		let isIE = /*@cc_on!@*/false || !!document.documentMode;
-		if (isIE) {
-			return 'IE6-11';
-		}
-		    // Edge 20+
-		if ( !isIE && !!window.StyleMedia ) {
-			return 'Edge20+';
-		}
-		    // Chrome 1+
-		if ( !!window.chrome && !!window.chrome.webstore ) {
-			return 'Chrome1+';
-		}
-		    // Blink engine detection
-		if ( (isChrome || isOpera) && !!window.CSS ) {
-			return 'Blink';
-		}
+	var log = function log( txt ) {
+		// Convenience method for logging:
+		logger.log(txt);
 	}
+	
 	
 	return constructor(width, height);
 }

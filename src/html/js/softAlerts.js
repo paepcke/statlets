@@ -30,6 +30,8 @@ var SoftAlert = function() {
 			return instance;
 		}
 		
+		instance = this;
+		
 		// Clicking the softAlert button by default
 		// dismisses the dialog:
 		let btn = document.getElementById("softAlertOkBtn"); 
@@ -394,3 +396,5 @@ var SoftAlert = function() {
 		
 	return constructor();
 }
+
+// export {softAlert}
