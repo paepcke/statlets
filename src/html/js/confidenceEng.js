@@ -128,8 +128,8 @@ var ConfidenceViz = function(width, height) {
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = Logger(alerter, uid);
-			cookieMonster.delCookie("stats60Uid");
+			logger = Logger(alerter, uid, false);    // false: don't solicitSrvDwnEmail
+			cookieMonster.delCookie("stats60Uid");   // if server is down.
 		} else {
 			logger = Logger(alerter);
 		}
