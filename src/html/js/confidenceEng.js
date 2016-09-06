@@ -41,7 +41,6 @@ var ConfidenceViz = function(width, height) {
 	var svgData			 = null;
 	var svgAllStates     = null;	
 	
-	var sentServerDwnMail= false;
 	var browserType      = null;
 	
 	var alerter          = null;
@@ -119,20 +118,20 @@ var ConfidenceViz = function(width, height) {
 	var constructor = function() {
 		
 		// For non-modal alerts:
-		alerter     = new SoftAlert();
+		alerter     = SoftAlert();
 		// If this access to the page is just
 		// the result of user clicking the New Sample
 		// button, then don't ask for login again.
 		// The button handler will have set a cookie:
 		
-		cookieMonster = new  CookieMonster();
+		cookieMonster = CookieMonster();
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = new Logger(uid);
+			logger = Logger(alerter, uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			logger = new Logger();
+			logger = Logger(alerter);
 		}
 		browserType = logger.browserType();
 		

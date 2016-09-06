@@ -3,7 +3,7 @@
 var SoftAlert = function() {
 
 	// Instance variables:
-	var instance           = null;
+
 	var showingAlert       = false;
 	var alertQueue         = [];
 
@@ -26,11 +26,6 @@ var SoftAlert = function() {
 	-----------------*/
 	
 	var constructor = function() {
-		if ( instance !== null ) {
-			return instance;
-		}
-		
-		instance = this;
 		
 		// Clicking the softAlert button by default
 		// dismisses the dialog:
@@ -266,7 +261,7 @@ var SoftAlert = function() {
 					},
 					function( rejectedPromise ) {
 						// Should not happen!
-						shutdownTheAlert();
+						shutDownTheAlert();
 					})
 		} else {
 			shutDownTheAlert();
