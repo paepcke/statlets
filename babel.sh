@@ -9,7 +9,7 @@ then
 fi
 
 echo "Running Babel..."
-babel/node_modules/babel-cli/bin/babel.js src -d lib
+node_modules/babel-cli/bin/babel.js src -d lib
 
 echo "Copying HTML..."
 cp src/html/*.css src/html/*.html lib/html/
