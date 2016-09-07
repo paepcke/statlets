@@ -521,7 +521,7 @@ CorrelationViz = function(width, height) {
 		dispatch.on("drag.dataDot", circleDragged);
 										
 
-		return d3.behavior.drag()
+		return d3.drag()
 				.on('dragstart', function(d) {
 					
 					// D3-select the DOM element that's trying
@@ -539,7 +539,7 @@ CorrelationViz = function(width, height) {
 					circleSel.classed("dragging", true);
 
 					// Remember the circle that's in motion:
-					d3.behavior.drag.currCircle = this;
+					d3.drag.currCircle = this;
 					
 				})
 				.on('drag', function(d) {
@@ -556,7 +556,7 @@ CorrelationViz = function(width, height) {
 					if (Math.abs(mouseY - circleY) > circleR) {
 						// Mouse got ahead of the dragged circle.
 						// Select the circle we are dragging instead:
-						circleSel = d3.select(d3.behavior.drag.currCircle);
+						circleSel = d3.select(d3.drag.currCircle);
 						if (circleSel.empty()) {
 							// Not over a circle:
 							return;
@@ -571,7 +571,7 @@ CorrelationViz = function(width, height) {
 						if (Math.abs(mouseX - circleX) > circleR) {
 							// Mouse got ahead of the dragged circle.
 							// Select the circle we are dragging instead:
-							circleSel = d3.select(d3.behavior.drag.currCircle);
+							circleSel = d3.select(d3.drag.currCircle);
 							if (circleSel.empty()) {
 								// Not over a circle:
 								return;
@@ -591,7 +591,7 @@ CorrelationViz = function(width, height) {
 				})
 				.on ('dragend', function(d) {
 					d3.select(this).classed("dragging", false);
-					d3.behavior.drag.currCircle = undefined;
+					d3.drag.currCircle = undefined;
 				})
 	}
 	
@@ -783,14 +783,14 @@ CorrelationViz = function(width, height) {
 		
 		switch(extentDict.x.scaleType) {
 		case 'linear':
-			xScale = d3.scale.linear()
+			xScale = d3.scaleLinear()
 							 .domain(extentDict.x.domain)
 							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
 			break;
 		case 'ordinal':
-			xScale = d3.scale.ordinal()
+			xScale = d3.scaleOrdinal()
 							 .domain(extentDict.x.domain)
-							 .rangeRoundPoints([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
+							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
@@ -807,14 +807,14 @@ CorrelationViz = function(width, height) {
 		// Y Scale
 		switch(extentDict.y.scaleType) {
 		case 'linear':
-			yScale = d3.scale.linear()	
+			yScale = d3.scaleLinear()	
 			 			 .domain(extentDict.y.domain)
 						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
 			break;
 		case 'ordinal':
-			yScale = d3.scale.ordinal()
+			yScale = d3.scaleOrdinal()
 							 .domain(extentDict.y.domain)
-							 .rangePoints([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
+							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING]);
 			break;
 		default:
 			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
@@ -822,9 +822,8 @@ CorrelationViz = function(width, height) {
 		
 		// Make the visual coordinate system:
 		
-		xAxis = d3.svg.axis()
-				      .scale(xScale)
-				      .orient("bottom");
+		xAxis = d3.select(".axis")
+					  .call(d3.axisBottom(xScale));
 		
 		// Create a group, and call the xAxis function to create the axis.
 		let xAxisGroup = svg.append("g")
