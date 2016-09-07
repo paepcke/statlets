@@ -147,6 +147,7 @@
 	    <div class="allStatesDiv" id="allStatesDiv"></div>
 	</div> <!-- end flexWrapper -->
 
+<!-- The following are commented because they are imported in confidence.js via ES6 -->
 <!--
 	<script type="text/javascript" src="js/log4javascript.min.js"></script>
 	<script type="text/javascript" src="js/softAlerts.js"></script>
@@ -156,6 +157,11 @@
 	<script type="text/javascript" src="js/simple-statistics.min.js"></script>
 	<script type="text/javascript" src="js/d3.min.js"></script>
 -->	
+	
+	<!-- Until going hot: suppress login requirement -->
+	<script>
+	document.cookie = "stats60Uid = preFlight*";
+	</script>
 	
 	<!-- Main:  -->
 	<script src="js/confidence.js"></script>
