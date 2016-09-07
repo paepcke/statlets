@@ -1,0 +1,84 @@
+div.overlayDiv {
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-color:#fff;
+    opacity:0;
+    z-index:-1;
+}
+
+div.overlayDiv.visible { z-index : 1001;
+				   		 opacity : 0.8;
+				       }    
+
+
+/* Alert box features: */
+
+.softAlertDiv {    
+	position: fixed;
+    top:40%;
+    left:40%;
+    /* background-color: rgb(204, 255, 204); */ /* light green */
+    background-color: rgb(248,205,222);   /* rose */
+    opacity:0;
+    z-index:-2;
+}
+
+.softAlertDiv.visible {
+	z-index:1002;
+	opacity : 1;
+	border : 1px solid rgb(0, 102, 0); /* dark green */
+}
+
+.softAlertHeader {
+	font-size   : 18pt;
+	font-weight : bold;
+	color       : rgb(0, 102, 0); /* dark green */
+	margin-left : 10px;
+	margin-top  : -1px;
+}
+
+.softAlertTxt {
+	font-size   : 12pt;
+	color : black;
+	margin-left : 10px;
+	margin-top  : -15px;
+	margin-right: 10px;
+}
+
+.softAlertTxt.wrong { color : red; }
+
+.softAlertEntryFld {
+	background-color : rgb(250,259,194);
+	size          : 30;
+	margin-left   : 10px;
+	margin-bottom : 5px;
+	display	      : none;
+}
+
+.softAlertEntryFld.visible {
+	display: block;
+}
+
+button.softAlert {
+	background-color : rgb(0, 102, 0); /* dark green */
+    color : white;
+ 	border-radius : 25px;
+ 	margin-right : 20px;
+ 	margin-left : 10px;
+ 	margin-top : 5px;
+ 	margin-bottom : 5px;
+ 	padding : 3px;
+ 	opacity : 1;
+}
+
+button.softAlert.disabled {
+	opacity : 0.5;
+}
+
+/* Suppress blue outline around alert box button:
+button.softAlert:focus { outline : 0 !important; }
+
+
