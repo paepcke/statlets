@@ -1,12 +1,27 @@
 {
-  presets: ["es2015", "react"],
-  only:    ["src/html/js/confidenceEng.js",
-            "src/html/js/tableManager.js",
-            "src/html/js/statsBarchartResizeHandler.js",
-            "src/html/js/softAlerts.js",
-            "src/html/js/cookieMonster.js",
-            "src/html/js/logging.js"
-            ],
-  plugins: ["transform-runtime"]            
-}
+    env : {
+        confidence : {
+            presets: ["es2015", "react"],
+            only:    ["src/html/confidence/js/confidenceEng.js",
+                      "src/html/utils/js/statsBarchartResizeHandler.js",
+                      "src/html/utils/js/softAlerts.js",
+                      "src/html/utils/js/cookieMonster.js",
+                      "src/html/utils/js/logging.js"
+                     ],
+            plugins: ["transform-runtime"]
+        },
 
+        correlation: {
+            presets: ["es2015", "react"],
+            only:    ["src/html/correlation/js/correlationEng.js",
+                      "src/html/utils/js/tableManager.js",
+                      "src/html/utils/js/statsBarchartResizeHandler.js",
+                      "src/html/utils/js/statsDragClickHandler.js",
+                      "src/html/utils/js/softAlerts.js",
+                      "src/html/utils/js/cookieMonster.js",
+                      "src/html/utils/js/logging.js"
+                     ],
+            plugins: ["transform-runtime"]
+        }
+    }
+}
