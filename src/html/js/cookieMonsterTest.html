@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scratch</title>
+	<script type="text/javascript" src="js/cookieMonster.js"></script>	    	
+    
+</head>
+<body>
+	<div>
+	
+	</div>
+	<script>
+	var monster = new CookieMonster();
+	var cookie  = monster.getCookie("test");
+ 	alert(cookie); // null
+	monster.setCookie("test", "My un:safe=string");
+	alert(monster.getCookie("test")); // "My un:safe=string"
+	monster.delCookie("test")
+	alert(monster.getCookie("test"));  // null
+	
+	monster.setCookie("test", "firstCookie");
+	monster.setCookie("test1", "secondCookie");
+	alert(monster.getCookie("test1")); // "secondCookie"
+	alert(monster.getCookie("test"));  // "firstCookie"
+	monster.delCookie("test1");        
+	alert(monster.getCookie("test1")); // null
+	monster.delCookie("test");
+	alert(monster.getCookie("test"));  // null
+	
+	</script>
+	
+</body>
+</html>

@@ -1,0 +1,238 @@
+body        { background-color : Bisque; }
+
+h1          { text-align : center;  }
+
+/* Suppress ability to select non-selectable
+   text and other items (and getting the blue overlay)
+   Usage: d3.select('...').classed('unselectable', true) 
+   */
+*.unselectable {
+		 -webkit-touch-callout: none; /* iOS Safari */
+		 -webkit-user-select: none;   /* Chrome/Safari/Opera */
+		 -khtml-user-select: none;    /* Konqueror */
+		 -moz-user-select: none;      /* Firefox */
+		 -ms-user-select: none;       /* Internet Explorer/Edge */
+		 /* user-select: none; */          /* Non-prefixed version, currently
+		                                  not supported by any browser */
+}
+
+
+.flexWrapper    { 
+				  display : flex;
+				  flex-direction : row;
+				  flex-wrap : nowrap;
+				  align-items : start;      /* Vertical align within content divs */
+				  width : 95%;
+                }
+
+.instructionsDiv {
+           		  padding : 10px;
+			      min-height : 20em;
+           		  flex   : 1 1 20%;        /* Get 1 unit of free space for either grow or shrink. */
+			                               /* The 20% is the base value: within div. */
+			      }
+			      
+.instrTxt          { display : none; }
+.instrTxt.visible  { display : inline; }
+
+.dataDiv { 
+           /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
+           flex : 1 1;
+           /* flex-basis : 40%; ***** */
+           flex-basis : 20%;
+           background-color : #F6F6F6;
+         }
+
+.allStatesDiv { 
+           /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
+           flex   : 1 1;
+           /* flex-basis : 40%; ***** */
+           flex-basis: 20%;
+           background-color : #F6F6F6;
+		   opacity : 1;
+         }
+
+.largeLabel {font-size : 150%;
+   		     font-weight : bold; 
+   		     color : blue;
+   		     }
+   		     
+.statsLabel {font-size : 150%;
+   		     font-weight : bold; 
+   		     color : black;
+   		     }   
+   		     
+.inputTable, th, td {border-bottom : 1px solid black;
+					 border-collapse : collapse;
+	 				 text-align : center; 
+	 				 padding : 15px;
+	 				 margin  : auto;
+			}
+
+.svgData  {
+    border : 1px solid BurlyWood;
+    overflow : scroll;
+}			
+
+.svgAllStates  {
+    border : 1px solid BurlyWood;
+}			
+
+.legend {font-size : 12pt;
+		}
+
+.axis path,
+.axis line   { fill : none;
+			   stroke : black;
+			   shape-rendering : crispEdges; 
+			 }			 
+
+.axis.noLabels text { display : none; }
+.axis.noLabels line { stroke-width : 0; } /*  controls tickmarks */
+.axis.noTicks  line { stroke-width : 0; } /*  controls tickmarks */
+
+.axis.y.label { transform   : translate(1.8em, 15em) rotate(-90deg); 		        
+		        color		: black;
+		        font-family : sans-serif;
+		        font-size   : 11pt;
+		        opacity     : 1;    	
+			  } 
+
+.axis.x.label { 
+		        /* text-anchor : start; */
+		        text-anchor : start;
+				transform   : translate(0.33em, 0.3em) rotate(45deg); 		        
+		        color		: black;
+		        font-family : sans-serif;
+		        font-size   : 9pt;
+		        font-weight : bold;
+		        opacity     : 1;    	
+			  }
+				   
+.axis.label.invisible { opacity   : 0; }
+
+
+.meanLineSample    { stroke : rgb(144, 12, 63) ;  /* Dark red. */
+					 stroke-width : 2px;
+					 fill 		  : none;					 
+				   }
+.meanLineAllStates { stroke 	  : Blue;
+					 stroke-width : 2px;
+					 fill 		  : none;
+					} 
+					
+.confIntLine       { stroke       : rgb(144, 12, 63); 
+					 stroke-width : 2px;
+					 fill		  : none;
+				   }		
+					            
+.legendText  { font-size : 10pt; }
+
+.allStatesStateLabelTxt {
+				     font-size : 12pt;
+				     fill      : White;
+				     opacity   : 0.8;
+				   }
+
+
+.teenBirthBar       { fill : rgb(144, 12, 63) ; } /* Dark Red. */
+.allStatesBar       { Fill : CornFlowerBlue ;
+					}
+
+.controlBarWrapper  { margin-left : 200px;
+			          margin-right : auto;
+			          border : 1px;
+			        }
+.controlButtonBar    { }
+			           
+.button.cntBtn:focus { outline : 0 !important; }
+
+			           
+.button.cntBtn { background : DarkGray;
+ 				 border-radius : 25px;
+ 				 width : 60px;
+ 				 margin-left : 8px;
+ 				 margin-bottom : 2px;
+		       }
+
+.button.cntBtn.current { background : LightGray; } /* the currently active exercise. */              		 
+
+.button.cntBtn.reset { margin-left : 35px; }
+
+
+.buttonCol        { display : flex;
+				    flex-direction : column;
+				    flex-wrap : nowrap;
+				    align-items : start;
+				  }
+.button.sampleBtn { background : rgb(221, 159, 183);
+ 				    border-radius : 25px;
+ 				    width : 100px;
+ 				    margin-right : 20px;
+ 				    margin-bottom : 2px;
+		          }
+.button.sampleBtn.first { margin-top : 40px; }		          
+.button.sampleBtn:focus { outline : 0 !important }
+
+.sdGrp   { }
+.sdTxt   { transform   : translate(1em, -1em);
+		   font-size   : 12pt;
+		   font-weight : bold;		   
+         }
+.sdTxt.allStates { fill  	   : Blue; }
+.sdTxt.data      { fill  	   : rgb(144, 12, 63); } /* Dark Red. */
+
+.legendGrp       { transform : translate(8em, 0.3em); }
+.legendTxt       { font-size : 0.9em; }
+
+.legendSampleTxt.data        { fill  : rgb(144, 12, 63);  /* Dark Red. */
+							   transform : translate(2.3em, 0em); 
+							 }
+.legendPopulationTxt.data    { fill  : CornFlowerBlue;
+							   transform : translate(-2.3em, 0em); 
+							 }
+
+.legendPopulationTxt.data.ci {
+							   transform : translate(-2.3em, 1em); 
+							 }
+  
+.sampleLegendMeanLine        { stroke        : rgb(144, 12, 63);  /* Dark Red. */
+							   stroke-width  : 2px;
+						  	   transform     : translate(6em, -0.2em);
+					  	     }
+
+.populationLegendMeanLine    { stroke : blue;
+							   stroke-width  : 2px;
+							   transform : translate(6em, 0.7em);
+						     }
+.populationLegendConfIntLine { stroke : rgb(144, 12, 63);  /* Dark Red. */
+							   stroke-width  : 2px;
+							   transform : translate(6em, -0.2em);
+							 }
+							 
+
+div.tooltip 				 {	
+    						   position: absolute;        
+    						   text-align: center;
+    						   width: 60px;					
+    						   height: 28px;
+    						   padding: 5px;				
+    						   font: 12px sans-serif;		
+    						   background: lightsteelblue;	
+    						   border: 0px;		
+    						   border-radius: 8px;			
+    						   pointer-events: none;
+							 }
+div.tooltip 			 	 { 
+							   opacity : 0;
+							   transition : opacity 2s; 
+							 }   /* Tooltip text: hovered-over state */							 						 
+div.tooltip.visible,
+div.tooltip.state.visible    { 
+							   opacity : 1;
+							   transition : opacity 1s;  
+							 }
+
+.sampleHeader,
+.populationHeader     		 { font-size : 18pt; }
+

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <LINK href="regression.css" rel="stylesheet" type="text/css">
+
+    <!-- For Math formula rendering: -->
+    <script type="text/javascript" 
+	    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+
+    <!-- For 3D plotting, using the extended version: -->
+    <script type="text/javascript" src='../utils/js/3Dplotting/SurfacePlotExt.js'></script>
+    <script type="text/javascript" src='../utils/js/3Dplotting/ColourGradient.js'></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+  </head>
+  <body id="regressionBody">
+
+    <div id='allWrapper'>
+      <div id="simDiv">
+
+	<svg id="svgArea" xmlns="http://www.w3.org/2000/svg"
+	     xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="510">
+	</svg>
+      </div> <!-- The error sums; will be filled in by regression.js -->
+
+      <div id='errorFormulas'>
+	Three alternative measures for <i>goodness of fit</i>:<p>
+	<table id='formulaTable' class='formulaTable'>
+	  <tr class='formula'>
+	    <td id='maeNameCell' 
+		title='MAE: a less often used measure.'>
+	      Mean absolute error (MAE)</td>
+	    <td id='maeEqualsCell'>=</td>
+	    <td id='maeSumCell'>$estimator-terms$</td>
+	    <td id='maeSumEqualsCell'>=</td>
+	    <td id='maeTotalSumCell'>estimate-error</td>
+	  </tr>
+	  <tr class='formula'>
+	    <td id='mseNameCell'>Mean squared error (MSE)</td>
+	    <td id='mseEqualsCell'>=</td>
+	    <td id='mseSumCell'>$estimator-terms$</td>
+	    <td id='mseSumEqualsCell'>=</td>
+	    <td id='mseTotalSumCell'>estimate-error</td>
+	  </tr>
+	  <tr class='formula'>
+	    <td id='rmseNameCell'>Root mean squared error (RMSE)</td>
+	    <td id='rmseEqualsCell'>=</td>
+	    <td id='rmseSumCell'>$estimator-terms$</td>
+	    <td id='rmseSumEqualsCell'>=</td>
+	    <td id='rmseTotalSumCell'>estimate-error</td>
+	  </tr>
+	</table>
+	<div id="currEqHeader">
+	  Current estimator function:
+        </div>
+	<div id='currEquation'>
+	  potatoes = m*distance + b
+	</div>
+	<div id='seeBestMSE'>
+	  <input type="button" 
+		 id="seeMaeButton" 
+		 value="Best MAE line"
+		 title="Click to see the line that minimizes the mean
+		 absolute error."
+		 />
+	  <input type="button" 
+		 id="seeMseButton" 
+		 value="Best MSE line"
+		 title="Click to see the line that minimizes the mean
+		 squared error."
+		 />
+	  <input type="button" 
+		 id="seeRmseButton" 
+		 value="Best RMSE line"
+		 title="Click to see the line that minimizes the root
+		 mean squared error."
+		 />
+	</div>
+      </div>
+    </div>
+
+    <div id='surfacePlotDiv'>
+      <!-- SurfacePlot goes here... -->
+    </div>
+
+    <script src="js/regression.js"></script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" type="text/css" href="confidence.css">
+<link rel="stylesheet" type="text/css" href="../utils/softAlerts.css">
+
+
+	<!-- LaTex Math (easiest to get from their site) : -->
+	<script type="text/javascript" async
+		src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+	</script>
+
+</head>
+<body>
+	<h1><i>Statlet</i>: Exploring Confidence Intervals</h1>
+	
+	<div class="overlayDiv" id="overlayDiv"></div>
+	<div class="softAlertDiv" id="softAlertDiv">
+		<p class="softAlertHeader" id="softAlertHeader">Note:</p>
+		<p class="softAlertTxt" id="softAlertTxt"></p>
+		<input type="text" class="softAlertEntryFld" id="softAlertEntryFld" autofocus>
+		<button class="softAlert" id="softAlertOkBtn">OK</button>
+	</div>
+	
+	<div class="controlBarWrapper">
+		<div class="controlButtonBar"></div>
+	</div>
+	<div class="flexWrapper" id="flexWrapper">
+		<div class="instructionsDiv" id="instructions">
+			<div class="instrTxt" id="homeTxt">
+
+                          This statlet allows you to explore
+                          confidence intervals. The <i>population</i>
+                          are all US states. A <i>sample</i> is a
+                          randomly selected group of five
+                          states. The <i>measurement</i> taken on each
+                          state in a sample is the rate of teen
+                          pregnancies in a given state. The data was
+                          collected by the US Center for Disease
+                          Control (CDC). A state's teen pregnancy rate
+                          is computed as the number of teen births in
+                          that state, divided by the total number of
+                          births in that state.
+                          <p>
+                          Go ahead and find the population and sample
+                          means, the standard deviations, and the
+                          confidence interval of this particular
+                          sample.
+
+			</div>
+			<div class="instrTxt" id="step1Txt">
+                          Now pretend that some of these sample states
+                          had different teen pregnancy rates. How would
+                          that affect the confidence interval?  So see,
+                          drag the bars in the sample chart up and down,
+                          while observing the confidence interval. To
+                          notice:
+
+                          <ul>
+
+                          <li>What happens to the confidence interval
+                          when you make one bar much higher or lower
+                          than the others? Why does this happen? (You
+                          can always return to the original values by
+                          clicking the <i>Reset</i> button.)</li>
+
+                          <li>Drag one of the sample bars to the
+                          height of the sample mean, and then a bit
+                          above, and a bit below that line. While you
+                          do this, simultaneously observe the sample
+                          standard deviation number and the width of
+                          the confidence interval. What do you
+                          observe?</li>
+                              
+                          <li>Now make all the bars the same height as
+                          the blue population mean line. What happens
+                          to the confidence interval? What is the
+                          value of the sample SD?</li>
+
+                          <li>Next, make all the bars the same height
+                          again, but below or above the blue
+                          population mean line. Where does the
+                          confidence interval end up?</li>
+
+                          </ul>    
+                          
+			</div>
+                          
+			<div class="instrTxt" id="step2Txt">
+                          When a confidence interval is very wide, it
+                          means that the experimental results are not
+                          very reliable. One way to mitigate this
+                          problem is to collect more samples from the
+                          population.
+                          <p>
+                          You can observe the effect of this move by
+                          clicking the <i>Add a State</i> button. You
+                          will see that an additional, randomly selected
+                          state is added to the sample chart. You can
+                          click this button as often as you
+                          want. Observe that your confidence interval
+                          does not <i>always</i> get smaller when you
+                          add another state. Sometimes the additional
+                          state actually makes the confidence interval
+                          larger. By observing the bar added by an
+                          additional state, can you articulate why this
+                          negative effect might occur?
+                          <p>
+                          However, note what happens to the confidence
+                          interval as you make your sample larger and
+                          larger. Take the process to its extreme. After
+                          you clicked the <i>Add a State</i> button many
+                          (actually 46) times, a popup notice will
+                          appear. Can you guess what this notice will
+                          say?
+                          <p>
+                          Once you get that notice to appear, compare
+                          the two mean lines. What do you notice?  
+                        
+			</div>
+                        
+			<div class="instrTxt" id="step3Txt">
+                        
+                          Finally, let's relate all this to the formula
+                          for confidence intervals:
+
+                          $$ci = sampleMean \pm t_{0.95/2}*\frac{SampleSD}{\sqrt{n}}$$
+
+                          The <i>0.95</i> indicates that this statlet
+                          performs all its computations using a 95%
+                          confidence interval. Remember that
+                          \(t_{0.95/2}\) is the value your read from
+                          the <i>t</i> distribution table.  The
+                          value <i>n</i> is the size of the sample you
+                          took. In our case that number is five (unless
+                          you added states).
+                          <p>
+                          Go again through the various manipulations you
+                          can perform. This time as you drag bars, or
+                          add sampled states, think about which part of
+                          the formula you are changing, and how those
+                          changes explain what you observe.
+                        </div>
+		</div> <!-- end instructionsDiv -->
+		<div id="buttonCol" class="buttonCol"></div>
+		<div class="dataDiv" id="dataDiv"></div>
+	    <div class="allStatesDiv" id="allStatesDiv"></div>
+	</div> <!-- end flexWrapper -->
+
+<!-- The following are commented because they are imported in confidence.js via ES6 -->
+<!--
+	<script type="text/javascript" src="../utils/js/log4javascript.min.js"></script>
+	<script type="text/javascript" src="../utils/js/softAlerts.js"></script>
+	<script type="text/javascript" src="../utils/js/statsBarchartResizeHandler.js"></script>
+	<script type="text/javascript" src="../utils/js/cookieMonster.js"></script>
+	<script type="text/javascript" src="../utils/js/logging.js"></script>
+	<script type="text/javascript" src="../utils/js/simple-statistics.min.js"></script>
+	<script type="text/javascript" src="../utils/js/d3.min.js"></script>
+-->	
+	
+	<!-- Until going hot: suppress login requirement -->
+	<script>
+	document.cookie = "stats60Uid = preFlight*";
+	</script>
+	
+	<!-- Main:  -->
+	<script src="js/confidence.js"></script>
+</body>
+</html>

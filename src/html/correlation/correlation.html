@@ -1,0 +1,82 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" type="text/css" href="correlation.css">
+
+</head>
+<body>
+	<h1>Exploring Correlation</h1>
+	<div class="controlBarWrapper">
+		<div class="controlButtonBar"></div>
+	</div>
+	<div class="flexWrapper" id="flexWrapper">
+		<div class="instructionsDiv" id="instructions">
+			<div class="instrTxt" id="homeTxt">
+				This chart shows the murder rates per 100k citizens
+				in five US States. The green data points show the rates 
+				in 1996; the blue points show the rates at 2014. Note
+				the consistent difference between the two data series.
+				<p>
+				The Pearson's correlation <i><b>r</b></i> is shown in the upper
+				left of the chart. It tells us to what degree the murder 
+                rate changes between 1996 and 2014 are similar between
+                the states. For example, in 1996 Alabama's rate was 
+                10.4 murders/100K-citizens. By 2014 the rate had fallen
+                to 5.7murders/100k-citizens. Observe the trend in the 
+                other states. Then click the Step 1 button.
+			</div>
+			<div class="instrTxt" id="step1Txt">
+				Note that the blue Nevada 2014 data point drops relative
+				to Mississippi's 2014 data, while Nevada's green data point rises.
+				This difference 'ruins' the otherwise great correlation.
+				Drag Nevada's 2014 data point up to see how <i>r</i>
+				improves. But is this 'better' <i>r</i> desirable for
+				these data?  
+				<p>
+				To get a feel for the behavior of Pearson's <i>r</i>, move the
+				data points up and down, observing the correlation measure.
+				Try to arrange the data points such that <i>r=0.7</i>.
+				Then arrange the points very differently, but ending up
+				with an <i>r=0.7</i> again. You can click the <i>Reset</i>
+				button to arrange the data into their true values as often
+				as you like.
+				<p>
+				Observe how sensitive <i>r</i> is to moving particular points.
+				do you see differences in how rapidly <i>r</i> changes when
+				you move the points? Try (roughly) doubling one series, leaving
+				the other data points alone. How does <i>r</i> change? What
+				about when you instead add a constant to each point? For acurate
+				readings, you can consult the table below the chart; it updates
+				as you drag.
+			</div>
+			<div class="instrTxt" id="step2Txt">
+				The chart on the right shows a different view onto the 
+				same data. The x-axis records the 1996 data, while the
+				y-axis shows the 2014 values. This chart summarizes
+				the correlation. You can run your mouse over any of the
+				points to see what they represent.
+				<p>
+				Note that we only have half the number of data points in this 
+				chart than in the data chart on the left. Why is that?
+				<p>
+				Drag the data points in the left chart as you did in the
+				earlier steps. What happens to the points in the correlation
+				chart?
+
+			</div>
+		</div> <!-- end instructionsDiv -->
+		<div class="dataDiv" id="dataDiv"></div>
+	    <div class="corrDiv" id="corrDiv"></div>
+	</div> <!-- end flexWrapper -->
+	<div id="tableDiv"></div>
+	
+<!-- 	
+	<script src="../utils/js/d3.min.js" charset="utf-8"></script>
+	<script src="../utils/js/simple-statistics.min.js"></script>		
+	<script src="../utils/js/tableManager.js"></script>
+	<script src="../utils/js/statsDragClickHandler.js"></script>		
+ -->
+	<script src="js/correlation.js"></script>
+</body>
+</html>
+
