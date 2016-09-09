@@ -5,6 +5,13 @@
  *  o Add new chart a la Lucas
  */
 
+/*
+ *   		return {headerRow : ['State', 'Alabama', 'California', 'Georgia',  'Mississippi', 'Nevada'],
+ *		    data      : [['1996', 10.4, 9.1, 9.5, 11.1, 13.7],
+ *					     ['2014', 5.7, 4.4, 5.7, 8.6, 6.0]
+ *
+ */
+
 import { TableManager } from "./../../utils/js/tableManager.js";
 import { StatsDragClickHandler } from "./../../utils/js/statsDragClickHandler.js";
 import { SoftAlert } from "./../../utils/js/softAlerts";
@@ -80,7 +87,8 @@ var CorrelationViz = function(width, height) {
 			logger.setUserId(uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			logger = Logger(alerter);
+			//*******logger = Logger(alerter);
+			logger = Logger(alerter, null, false); // REMOVE AFTER DEBUGGING TO RESTORE LOGIN!!!
 		}
 		browserType = logger.browserType();
 		
@@ -118,14 +126,14 @@ var CorrelationViz = function(width, height) {
         document.getElementById('tableDiv').appendChild(tblObj.value());
         
         // From the (y-) data of the table, get 
-        // the maximum dollar amount:
+        // the maximum murder amount:
         let nestedData  = tblObj.getData();
         let flatData    = [].concat.apply([], nestedData);
-        // Exclude the col-0 names of people:
+        // Exclude the col-0 years:
         let numericData = flatData.filter(function(item) {return typeof(item) === 'number'});
         let yDomain     = [0, Math.max.apply(null, numericData)];
         
-        // X axis is months without the col-0 header 'Spender':
+        // X axis is months without the col-0 header 'State':
         let xDomain     = tblObj.getHeader().slice(1);
         
         // Argument for makeCoordSys:
@@ -861,13 +869,10 @@ var CorrelationViz = function(width, height) {
 			 
 		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
-		if (extentDict.x.scaleType == 'ordinal') {
+		if (extentDict.x.scaleType === 'ordinal') {
 			
 			// Find distance between X-ticks;
-			// xScale.range() returns array with
-			// pixel coords of each tick:
-			let tickArr    = xScale.range();
-			let tickWidth  = tickArr[1] - tickArr[0];
+			let tickWidth  = d3.tickStep(xScale.range()[0], xScale.range()[1], xScale.domain().length);
 			let txtSel     = xAxisGroup.selectAll("text");
 			
 	    	txtSel
