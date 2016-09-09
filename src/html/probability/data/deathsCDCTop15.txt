@@ -1,0 +1,68 @@
+"Notes"	"Year"	"Year Code"	"ICD Chapter"	"ICD Chapter Code"	Deaths	Population	Crude Rate	% of Total Deaths
+	"2013"	"2013"	"Certain infectious and parasitic diseases"	"A00-B99"	70601	316128839	22.3	2.7%
+	"2013"	"2013"	"Neoplasms"	"C00-D48"	600113	316128839	189.8	23.1%
+	"2013"	"2013"	"Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"	"D50-D89"	10216	316128839	3.2	0.4%
+	"2013"	"2013"	"Endocrine, nutritional and metabolic diseases"	"E00-E88"	109159	316128839	34.5	4.2%
+	"2013"	"2013"	"Mental and behavioural disorders"	"F01-F99"	156415	316128839	49.5	6.0%
+	"2013"	"2013"	"Diseases of the nervous system"	"G00-G98"	151784	316128839	48.0	5.8%
+	"2013"	"2013"	"Diseases of the eye and adnexa"	"H00-H57"	43	316128839	0.0	0.0%
+	"2013"	"2013"	"Diseases of the ear and mastoid process"	"H60-H93"	71	316128839	0.0	0.0%
+	"2013"	"2013"	"Diseases of the circulatory system"	"I00-I99"	800937	316128839	253.4	30.8%
+	"2013"	"2013"	"Diseases of the respiratory system"	"J00-J98"	261071	316128839	82.6	10.1%
+	"2013"	"2013"	"Diseases of the digestive system"	"K00-K92"	98364	316128839	31.1	3.8%
+	"2013"	"2013"	"Diseases of the skin and subcutaneous tissue"	"L00-L98"	4330	316128839	1.4	0.2%
+	"2013"	"2013"	"Diseases of the musculoskeletal system and connective tissue"	"M00-M99"	13534	316128839	4.3	0.5%
+	"2013"	"2013"	"Diseases of the genitourinary system"	"N00-N98"	64085	316128839	20.3	2.5%
+	"2013"	"2013"	"Pregnancy, childbirth and the puerperium"	"O00-O99"	1138	316128839	0.4	0.0%
+	"2013"	"2013"	"Certain conditions originating in the perinatal period"	"P00-P96"	12084	316128839	3.8	0.5%
+	"2013"	"2013"	"Congenital malformations, deformations and chromosomal abnormalities"	"Q00-Q99"	9583	316128839	3.0	0.4%
+	"2013"	"2013"	"Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"	"R00-R99"	37752	316128839	11.9	1.5%
+	"2013"	"2013"	"Codes for special purposes"	"U00-U99"	3	316128839	Unreliable	0.0%
+	"2013"	"2013"	"External causes of morbidity and mortality"	"V01-Y89"	195710	316128839	61.9	7.5%
+"---"
+"Dataset: Underlying Cause of Death, 1999-2014"
+"Query Parameters:"
+"Title: Deaths"
+"2013 Urbanization: All"
+"Autopsy: All"
+"Gender: All"
+"Hispanic Origin: All"
+"ICD-10 Codes: All"
+"Place of Death: All"
+"Race: All"
+"States: All"
+"Ten-Year Age Groups: All"
+"Weekday: All"
+"Year/Month: 2013"
+"Group By: Year, ICD Chapter"
+"Show Totals: False"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"Calculate Rates Per: 100,000"
+"Rate Options: Default intercensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/ucd.html for more information."
+"---"
+"Query Date: Sep 9, 2016 1:14:29 PM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. Underlying Cause of Death"
+"1999-2014 on CDC WONDER Online Database, released 2015. Data are from the Multiple Cause of Death Files, 1999-2014, as compiled"
+"from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative Program. Accessed at"
+"http://wonder.cdc.gov/ucd-icd10.html on Sep 9, 2016 1:14:29 PM"
+"---"
+Caveats:
+"1. Death rates are flagged as Unreliable when the rate is calculated with a numerator of 20 or less. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd.html#Unreliable."
+"2. The population figures for year 2014 are bridged-race estimates of the July 1 resident population, from the Vintage 2014"
+"postcensal series released by NCHS on June 30, 2015. The population figures for year 2013 are bridged-race estimates of the July"
+"1 resident population, from the Vintage 2013 postcensal series released by NCHS on June 26, 2014. The population figures for"
+"year 2012 are bridged-race estimates of the July 1 resident population, from the Vintage 2012 postcensal series released by NCHS"
+"on June 13, 2013. The population figures for year 2011 are bridged-race estimates of the July 1 resident population, from the"
+"Vintage 2011 postcensal series released by NCHS on July 18, 2012. Population figures for 2010 are April 1 Census counts. The"
+"population figures for years 2001 - 2009 are bridged-race estimates of the July 1 resident population, from the revised"
+"intercensal county-level 2000 - 2009 series released by NCHS on October 26, 2012. Population figures for 2000 are April 1 Census"
+"counts. Population figures for 1999 are from the 1990-1999 intercensal series of July 1 estimates. Population figures for the"
+"infant age groups are the number of live births. <br/><b>Note:</b> Rates and population figures for years 2001 - 2009 differ"
+"slightly from previously published reports, due to use of the population estimates which were available at the time of release."
+"3. The population figures used in the calculation of death rates for the age group 'under 1 year' are the estimates of the"
+"resident population that is under one year of age. More information: http://wonder.cdc.gov/wonder/help/ucd.html#Age Group."
