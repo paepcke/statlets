@@ -192,7 +192,7 @@ var ConfidenceViz = function(width, height) {
             				  },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
-            				   axisLabel : 'Teen Pregnancy Rate',
+            				   axisLabel : 'Teen Pregnancy Proportion',
             			     axisLabelId : 'dataYLabel',
             			     axisGrpName : 'dataYAxisGrp'            			    	 
             			      }
@@ -248,7 +248,7 @@ var ConfidenceViz = function(width, height) {
             			  },
             		   y: {scaleType   : 'linear',
             		       domain      : yDomainAllStates,
-        				   axisLabel   : 'Teen Pregnancy Rate',
+        				   axisLabel   : 'Teen Pregnancy Proportion',
         				   axisLabelId : 'allStatesYLabel',
         				   axisGrpName : 'allStatesYAxisGrp'        				          				   
             		      }
