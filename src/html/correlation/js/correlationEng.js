@@ -141,13 +141,15 @@ var CorrelationViz = function(width, height) {
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'US States',
-        					 axisLabelId : 'dataXLabel'        						   
-            				  },
+        					 axisLabelId : 'dataXLabel',
+        					 axisGrpName : 'dataXAxisGrp'        					 
+        				   },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
             				   axisLabel : 'Murders per 100K People',
-            			     axisLabelId : 'dataYLabel'
-            			      }
+            			     axisLabelId : 'dataYLabel',
+            			     axisGrpName : 'dataYAxisGrp'            			     
+            			   }
                           };
 
 		scalesData = makeCoordSys(extentDict);
@@ -179,12 +181,14 @@ var CorrelationViz = function(width, height) {
         			   x: {scaleType   : 'linear',
         				   domain      : yDomain,
         				   axisLabel   : 'Murders per 100K in ' + dataCat1,
-        				   axisLabelId : 'corrXLabel'
+        				   axisLabelId : 'corrXLabel',
+        				  axisGrpName  : 'corrXAxisGrp'        					   
             			  },
             		   y: {scaleType   : 'linear',
             		       domain      : yDomain,
         				   axisLabel   : 'Murders per 100K in ' + dataCat2,
-        				   axisLabelId : 'corrYLabel'
+        				   axisLabelId : 'corrYLabel',
+        				  axisGrpName  : 'corrYAxisGrp'        					   
             		      }
                        };
 
@@ -819,28 +823,57 @@ var CorrelationViz = function(width, height) {
 		
 		// X Scale:
 		
-		switch(extentDict.x.scaleType) {
-		case 'linear':
-			xScale = d3.scaleLinear()
-							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
-			break;
-		case 'ordinal':
-			xScale = d3.scaleOrdinal()
-							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
-							 
-			// Width between two ticks is (for instance) pixel-pos
-			// at first domain value minus pixel pos at zeroeth domain
-			// value:
-			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
+		let X_AXIS_RIGHT = X_AXIS_RIGHT_PADDING;
 
-		break;
-		default:
-			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+		if (typeof extentDict.x.rightPadding !== 'undefined') {
+			X_AXIS_RIGHT = extentDict.x.rightPadding;
+		}
+
+		// X Scale:
+
+		switch (extentDict.x.scaleType) {
+			case 'linear':
+				xScale = d3.scaleLinear().domain(extentDict.x.domain).range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
+				break;
+			case 'ordinal':
+				xScale = d3.scaleBand().domain(extentDict.x.domain).rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]).paddingInner(0.1);
+
+				// Width between two ticks is (for instance) pixel-pos
+				// at first domain value minus pixel pos at zeroeth domain
+				// value:
+				bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]);
+
+				break;
+			default:
+				throw `Axis type ${ extentDict.x.scaleType } not implemented.}`;
 		}
 		
-
+		
+		
+//		//9999
+//		
+//		switch(extentDict.x.scaleType) {
+//		case 'linear':
+//			xScale = d3.scaleLinear()
+//							 .domain(extentDict.x.domain)
+//							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
+//			break;
+//		case 'ordinal':
+//			xScale = d3.scaleOrdinal()
+//							 .domain(extentDict.x.domain)
+//							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
+//							 
+//			// Width between two ticks is (for instance) pixel-pos
+//			// at first domain value minus pixel pos at zeroeth domain
+//			// value:
+//			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
+//
+//		break;
+//		default:
+//			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+//		}
+//		
+//		//9999999
 
 		// Y Scale
 		switch(extentDict.y.scaleType) {
