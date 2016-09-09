@@ -1289,13 +1289,16 @@ var ConfidenceViz = function(width, height) {
 		
 		switch (stepName) {
 		case 'home':
-			d3.select('#allStatesDiv')
+			d3.select("#allStatesDiv")
+			colBtnsVisible(false);
 			break;
 		case "step1":
 			d3.select('#allStatesDiv')
+			colBtnsVisible(true);
 			break;
 		case "step2":
 			d3.select('#allStatesDiv')
+			colBtnsVisible(true);
 			break;
 		case "reset":
 			// Restore true birth rates:
@@ -1308,6 +1311,25 @@ var ConfidenceViz = function(width, height) {
 			break;
 		}
 	}
+	
+	/*---------------------------
+	| colBtnsVisible 
+	-----------------*/
+	
+	var colBtnsVisible = function(shouldBeVisible) {
+		
+		if (shouldBeVisible) {
+			d3.select("#addState")
+				.attr("class", "button sampleBtn first visible");
+			d3.select("#newSample")
+				.attr("class", "button sampleBtn visible");
+		} else {
+			d3.select("#addState")
+				.attr("class", "button sampleBtn first");
+			d3.select("#newSample")
+				.attr("class", "button sampleBtn");
+		}
+	} 
 	
 	/*---------------------------
 	| log 

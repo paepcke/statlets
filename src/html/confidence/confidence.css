@@ -165,14 +165,17 @@ h1          { text-align : center;  }
 				    flex-wrap : nowrap;
 				    align-items : start;
 				  }
-.button.sampleBtn { background : rgb(221, 159, 183);
+.button.sampleBtn { background : rgb(221, 159, 183);     /* rose */
  				    border-radius : 25px;
  				    width : 100px;
  				    margin-right : 20px;
  				    margin-bottom : 2px;
+                                    display : none;
 		          }
 .button.sampleBtn.first { margin-top : 40px; }		          
 .button.sampleBtn:focus { outline : 0 !important }
+
+.button.sampleBtn.visible { display : block }
 
 .sdGrp   { }
 .sdTxt   { transform   : translate(1em, -1em);
