@@ -13,5 +13,9 @@ http://www.cdc.gov/nchs/data/nvsr/nvsr64/nvsr64_02.pdf
 Top 15 on CDC (Table B)
   http://www.cdc.gov/nchs/data/nvsr/nvsr64/nvsr64_02.pdf
 
-All causes of deaths:
+All causes of deaths (see downloaded table)
    http://wonder.cdc.gov/wonder/help/ucd.html#ICD-10%20Codes
+
+   Total population: 316,128,839
+          Lightning: 33
+          
