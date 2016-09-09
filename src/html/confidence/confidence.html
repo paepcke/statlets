@@ -34,27 +34,29 @@
                           are all US states. A <i>sample</i> is a
                           randomly selected group of five
                           states. The <i>measurement</i> taken on each
-                          state in a sample is the rate of teen
-                          pregnancies in a given state. The data was
-                          collected by the US Center for Disease
-                          Control (CDC). A state's teen pregnancy rate
+                          state in a sample is the teen pregnancy proportion.
+                          The data was collected by the US Center for Disease
+                          Control (CDC). A state's teen pregnancy proportion
                           is computed as the number of teen births in
                           that state, divided by the total number of
                           births in that state.
                           <p>
-                          Go ahead and find the population and sample
-                          means, the standard deviations, and the
-                          confidence interval of this particular
-                          sample.
+                          The red horizontal line in the left chart is
+                          the sample mean. The blue line in the right-hand
+                          chart is the population mean. The red bracket
+                          in the right-side chart is the confidence interval
+                          of the sample. You can compare the two means:
+                          are their lines on the same height? If not, why
+                          do you think the means are different?
 
 			</div>
 			<div class="instrTxt" id="step1Txt">
                           Now pretend that some of these sample states
-                          had different teen pregnancy rates. How would
-                          that affect the confidence interval?  So see,
+                          had different teen pregnancy proportions. How would
+                          that affect the confidence interval?  To see,
                           drag the bars in the sample chart up and down,
-                          while observing the confidence interval. To
-                          notice:
+                          while observing the confidence interval. 
+                          Consider:
 
                           <ul>
 
@@ -88,7 +90,7 @@
                           
 			<div class="instrTxt" id="step2Txt">
                           When a confidence interval is very wide, it
-                          means that the experimental results are not
+                          means that the sample mean you found is not
                           very reliable. One way to mitigate this
                           problem is to collect more samples from the
                           population.
@@ -124,12 +126,16 @@
                           Finally, let's relate all this to the formula
                           for confidence intervals:
 
-                          $$ci = sampleMean \pm t_{0.95/2}*\frac{SampleSD}{\sqrt{n}}$$
+                          $$ci = sampleMean \pm t_{4,1-(0.05/2)}*\frac{SampleSD}{\sqrt{n}}$$
 
-                          The <i>0.95</i> indicates that this statlet
-                          performs all its computations using a 95%
-                          confidence interval. Remember that
-                          \(t_{0.95/2}\) is the value your read from
+						  The <i>4</i> in this formula is <i>df</i>, the 
+						  degrees of freedom. Unless you added states to the
+						  sample, we have sampled 5 states, making \(df=4\).
+						  <p>
+                          The <i>\(1-(0.05/2)\)</i> indicates that this statlet
+                          performs all its computations using \(\alpha=0.05\), 
+                          and therefore produces a 95% confidence interval. Remember that
+                          \(t_{4,1-0.05/2} = t_{4,0.975}\) is the value you read from
                           the <i>t</i> distribution table.  The
                           value <i>n</i> is the size of the sample you
                           took. In our case that number is five (unless
@@ -157,7 +163,7 @@
 	<script type="text/javascript" src="../utils/js/simple-statistics.min.js"></script>
 	<script type="text/javascript" src="../utils/js/d3.min.js"></script>
 -->	
-	
+
 	<!-- Until going hot: suppress login requirement -->
 	<script>
 	document.cookie = "stats60Uid = preFlight*";
