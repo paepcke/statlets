@@ -7,6 +7,9 @@
 
 import { TableManager } from "./../../utils/js/tableManager.js";
 import { StatsDragClickHandler } from "./../../utils/js/statsDragClickHandler.js";
+import { SoftAlert } from "./../../utils/js/softAlerts";
+import { CookieMonster } from "./../../utils/js/cookieMonster";
+import { Logger } from "./../../utils/js/logging";
 import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
 
@@ -26,6 +29,11 @@ var CorrelationViz = function(width, height) {
 	var currBtn		 	 = null; // Currently active exercise-step button.
 
 	var svgData			 = null;
+	
+	var alerter          = null;
+	var logger           = null;
+	var cookieMonster    = null;
+	var browserType      = null;
 	
 	// Constants:
 
@@ -61,6 +69,21 @@ var CorrelationViz = function(width, height) {
 	-----------------*/
 	
 	var constructor = function() {
+		
+		// For non-modal alerts:
+		alerter     = SoftAlert();
+		cookieMonster = CookieMonster();
+		
+		let uid = cookieMonster.getCookie("stats60Uid");
+		if ( uid !== null ) {
+			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
+			logger.setUserId(uid);
+			cookieMonster.delCookie("stats60Uid");
+		} else {
+			logger = Logger(alerter);
+		}
+		browserType = logger.browserType();
+		
 		
 		// Find the div in which the chart is to reside,
 		// and its dimensions:
@@ -1111,6 +1134,17 @@ var CorrelationViz = function(width, height) {
 			break;
 		}
 	}
+	
+	
+	/*---------------------------
+	| log 
+	-----------------*/
+	
+	var log = function log( txt ) {
+		// Convenience method for logging:
+		logger.log(txt);
+	}
+	
 	
 	return constructor(width, height);
 }
