@@ -310,9 +310,10 @@ var CorrelationViz = function(width, height) {
 			let dotClass = dotClasses[++currRowNum];
 			let colNum = 0;
 
-			let personDotSel = svgData.selectAll('.' + dotClass)
+			let stateDotSel = svgData.selectAll('.' + dotClass)
 				.data(function() { return row });
-			personDotSel
+			
+			stateDotSel
  				    // Update existing dots with (possibly) changed data:
 				   	.transition('resettingX')
 				   		.delay(0.1)
@@ -322,21 +323,68 @@ var CorrelationViz = function(width, height) {
 				   		.delay(0.1)
 				   		.duration(800) // ms
 				   		.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
-			personDotSel.enter() 
+				   		
+			stateDotSel.enter() 
 				 // Add additional dots if now more data than before:
-				   .append('circle')
-				   .attr('state',  function(row, i) { return states[i] })
-				   .attr('id', function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Category
-				   .attr('tblRows', function() { return `[${currRowNum}]` })   // Only one table row is involved
-				   .attr('tblCol', function() { return colNum++ } )
-				   .attr('r', DOT_RADIUS)                                                     // to which this circle belongs.
-				   .attr('cx', function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				   .attr('cy', function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
-				   .attr('class', function() { return dotClass } )
+				   .append("circle")
+				      .attr("state",  function(row, i) { return states[i] })
+				      .attr("id", function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) }) // Year of murders
+				      .attr("tblRows", function() { return `[${currRowNum}]` })   // Only one table row is involved
+				      .attr("tblCol", function() { return colNum++ } )
+				      .attr("r", DOT_RADIUS)                                                     // to which this circle belongs.
+				      .attr("cx", function(d,colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				      .attr("cy", function(d, colNum) { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				      .attr("class", function() { return dotClass } )
+				      // Attach drag-start behavior to this circle.
+				      // Do update the data table from these moves.
+				      .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 
-				   // Attach drag-start behavior to this circle.
-				   // Do update the data table from these moves.
-				   .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
+			let lineCoords = d3.svg.line()
+								.x(function(d, colNum) {
+									return (xScale(states[colNum]) + Math.round(bandWidth / 2.0));
+								})
+								.y(function() {
+									return yScale(d) + Y_AXIS_TOP_PADDING };
+								})
+			
+			stateDotSel.enter()
+					.append("path")
+					   .attr("d", function(row, i) {
+						   
+					   })
+			
+			
+			
+			let circles = d3.selectAll(`.${dotClass}`)
+								.append("path")
+								    .attr("d", function(circle) {
+								    	return `M ${circle.cx} ${circle.cy}
+								    	        L ${circle.cx} ${height - X_AXIS_BOTTOM_PADDING}`;
+								    });
+			
+//		    stateDotSel.enter() 				      
+//					.append("path")
+//				      .attr("state",  function(row, i) { return states[i] })
+//				      .attr("id", function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) + 'Stick'}) // Year of murders
+//				      .attr("class", function() { return dotClass + 'Stick' } )
+//				      .attr("d", function(row, i) {
+//				    	  return d3.svg.line()
+//				    	  			.x(function() {
+//				    	  				let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
+//				    	  				return dotSel.attr("cx");
+//				    	  			})
+//				      })
+//				      
+//				      
+//				      .x   (function(row, i) {
+//				    	  	  let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
+//				    	  	  return dotSel.attr("cx");
+//				      })
+//				      .y   (function(row, i) {
+//				    	  	  let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
+//				    	  	  return dotSel.attr("cy");
+//				      })
+//
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -848,33 +896,6 @@ var CorrelationViz = function(width, height) {
 				throw `Axis type ${ extentDict.x.scaleType } not implemented.}`;
 		}
 		
-		
-		
-//		//9999
-//		
-//		switch(extentDict.x.scaleType) {
-//		case 'linear':
-//			xScale = d3.scaleLinear()
-//							 .domain(extentDict.x.domain)
-//							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING]);
-//			break;
-//		case 'ordinal':
-//			xScale = d3.scaleOrdinal()
-//							 .domain(extentDict.x.domain)
-//							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT_PADDING], 1.5);
-//							 
-//			// Width between two ticks is (for instance) pixel-pos
-//			// at first domain value minus pixel pos at zeroeth domain
-//			// value:
-//			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
-//
-//		break;
-//		default:
-//			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
-//		}
-//		
-//		//9999999
-
 		// Y Scale
 		switch(extentDict.y.scaleType) {
 		case 'linear':
@@ -1019,7 +1040,7 @@ var CorrelationViz = function(width, height) {
 		let svgCorrSel  = d3.select(".svgCorr");
 		let dotsSel  = d3.selectAll(".corrDot");
 		
-		svgCorrSel.selectAll('circle')
+		svgCorrSel.selectAll("circle")
 		  .each(function() {
 			
 			let dotSel   = d3.select(this);

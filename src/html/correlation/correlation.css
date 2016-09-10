@@ -135,8 +135,17 @@ h1          { text-align : center;  }
 		           transform: translate(-1.5em, -2em);
 				}
 
-.category1Dot  { fill : green; }
-.category2Dot  { fill : blue; }
+.category1Dot      { fill : green; }
+.category2Dot      { fill : blue; }
+
+.category1DotStick { stroke       : green;
+					 stroke-width : 1.5px;  
+}
+.category2DotStick { stroke       : blue;
+					 stroke-width : 1.5px;  
+}
+
+
 .corrDot       { fill : rgb(144, 12, 63) ; } // Dark red.
 
 .controlBarWrapper  { margin-left : 200px;
