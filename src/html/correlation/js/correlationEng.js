@@ -339,28 +339,35 @@ var CorrelationViz = function(width, height) {
 				      // Do update the data table from these moves.
 				      .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 
-			let lineCoords = d3.svg.line()
-								.x(function(d, colNum) {
-									return (xScale(states[colNum]) + Math.round(bandWidth / 2.0));
-								})
-								.y(function() {
-									return yScale(d) + Y_AXIS_TOP_PADDING };
-								})
-			
-			stateDotSel.enter()
-					.append("path")
-					   .attr("d", function(row, i) {
-						   
-					   })
-			
-			
-			
-			let circles = d3.selectAll(`.${dotClass}`)
-								.append("path")
-								    .attr("d", function(circle) {
-								    	return `M ${circle.cx} ${circle.cy}
-								    	        L ${circle.cx} ${height - X_AXIS_BOTTOM_PADDING}`;
-								    });
+
+			let stateStickSel = svgData.selectAll('.' + dotClass)
+				.each()
+  				    // Update existing sticks:
+				   	.transition('resettingHeight')
+				   		.delay(0.1)
+				   		.duration(800) // ms
+				   		.attr('d', function(d, colNum) {
+				   			this.moveTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
+				   						yScale(d) + Y_AXIS_TOP_PADDING);
+				   			this.lineTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
+				   						height + Y_AXIS_TOP_PADDING);
+				   		}) 
+			stateStickSel.enter()
+				    .append("path")
+				   	   .attr('d', function(d, colNum) {
+				   			this.moveTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
+				   						yScale(d) + Y_AXIS_TOP_PADDING);
+				   			this.lineTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
+				   						height + Y_AXIS_TOP_PADDING);
+				   		});
+
+//			
+//			let circles = d3.selectAll(`.${dotClass}`)
+//								.append("path")
+//								    .attr("d", function(circle) {
+//								    	return `M ${circle.cx} ${circle.cy}
+//								    	        L ${circle.cx} ${height - X_AXIS_BOTTOM_PADDING}`;
+//								    });
 			
 //		    stateDotSel.enter() 				      
 //					.append("path")
