@@ -313,6 +313,10 @@ var CorrelationViz = function(width, height) {
 			let stateDotSel = svgData.selectAll('.' + dotClass)
 				.data(function() { return row });
 			
+			let verticalResetTransition = 
+					d3.transition('resettingY')
+				   		.delay(0.1)
+				   		.duration(800) // ms
 			stateDotSel
  				    // Update existing dots with (possibly) changed data:
 				   	.transition('resettingX')
@@ -320,8 +324,6 @@ var CorrelationViz = function(width, height) {
 				   		.duration(800) // ms
 				   		.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
 				   	.transition('resettingY')
-				   		.delay(0.1)
-				   		.duration(800) // ms
 				   		.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				   		
 			stateDotSel.enter() 
@@ -355,15 +357,14 @@ var CorrelationViz = function(width, height) {
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
 					
+			stateStickSel					
 					// Update stick locations:
 				   	.transition('resettingY')
-				   		.delay(0.1)
-				   		.duration(800) // ms
 				   		.attr("y1", function(stickEl) {
-				   			return stickEl.circle.cy;
+				   			return stickEl.circle.cy.baseVal.value;
 				   		})
 					
-					
+			stateStickSel
 				    .enter()
 				       .append("line")
 				   	      .attr("x1", function(stickEl) {
