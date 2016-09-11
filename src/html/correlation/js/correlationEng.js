@@ -322,12 +322,27 @@ var CorrelationViz = function(width, height) {
 				   	.transition(verticalResetTransition)
 				   		.delay(0.1)
 				   		.duration(800) // ms
-				   		.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				   	.transition('resettingY')
-				   		.attr('cy', function(d)  {
-				   			let circle = this;
-				   			let stickId = circle;
-				   			return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				   		.attr("cx", function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
+				   	.transition(verticalResetTransition)
+				   		.attr("cy", function(d)  {
+				   			return yScale(d) + Y_AXIS_TOP_PADDING 
+				   		}) // one row element at a time
+				   	.each(function(d) {
+				   		let circle = this;
+				   		let stickId = d3.select(circle).attr("stick");
+				   		d3.select("#" + stickId)
+				   			.attr("y1", function() {
+				   				return yScale(d) + Y_AXIS_TOP_PADDING;
+				   			})
+				   	})
+		
+//		    // Updated lengths of all existing sticks:
+//			let existingSticksSel = d3.selectAll('.' + dotClass + 'Stick')
+//				.data(function() { return row })
+//				.transition(verticalResetTransition)
+//					.attr("y1", function(d) {
+//						return yScale(d) + Y_AXIS_TOP_PADDING;
+//					});
 				   		
 			stateDotSel.enter() 
 				 // Add additional dots if now more data than before:
@@ -343,7 +358,7 @@ var CorrelationViz = function(width, height) {
 				      // Attach drag-start behavior to this circle.
 				      // Do update the data table from these moves.
 				      .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
-
+			
 			let stickData = []
 			
 			d3.selectAll(`circle.${dotClass}`)
@@ -360,12 +375,12 @@ var CorrelationViz = function(width, height) {
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
 					
-			stateStickSel					
-					// Update stick locations:
-				   	.transition(verticalResetTransition)
-				   		.attr("y1", function(stickEl) {
-				   			return stickEl.circle.cy.baseVal.value;
-				   		})
+//			stateStickSel					
+//					// Update stick locations:
+//				   	.transition(verticalResetTransition)
+//				   		.attr("y1", function(stickEl) {
+//				   			return stickEl.circle.cy.baseVal.value;
+//				   		})
 					
 			stateStickSel
 				    .enter()
