@@ -324,7 +324,10 @@ var CorrelationViz = function(width, height) {
 				   		.duration(800) // ms
 				   		.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
 				   	.transition('resettingY')
-				   		.attr('cy', function(d)  { return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
+				   		.attr('cy', function(d)  {
+				   			let circle = this;
+				   			let stickId = circle;
+				   			return yScale(d) + Y_AXIS_TOP_PADDING }) // one row element at a time
 				   		
 			stateDotSel.enter() 
 				 // Add additional dots if now more data than before:
