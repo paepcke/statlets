@@ -339,10 +339,31 @@ var CorrelationViz = function(width, height) {
 				      // Do update the data table from these moves.
 				      .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 
+			let stickData = []
+			
+			d3.selectAll(`circle.${dotClass}`)
+				.each(function() {
+					let circle = this;
+					stickData.push({"x1" : circle.cx.baseVal.value, "y1" : circle.cy.baseVal.value,
+								    "x2" : circle.cx.baseVal.value, "y2" : height - X_AXIS_BOTTOM_PADDING,
+									"state" : d3.select(circle).attr("state")
+								   }
+					)}
+				);
 
-			let stateStickSel = svgData.selectAll('.' + dotClass)
-				.each()
+			let lineFunc  = d3.line()
+							  .x(function(stickDataEl) {
+								  return stickDataEl.x.baseVal.value;
+							  })
+							  .y(function(stickDataEl) {
+								  return stickDataEl.y.baseVal.value;
+							  });
+
+			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
+					.data(stickData)
+					
   				    // Update existing sticks:
+				/*
 				   	.transition('resettingHeight')
 				   		.delay(0.1)
 				   		.duration(800) // ms
@@ -351,15 +372,36 @@ var CorrelationViz = function(width, height) {
 				   						yScale(d) + Y_AXIS_TOP_PADDING);
 				   			this.lineTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
 				   						height + Y_AXIS_TOP_PADDING);
-				   		}) 
-			stateStickSel.enter()
-				    .append("path")
-				   	   .attr('d', function(d, colNum) {
-				   			this.moveTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
-				   						yScale(d) + Y_AXIS_TOP_PADDING);
-				   			this.lineTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
-				   						height + Y_AXIS_TOP_PADDING);
-				   		});
+				   		})
+				*/ 
+
+					
+				    .enter()
+				       .append("line")
+				   	      .attr("x1", function(stickEl) {
+				   	    	  return stickEl.x1;
+				   	      })
+				   	      .attr("y1", function(stickEl) {
+				   	    	  return stickEl.y1;
+				   	      })
+				   	      .attr("x2", function(stickEl) {
+				   	    	  return stickEl.x2;
+				   	      })
+				   	      .attr("y2", function(stickEl) {
+				   	    	  return stickEl.y2;
+				   	      })
+				   	      .attr("class", dotClass + "Stick")
+				   	      .attr("state", function(stickEl) {
+				   	    	  return stickEl.state;
+				   	      });
+					
+//				    .enter()
+//				       .append("path")
+//				   	      .attr("d", lineFunc)
+//				   	      .attr("class", dotClass + "Stick")
+//				   	      .attr("state", function(stickEl, i) {
+//				   	    	  return stickEl.state;
+//				   	      })
 
 //			
 //			let circles = d3.selectAll(`.${dotClass}`)
