@@ -347,7 +347,7 @@ var CorrelationViz = function(width, height) {
 					stickData.push({"x1" : circle.cx.baseVal.value, "y1" : circle.cy.baseVal.value,
 								    "x2" : circle.cx.baseVal.value, "y2" : height - X_AXIS_BOTTOM_PADDING,
 									"state" : d3.select(circle).attr("state"),
-									"circle" : this
+									"circle" : circle
 								   }
 					)}
 				);
@@ -355,12 +355,6 @@ var CorrelationViz = function(width, height) {
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
 					
-  				    // Update existing sticks:
-				
-					.attr("y1", function(stickEl) {
-						return stickEl.circle.cy.baseVal.value;
-					})
-
 				    .enter()
 				       .append("line")
 				   	      .attr("x1", function(stickEl) {
