@@ -314,12 +314,12 @@ var CorrelationViz = function(width, height) {
 				.data(function() { return row });
 			
 			let verticalResetTransition = 
-					d3.transition('resettingY')
+					d3.transition()
 				   		.delay(0.1)
 				   		.duration(800) // ms
 			stateDotSel
  				    // Update existing dots with (possibly) changed data:
-				   	.transition('resettingX')
+				   	.transition(verticalResetTransition)
 				   		.delay(0.1)
 				   		.duration(800) // ms
 				   		.attr('cx', function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
@@ -359,7 +359,7 @@ var CorrelationViz = function(width, height) {
 					
 			stateStickSel					
 					// Update stick locations:
-				   	.transition('resettingY')
+				   	.transition(verticalResetTransition)
 				   		.attr("y1", function(stickEl) {
 				   			return stickEl.circle.cy.baseVal.value;
 				   		})
