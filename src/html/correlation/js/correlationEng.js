@@ -355,6 +355,15 @@ var CorrelationViz = function(width, height) {
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
 					
+					// Update stick locations:
+				   	.transition('resettingY')
+				   		.delay(0.1)
+				   		.duration(800) // ms
+				   		.attr("y1", function(stickEl) {
+				   			return stickEl.circle.cy;
+				   		})
+					
+					
 				    .enter()
 				       .append("line")
 				   	      .attr("x1", function(stickEl) {
