@@ -346,36 +346,21 @@ var CorrelationViz = function(width, height) {
 					let circle = this;
 					stickData.push({"x1" : circle.cx.baseVal.value, "y1" : circle.cy.baseVal.value,
 								    "x2" : circle.cx.baseVal.value, "y2" : height - X_AXIS_BOTTOM_PADDING,
-									"state" : d3.select(circle).attr("state")
+									"state" : d3.select(circle).attr("state"),
+									"circle" : this
 								   }
 					)}
 				);
-
-			let lineFunc  = d3.line()
-							  .x(function(stickDataEl) {
-								  return stickDataEl.x.baseVal.value;
-							  })
-							  .y(function(stickDataEl) {
-								  return stickDataEl.y.baseVal.value;
-							  });
 
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
 					
   				    // Update existing sticks:
-				/*
-				   	.transition('resettingHeight')
-				   		.delay(0.1)
-				   		.duration(800) // ms
-				   		.attr('d', function(d, colNum) {
-				   			this.moveTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
-				   						yScale(d) + Y_AXIS_TOP_PADDING);
-				   			this.lineTo(xScale(states[colNum]) + Math.round(bandWidth / 2.0),
-				   						height + Y_AXIS_TOP_PADDING);
-				   		})
-				*/ 
+				
+					.attr("y1", function(stickEl) {
+						return stickEl.circle.cy.baseVal.value;
+					})
 
-					
 				    .enter()
 				       .append("line")
 				   	      .attr("x1", function(stickEl) {
@@ -393,47 +378,15 @@ var CorrelationViz = function(width, height) {
 				   	      .attr("class", dotClass + "Stick")
 				   	      .attr("state", function(stickEl) {
 				   	    	  return stickEl.state;
-				   	      });
+				   	      })
+				   	      .attr("id", function(stickEl) {
+				   	    	  let id = stickEl.circle.id + "Stick";
+				   	    	  // Add id of this stick to the corresponding
+				   	    	  // circle for easy association:
+				   	    	  d3.select(stickEl.circle).attr("stick", id);
+				   	    	  return id;
+				   	      })
 					
-//				    .enter()
-//				       .append("path")
-//				   	      .attr("d", lineFunc)
-//				   	      .attr("class", dotClass + "Stick")
-//				   	      .attr("state", function(stickEl, i) {
-//				   	    	  return stickEl.state;
-//				   	      })
-
-//			
-//			let circles = d3.selectAll(`.${dotClass}`)
-//								.append("path")
-//								    .attr("d", function(circle) {
-//								    	return `M ${circle.cx} ${circle.cy}
-//								    	        L ${circle.cx} ${height - X_AXIS_BOTTOM_PADDING}`;
-//								    });
-			
-//		    stateDotSel.enter() 				      
-//					.append("path")
-//				      .attr("state",  function(row, i) { return states[i] })
-//				      .attr("id", function(row, i) { return states[i] + tblObj.getCell(currRowNum, 0) + 'Stick'}) // Year of murders
-//				      .attr("class", function() { return dotClass + 'Stick' } )
-//				      .attr("d", function(row, i) {
-//				    	  return d3.svg.line()
-//				    	  			.x(function() {
-//				    	  				let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
-//				    	  				return dotSel.attr("cx");
-//				    	  			})
-//				      })
-//				      
-//				      
-//				      .x   (function(row, i) {
-//				    	  	  let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
-//				    	  	  return dotSel.attr("cx");
-//				      })
-//				      .y   (function(row, i) {
-//				    	  	  let dotSel = d3.select("#" + states[i] + tblObj.getCell(currRowNum, 0));
-//				    	  	  return dotSel.attr("cy");
-//				      })
-//
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -856,6 +809,13 @@ var CorrelationViz = function(width, height) {
 		placeCorrelationValue();
 		
 		dragClickHandler.dragmove(d3CircleSel, vertMove, horMove);
+		
+		// Adjust height of stick to end in the circle again. Circles
+		// include an attr "stick" with their stick name:
+		let stickSel = d3.select("#" + d3CircleSel.attr("stick")) 
+		stickSel.attr("y1", function() {
+			return d3CircleSel.attr("cy");
+		})
 	}
 	
 	/*---------------------------
