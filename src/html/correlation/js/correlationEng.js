@@ -320,22 +320,26 @@ var CorrelationViz = function(width, height) {
 				   		.delay(0.1)
 				   		.duration(800) // ms
 		    
-			if ( stateStickSel !== null ) {
-				// Updating dots and sticks (as opposed to first-time creating them.
-				// Update existing dots with (possibly) changed data:
-				
-				stateStickSel // data is obj w/ properties x1,y1,x2,y2,state,circle[Obj]
-					.transition(verticalResetTransition)
-						.attr("cx", function(d, colNum)  { 
-							return xScale(states[colNum]) + Math.round(bandWidth / 2.0) 
-						})
-						.attr("cy", function(d)  {
-							return yScale(d) + Y_AXIS_TOP_PADDING;
-						})
-						.attr("y1", function(d) {
-							return yScale(d) + Y_AXIS_TOP_PADDING;
-						})
-			}
+		    stateDotSel
+		    	.transition(verticalResetTransition)
+		    		.each(function(yVal, i) {
+		    			let circle = this;
+		    			d3.select(circle)
+		    				.attr("cx", function(yVal)  { 
+		    					return xScale(states[colNum++]) + Math.round(bandWidth / 2.0) 
+		    				})
+		    				.attr("cy", function(yVal)  {
+		    					return yScale(yVal) + Y_AXIS_TOP_PADDING; 
+		    				})
+		    				.call(function(transition) {
+		    					let stickId = d3.select(circle).attr("stick");
+		    					d3.select("#" + stickId)
+		    						.attr("y1", function(d) {
+		    							return yScale(yVal) + Y_AXIS_TOP_PADDING;
+		    						})
+		    				})
+		    		})
+		    colNum = 0;
 //				   		.call (function(d, i) { // start of transition.
 //				   		let circle = this;
 //				   		let stickId = d3.select(circle).attr("stick");
