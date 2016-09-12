@@ -1253,6 +1253,11 @@ var CorrelationViz = function(width, height) {
 				tblObj.setRow(rowNum, data[rowNum]);
 			}
 			updateDataChart(scalesData);
+			
+			// Ensure stick colors and paint order are OK:
+			for ( let state in STATE_TBL ) {
+				adjustStickZIndices(state);
+			};
 			// Update correlation:
 			placeCorrelationValue();
 			updateCorrChart(scalesCorr);
@@ -1346,16 +1351,22 @@ var CorrelationViz = function(width, height) {
 											.filter(function() {
 												return d3.select(this).attr("state") === state;
 											});
-			//**** circleAndSticksSel.sort(sortCompare);
 			let circleAndStickNodes = circleAndSticksSel.nodes();
-			if ( circleAndStickNodes[0].y1.baseVal.value >= circleAndStickNodes[1].y1.baseVal.value ) {
-				 d3.select(circleAndStickNodes[0]).raise();
-				 d3.select(circleAndStickNodes[1]).lower();
+			let stick1 = circleAndStickNodes[0];
+			let stick2 = circleAndStickNodes[1];
+			if ( stick1.y1.baseVal.value >= stick2.y1.baseVal.value ) {
+				 d3.select(stick1).raise();
+				 d3.select(stick2).lower();
 			} else {
-				 d3.select(circleAndStickNodes[0]).lower();
-				 d3.select(circleAndStickNodes[1]).raise();
+				 d3.select(stick1).lower();
+				 d3.select(stick2).raise();
 			}
-			
+
+			// Ensure that circels are always on top:
+			let circleId  = d3.select(stick1).attr("nodeId");
+			let circleSel = d3.select("#" + circleId);
+			circleSel.raise(); // for good measure.
+			circleSel.raise(); // for good measure.
 		}
 		
 			
