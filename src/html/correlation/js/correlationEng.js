@@ -1334,13 +1334,10 @@ var CorrelationViz = function(width, height) {
 		
 		var sortCompare = function(firstStick, secondStick) {
 			
-			let firstSel = d3.select(firstStick);
-			let secSel = d3.select(secondStick);
-
-			if ( firstSel.y1 < secSel.y1 ) {
-				return -1 // lower stick should show on top
+			if ( firstStick.y1 < secondStick.y1 ) {
+				return 1 // lower stick should show on top
 			} else {
-				return 1; // if the stick vals are equal, order immaterial.
+				return -1; // if the stick vals are equal, order immaterial.
 			}
 		}
 		
@@ -1349,7 +1346,7 @@ var CorrelationViz = function(width, height) {
 											.filter(function() {
 												return d3.select(this).attr("state") === state;
 											})
-			circleAndSticksSel.order(sortCompare);
+			circleAndSticksSel.sort(sortCompare);
 		}
 		
 			
