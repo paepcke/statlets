@@ -980,8 +980,9 @@ var CorrelationViz = function(width, height) {
 			let txtSel     = xAxisGroup.selectAll("text");
 			
 	    	txtSel
-		    	.attr("y", -10)
-	    		.attr("x", tickWidth / 2)
+		    	/* .attr("y", -10) */
+	    		.attr("y", 5)
+	    		.attr("x", tickWidth / 2 - 10) //****
 		    	//.attr("dy", "-0.35em")
 		    	.attr("transform", "rotate(45)")
 		    	.style("text-anchor", "start")
