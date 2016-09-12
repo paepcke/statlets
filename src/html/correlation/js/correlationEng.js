@@ -283,7 +283,9 @@ var CorrelationViz = function(width, height) {
 		
 		let xScale    = scaleInfo.xScale;
 		let yScale    = scaleInfo.yScale;
-		let bandWidth = scaleInfo.bandWidth; 
+		let bandWidth = scaleInfo.bandWidth;
+		
+		let stateStickSel = null;
 		
 		// Get header (months), and data without the
 		// 'Spender', 'Monica', 'Daniel' column:
@@ -317,18 +319,23 @@ var CorrelationViz = function(width, height) {
 					d3.transition()
 				   		.delay(0.1)
 				   		.duration(800) // ms
-				   		
-			stateDotAndStickSel = svgData.selectAll('.' + dotClass, '.' + dotClass + 'Stick')
- 				    // Update existing dots with (possibly) changed data:
-				   	.transition(verticalResetTransition)
-				   		.attr("cx", function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				   		.attr("cy", function(d)  {
-				   			return yScale(d) + Y_AXIS_TOP_PADDING;
-				   		})
-				   		.attr("y1", function(d) {
-				   			return yScale(d) + Y_AXIS_TOP_PADDING;
-				   		})
-
+		    
+			if ( stateStickSel !== null ) {
+				// Updating dots and sticks (as opposed to first-time creating them.
+				// Update existing dots with (possibly) changed data:
+				
+				stateStickSel // data is obj w/ properties x1,y1,x2,y2,state,circle[Obj]
+					.transition(verticalResetTransition)
+						.attr("cx", function(d, colNum)  { 
+							return xScale(states[colNum]) + Math.round(bandWidth / 2.0) 
+						})
+						.attr("cy", function(d)  {
+							return yScale(d) + Y_AXIS_TOP_PADDING;
+						})
+						.attr("y1", function(d) {
+							return yScale(d) + Y_AXIS_TOP_PADDING;
+						})
+			}
 //				   		.call (function(d, i) { // start of transition.
 //				   		let circle = this;
 //				   		let stickId = d3.select(circle).attr("stick");
