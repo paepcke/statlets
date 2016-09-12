@@ -41,6 +41,11 @@ var CorrelationViz = function(width, height) {
 	var logger           = null;
 	var cookieMonster    = null;
 	var browserType      = null;
+
+	// Instance of StickStatus: info about
+	// stick height values and selections.
+	// Used to change z-index of sticks:
+	var stickInfo        = null;
 	
 	// Constants:
 
@@ -329,20 +334,34 @@ var CorrelationViz = function(width, height) {
 		    	.each(function(yVal, i) {
 		    		let circle = this;
 		    		d3.select(circle)
+		    		// Reset x position (which in this case doesn't change):
 		    		.transition(verticalResetTransition)
 		    		.attr("cx", function(yVal)  { 
 		    			return xScale(states[colNum++]) + Math.round(bandWidth / 2.0) 
 		    		})
+		    		// Reset y:
 		    		.attr("cy", function(yVal)  {
 		    			return yScale(yVal) + Y_AXIS_TOP_PADDING; 
 		    		})
+		    		// Reset the sticks
 		    		.call(function() {
-		    			let stickId = d3.select(circle).attr("stick");
-		    			d3.select("#" + stickId)
-		    			.transition(verticalResetTransition)
-		    			.attr("y1", yScale(yVal) + Y_AXIS_TOP_PADDING);
+		    			let stickId  = d3.select(circle).attr("stick");
+		    			let stickSel = d3.select("#" + stickId);
+		    			let state    = stickSel.attr("state");
+		    			let newYVal  = yScale(yVal) + Y_AXIS_TOP_PADDING;
+		    			stickSel
+		    				.transition(verticalResetTransition)
+		    					.attr("y1", newYVal);
+		    			stickInfo.updateStickValue(state, newYVal)
 		    		})
 		    	})
+		    	
+//		    if ( stickInfo !== null ) {
+//		    	// Ensure that the stick of the lower-value state
+//		    	// is on top of the other stick:
+//		    	stickInfo.adjustStickZIndices();
+//		    }
+			
 		    colNum = 0;
 			
 			   		
@@ -403,9 +422,20 @@ var CorrelationViz = function(width, height) {
 				   	    	  // Add id of this stick to the corresponding
 				   	    	  // circle for easy association:
 				   	    	  d3.select(stickEl.circle).attr("stick", id);
+				   	    	  // And vice versa: this sticks' circle's id to this stick:
+				   	    	  d3.select(this).attr("circleId", stickEl.circle.id);
 				   	    	  return id;
 				   	      })
 					
+		}
+		
+		// Unless already done in an earlier call,
+		// initialize info about sticks (their D3 selections
+		// and current values. Used to adjust indexes.
+		
+		if ( ! d3.selectAll(".category1Dot").empty() &&
+			 stickInfo === null ) {
+			stickInfo = StickStatus();
 		}
 		
 		// If legend does not yet exist, create a legend,
@@ -696,6 +726,14 @@ var CorrelationViz = function(width, height) {
 					}
 					
 					handleDrag(circleSel, yScale, xScale, dragDirections, updateTable);
+					
+					// Update position info of this state's stick,
+					// and adjust z-index of stick of the circle moved
+					// past the other (same state's) circle:
+					let state = circleSel.attr("state");
+					stickInfo.updateStickValue( state, circleSel.attr("cy") )
+					stickInfo.adjustStickZIndices(state);
+					
 					// Let interested parties know that a circle moved.
 					// Used to sync (synchronize) corr chart with data chart:
 					dispatch.call("drag", this, circleSel);
@@ -1231,7 +1269,116 @@ var CorrelationViz = function(width, height) {
 		// Convenience method for logging:
 		logger.log(txt);
 	}
+
+	/*---------------------------
+	| StickStatus 
+	-----------------*/
 	
+	var StickStatus = function() {
+		/* { state : { "high"     : valHigh,
+					   "highSel"  : stickSelHigh,
+					   "lowSel"   : stickSelLow
+					   }
+		   }
+		 */
+		var stickVals = {}
+		
+		var constructor = function() {
+			for ( let state in STATE_TBL ) {
+				stickVals[state] = { "high"    : null,
+								     "highSel" : null,
+								     "lowSel"  : null
+				}
+			}
+		 
+
+			d3.selectAll(".category1DotStick")
+				.each(function() {
+					let stickSel = d3.select(this);
+					let stickValsEntry     = stickVals[stickSel.attr("state")];
+					stickValsEntry.high    = stickSel.attr("y1");
+					stickValsEntry.highSel = stickSel;
+				});
+
+			d3.selectAll(".category2DotStick")
+				.each(function() {
+					let stickSel          = d3.select(this);
+					let stickValsEntry    = stickVals[stickSel.attr("state")];
+					stickValsEntry.lowSel = stickSel;
+				})
+				
+			return {
+					updateStickValue 	: updateStickValue,
+					adjustStickZIndices : adjustStickZIndices
+			}
+		}
+			
+		 var updateStickValue = function( state, yVal ) {
+			 let stickValsEntry = stickVals[state];
+			 if ( yVal < stickValsEntry.high ) { return; };
+			 let tmpHighSel = stickValsEntry.highSel;
+			 stickValsEntry.highSel = stickValsEntry.lowSel;
+			 stickValsEntry.lowSel  = tmpHighSel;
+			 stickValsEntry.high    = yVal; 
+		 }
+		
+		var isCircle = function(d3Sel) {
+			let cl = d3Sel.attr("class");
+			return ( cl === "category1Dot" || firstCl === "category2Dot");
+		}
+		
+		var isStick= function(d3Sel) {
+			let cl = d3Sel.attr("class");
+			return ( cl === "category1DotStick" || firstCl === "category2DotStick");
+		}
+		
+		var sortCompare = function(firstEl, secondEl) {
+			
+			let firstSel = d3.select(firstEl);
+			let secSel = d3.select(secondEl);
+
+			// Two circles?
+			if ( isCircle(firstSel) && isCircle(secSel) ) {
+				return 0; // order doesn't matter
+			}
+			
+			if (isCircle(firstSel) && isStick(secondSel)) {
+				return -1; // Circle should be on top.
+			}
+			
+			if ( isStick(firstSel) && isCircle(secondSel) ) {
+				return 1 // Circle should be on top.
+			}
+		
+			// Two sticks:
+			if ( firstSel.y1 < secSel.y1 ) {
+				return -1 // lower stick should show on top
+			} else {
+				return 1; // if the stick vals are equal, order immaterial.
+			}
+		}
+		
+		var adjustStickZIndices = function( state ) {
+			let circleAndSticksSel = d3.selectAll(".category1DotStick, .category2DotStick")
+											.filter(function() {
+												return d3.select(this).attr("state") === state;
+											})
+			circleAndSticksSel.order(sortCompare);
+		}
+		
+			
+//		var adjustStickZIndices = function() {
+//			for ( let state in stickVals ) {
+//				let lowSel = stickVals[state].lowSel
+//				lowSel.raise();
+//				// But: the circle needs to be way top: 
+//				let circleSel = d3.select("#" + lowSel.circleId)
+//				circleSel.raise();
+//			}
+			
+		return constructor();
+		
+	} // end class StickStatus
 	
 	return constructor(width, height);
 }

@@ -140,19 +140,21 @@ h1          { text-align : center;  }
 					 z-index : 2;        /* highest in stack order */
 }
 .category2Dot      { fill : blue; 
-		 			position : fixed;
+		 			position : absolute;
 		 			z-index : 2;        /* highest in stack order */ 
 }
 
 .category1DotStick { stroke       : green;
 					 stroke-width : 1.5px;
-					 position : fixed;
-					 z-index : 1;
+					 position : absolute;
+					 /* **** z-index : 1; */
+					 z-index : 10;
 }
 .category2DotStick { stroke       : blue;
 					 stroke-width : 1.5px;
-					 position : fixed;
-					 z-index : 0;
+					 position : absolute;
+					 /* **** z-index : 0; */
+					 z-index : -1;
 }
 
 
