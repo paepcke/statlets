@@ -317,19 +317,17 @@ var CorrelationViz = function(width, height) {
 					d3.transition()
 				   		.delay(0.1)
 				   		.duration(800) // ms
-			stateDotSel
+				   		
+			stateDotAndStickSel = svgData.selectAll('.' + dotClass, '.' + dotClass + 'Stick')
  				    // Update existing dots with (possibly) changed data:
 				   	.transition(verticalResetTransition)
 				   		.attr("cx", function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
 				   		.attr("cy", function(d)  {
-				   			let circle = this;
-				   			let stickId = d3.select(circle).attr("stick");
-				   			d3.select("#" + stickId)
-				   				.attr("y1", function(d, colNum) { 
-				   					return yScale(d) + Y_AXIS_TOP_PADDING 
-				   				})
-				   			return yScale(d) + Y_AXIS_TOP_PADDING 
-				   		}) // one row element at a time
+				   			return yScale(d) + Y_AXIS_TOP_PADDING;
+				   		})
+				   		.attr("y1", function(d) {
+				   			return yScale(d) + Y_AXIS_TOP_PADDING;
+				   		})
 
 //				   		.call (function(d, i) { // start of transition.
 //				   		let circle = this;
