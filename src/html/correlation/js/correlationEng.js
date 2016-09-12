@@ -1332,25 +1332,11 @@ var CorrelationViz = function(width, height) {
 			return ( cl === "category1DotStick" || firstCl === "category2DotStick");
 		}
 		
-		var sortCompare = function(firstEl, secondEl) {
+		var sortCompare = function(firstStick, secondStick) {
 			
-			let firstSel = d3.select(firstEl);
-			let secSel = d3.select(secondEl);
+			let firstSel = d3.select(firstStick);
+			let secSel = d3.select(secondStick);
 
-			// Two circles?
-			if ( isCircle(firstSel) && isCircle(secSel) ) {
-				return 0; // order doesn't matter
-			}
-			
-			if (isCircle(firstSel) && isStick(secondSel)) {
-				return -1; // Circle should be on top.
-			}
-			
-			if ( isStick(firstSel) && isCircle(secondSel) ) {
-				return 1 // Circle should be on top.
-			}
-		
-			// Two sticks:
 			if ( firstSel.y1 < secSel.y1 ) {
 				return -1 // lower stick should show on top
 			} else {
