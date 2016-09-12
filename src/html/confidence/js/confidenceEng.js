@@ -1300,6 +1300,10 @@ var ConfidenceViz = function(width, height) {
 			d3.select('#allStatesDiv')
 			colBtnsVisible(true);
 			break;
+		case "step3":
+			d3.select('#allStatesDiv')
+			colBtnsVisible(true);
+			break;
 		case "reset":
 			// Restore true birth rates:
 			teenBirthObj = JSON.parse(JSON.stringify(origTeenBirthObj));

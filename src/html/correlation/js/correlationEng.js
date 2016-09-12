@@ -87,8 +87,9 @@ var CorrelationViz = function(width, height) {
 			logger.setUserId(uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			//*******logger = Logger(alerter);
-			logger = Logger(alerter, null, false); // REMOVE AFTER DEBUGGING TO RESTORE LOGIN!!!
+			logger = Logger(alerter);
+			// Disable login:
+			//****logger = Logger(alerter, null, false); // REMOVE AFTER DEBUGGING TO RESTORE LOGIN!!!
 		}
 		browserType = logger.browserType();
 		

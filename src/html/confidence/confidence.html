@@ -129,13 +129,14 @@
                           Finally, let's relate all this to the formula
                           for confidence intervals:
 
-                          $$ci = sampleMean \pm t_{4,1-(0.05/2)}*\frac{SampleSD}{\sqrt{n}}$$
+                          $$ci = sampleMean \pm t_{4,0.975}*\frac{SampleSD}{\sqrt{n}}$$
 
 						  The <i>4</i> in this formula is <i>df</i>, the 
 						  degrees of freedom. Unless you added states to the
 						  sample, we have sampled 5 states, making \(df=4\).
 						  <p>
-                          The <i>\(1-(0.05/2)\)</i> indicates that this statlet
+                          The <i>0.975</i> is computed from <i>\(1-(0.05/2)\)</i> 
+                          based on the fact that the statlet 
                           performs all its computations using \(\alpha=0.05\), 
                           and therefore produces a 95% confidence interval. Remember that
                           \(t_{4,1-0.05/2} = t_{4,0.975}\) is the value you read from
@@ -169,7 +170,7 @@
 
 	<!-- Until going hot: suppress login requirement -->
 	<script>
-	document.cookie = "stats60Uid = preFlight*";
+	<!-- document.cookie = "stats60Uid = preFlight*"; -->
 	</script>
 	
 	<!-- Main:  -->
