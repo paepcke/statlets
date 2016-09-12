@@ -1345,8 +1345,17 @@ var CorrelationViz = function(width, height) {
 			let circleAndSticksSel = d3.selectAll(".category1DotStick, .category2DotStick")
 											.filter(function() {
 												return d3.select(this).attr("state") === state;
-											})
-			circleAndSticksSel.sort(sortCompare);
+											});
+			//**** circleAndSticksSel.sort(sortCompare);
+			let circleAndStickNodes = circleAndSticksSel.nodes();
+			if ( circleAndStickNodes[0].y1.baseVal.value >= circleAndStickNodes[1].y1.baseVal.value ) {
+				 d3.select(circleAndStickNodes[0]).raise();
+				 d3.select(circleAndStickNodes[1]).lower();
+			} else {
+				 d3.select(circleAndStickNodes[0]).lower();
+				 d3.select(circleAndStickNodes[1]).raise();
+			}
+			
 		}
 		
 			
