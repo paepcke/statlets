@@ -327,14 +327,26 @@ var CorrelationViz = function(width, height) {
 				   		.attr("cy", function(d)  {
 				   			return yScale(d) + Y_AXIS_TOP_PADDING 
 				   		}) // one row element at a time
-				   	.each(function(d) {
+				   	.on("start",function(d, i) { // start of transition.
 				   		let circle = this;
 				   		let stickId = d3.select(circle).attr("stick");
 				   		d3.select("#" + stickId)
-				   			.attr("y1", function() {
-				   				return yScale(d) + Y_AXIS_TOP_PADDING;
-				   			})
-				   	})
+				   			verticalResetTransition
+				   				.attr("y1", function() {
+				   					return yScale(d) + Y_AXIS_TOP_PADDING;
+				   				})
+				   	});
+				   		
+				   		
+				   		
+//				   	.each(function(d) {
+//				   		let circle = this;
+//				   		let stickId = d3.select(circle).attr("stick");
+//				   		d3.select("#" + stickId)
+//				   			.attr("y1", function() {
+//				   				return yScale(d) + Y_AXIS_TOP_PADDING;
+//				   			})
+//				   	})
 		
 //		    // Updated lengths of all existing sticks:
 //			let existingSticksSel = d3.selectAll('.' + dotClass + 'Stick')
