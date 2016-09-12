@@ -135,14 +135,24 @@ h1          { text-align : center;  }
 		           transform: translate(-1.5em, -2em);
 				}
 
-.category1Dot      { fill : green; }
-.category2Dot      { fill : blue; }
+.category1Dot      { fill : green;
+					 position : fixed;
+					 z-index : 2;        /* highest in stack order */
+}
+.category2Dot      { fill : blue; 
+		 			position : fixed;
+		 			z-index : 2;        /* highest in stack order */ 
+}
 
 .category1DotStick { stroke       : green;
-					 stroke-width : 1.5px;  
+					 stroke-width : 1.5px;
+					 position : fixed;
+					 z-index : 1;
 }
 .category2DotStick { stroke       : blue;
-					 stroke-width : 1.5px;  
+					 stroke-width : 1.5px;
+					 position : fixed;
+					 z-index : 0;
 }
 
 

@@ -344,6 +344,7 @@ var CorrelationViz = function(width, height) {
 		    		})
 		    	})
 		    colNum = 0;
+			
 			   		
 			stateDotSel.enter() 
 				 // Add additional dots if now more data than before:
