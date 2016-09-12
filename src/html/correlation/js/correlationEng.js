@@ -320,67 +320,31 @@ var CorrelationViz = function(width, height) {
 				   		.delay(0.1)
 				   		.duration(800) // ms
 		    
+			let verticalStickResetTransition = 
+					d3.transition()
+				   		.delay(0.1)
+				   		.duration(800) // ms
+				   		
 		    stateDotSel
-		    	.transition(verticalResetTransition)
-		    		.each(function(yVal, i) {
-		    			let circle = this;
-		    			d3.select(circle)
-		    				.attr("cx", function(yVal)  { 
-		    					return xScale(states[colNum++]) + Math.round(bandWidth / 2.0) 
-		    				})
-		    				.attr("cy", function(yVal)  {
-		    					return yScale(yVal) + Y_AXIS_TOP_PADDING; 
-		    				})
-		    				.call(function(transition) {
-		    					let stickId = d3.select(circle).attr("stick");
-		    					d3.select("#" + stickId)
-		    						.attr("y1", function(d) {
-		    							return yScale(yVal) + Y_AXIS_TOP_PADDING;
-		    						})
-		    				})
+		    	.each(function(yVal, i) {
+		    		let circle = this;
+		    		d3.select(circle)
+		    		.transition(verticalResetTransition)
+		    		.attr("cx", function(yVal)  { 
+		    			return xScale(states[colNum++]) + Math.round(bandWidth / 2.0) 
 		    		})
+		    		.attr("cy", function(yVal)  {
+		    			return yScale(yVal) + Y_AXIS_TOP_PADDING; 
+		    		})
+		    		.call(function() {
+		    			let stickId = d3.select(circle).attr("stick");
+		    			d3.select("#" + stickId)
+		    			.transition(verticalResetTransition)
+		    			.attr("y1", yScale(yVal) + Y_AXIS_TOP_PADDING);
+		    		})
+		    	})
 		    colNum = 0;
-//				   		.call (function(d, i) { // start of transition.
-//				   		let circle = this;
-//				   		let stickId = d3.select(circle).attr("stick");
-//				   		d3.select("#" + stickId)
-//				   			verticalResetTransition
-//				   				.attr("y1", function() {
-//				   					return yScale(d) + Y_AXIS_TOP_PADDING;
-//				   				})
-//				   	});
-				   		
-				   		
-				   		
-//				   	.on("start",function(d, i) { // start of transition.
-//				   		let circle = this;
-//				   		let stickId = d3.select(circle).attr("stick");
-//				   		d3.select("#" + stickId)
-//				   			verticalResetTransition
-//				   				.attr("y1", function() {
-//				   					return yScale(d) + Y_AXIS_TOP_PADDING;
-//				   				})
-//				   	});
-				   		
-				   		
-				   		
-//				   	.each(function(d) {
-//				   		let circle = this;
-//				   		let stickId = d3.select(circle).attr("stick");
-//				   		d3.select("#" + stickId)
-//				   			.attr("y1", function() {
-//				   				return yScale(d) + Y_AXIS_TOP_PADDING;
-//				   			})
-//				   	})
-		
-//		    // Updated lengths of all existing sticks:
-//			let existingSticksSel = d3.selectAll('.' + dotClass + 'Stick')
-//				.data(function() { return row })
-//				.transition(verticalResetTransition)
-//					.attr("y1", function(d) {
-//						return yScale(d) + Y_AXIS_TOP_PADDING;
-//					});
-				   		
+			   		
 			stateDotSel.enter() 
 				 // Add additional dots if now more data than before:
 				   .append("circle")
@@ -397,7 +361,9 @@ var CorrelationViz = function(width, height) {
 				      .call(addDragBehavior(dotClasses, yScale, xScale, {vertical: true, horizontal: false}, UPDATE_TABLE));
 			
 			let stickData = []
-			
+
+			// Create a data series of objects used
+			// for the sticks from the x-axis to the dots:
 			d3.selectAll(`circle.${dotClass}`)
 				.each(function() {
 					let circle = this;
@@ -411,13 +377,6 @@ var CorrelationViz = function(width, height) {
 
 			let stateStickSel = svgData.selectAll('.' + dotClass + "Stick")
 					.data(stickData)
-					
-//			stateStickSel					
-//					// Update stick locations:
-//				   	.transition(verticalResetTransition)
-//				   		.attr("y1", function(stickEl) {
-//				   			return stickEl.circle.cy.baseVal.value;
-//				   		})
 					
 			stateStickSel
 				    .enter()
