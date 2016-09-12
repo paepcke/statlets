@@ -320,22 +320,38 @@ var CorrelationViz = function(width, height) {
 			stateDotSel
  				    // Update existing dots with (possibly) changed data:
 				   	.transition(verticalResetTransition)
-				   		.delay(0.1)
-				   		.duration(800) // ms
 				   		.attr("cx", function(d, colNum)  { return xScale(states[colNum]) + Math.round(bandWidth / 2.0) })
-				   	.transition(verticalResetTransition)
 				   		.attr("cy", function(d)  {
+				   			let circle = this;
+				   			let stickId = d3.select(circle).attr("stick");
+				   			d3.select("#" + stickId)
+				   				.attr("y1", function(d, colNum) { 
+				   					return yScale(d) + Y_AXIS_TOP_PADDING 
+				   				})
 				   			return yScale(d) + Y_AXIS_TOP_PADDING 
 				   		}) // one row element at a time
-				   	.on("start",function(d, i) { // start of transition.
-				   		let circle = this;
-				   		let stickId = d3.select(circle).attr("stick");
-				   		d3.select("#" + stickId)
-				   			verticalResetTransition
-				   				.attr("y1", function() {
-				   					return yScale(d) + Y_AXIS_TOP_PADDING;
-				   				})
-				   	});
+
+//				   		.call (function(d, i) { // start of transition.
+//				   		let circle = this;
+//				   		let stickId = d3.select(circle).attr("stick");
+//				   		d3.select("#" + stickId)
+//				   			verticalResetTransition
+//				   				.attr("y1", function() {
+//				   					return yScale(d) + Y_AXIS_TOP_PADDING;
+//				   				})
+//				   	});
+				   		
+				   		
+				   		
+//				   	.on("start",function(d, i) { // start of transition.
+//				   		let circle = this;
+//				   		let stickId = d3.select(circle).attr("stick");
+//				   		d3.select("#" + stickId)
+//				   			verticalResetTransition
+//				   				.attr("y1", function() {
+//				   					return yScale(d) + Y_AXIS_TOP_PADDING;
+//				   				})
+//				   	});
 				   		
 				   		
 				   		
