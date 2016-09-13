@@ -158,16 +158,17 @@ var ProbabilityViz = function(width, height) {
 		
 			   
   	    // Add text to the slot window:
-		let slotWindHeight = slotWindowSvg.select(".slotWindowRect").attr("height");
-		let slotWindWidth  = slotWindowSvg.select(".slotWindowRect").attr("width");
-		let veneerHeight   = slotWindowSvg.select(".topVeneer").attr("height");
+		let slotWinHeight  = parseInt(slotWindowSvg.select(".slotWindowRect").attr("height"));
+		let slotWinWidth   = parseInt(slotWindowSvg.select(".slotWindowRect").attr("width"));
+		let veneerHeight   = parseInt(topVeneer.attr("height"));
+		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2. 
 		slotWindowSvg
 			.append("text")
 				.text("Foo")
 				.attr("class", "slotWindowTxt")
 				//.attr("transform", `translate(10,40)`);
 				.attr("transform", 
-					  `translate(${slotWindWidth / 2.}, ${slotWindHeight / 2.})`
+					  `translate(${slotWinWidth / 2.}, ${toHalfSlotWinY})`
 						)
 			   
 		// addInnerShadow(slotWindowSvg);
