@@ -144,7 +144,21 @@ var ProbabilityViz = function(width, height) {
 			   .attr("x", SLOT_WINDOW_X)
 			   .attr("y", SLOT_WINDOW_Y)
 			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC) // 40% of module body.			   
+			   .attr("height", MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC) // 40% of module body.
+			   .attr("class", "slotWindowRect")
+
+  	    // Add text to the slot window:
+		let slotWindHeight = slotWindowSvg.select(".slotWindowRect").attr("height");
+		let slotWindWidth  = slotWindowSvg.select(".slotWindowRect").attr("width");
+		let veneerHeight   = slotWindowSvg.select(".topVeneer").attr("height");
+		slotWindowSvg
+			.append("text")
+				.text("Foo")
+				.attr("class", "slotWindowTxt")
+				//.attr("transform", `translate(10,40)`);
+				.attr("transform", 
+					  `translate(${slotWindWidth / 2.}, ${veneerHeight + slotWindHeight / 2.})`
+						)
 			   
 		// addInnerShadow(slotWindowSvg);
 			
@@ -180,6 +194,15 @@ var ProbabilityViz = function(width, height) {
 		    	)
 			    .attr("dy", ".35em");
 		
+	}
+	
+	/*---------------------------
+	| setSlotWindowTxt 
+	-----------------*/
+	
+	var setSlotWindowTxt = function(slotModuleSel, txt) {
+		
+		slotModuleSel.text(txt);
 	}
 	
 	/*---------------------------

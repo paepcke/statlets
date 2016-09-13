@@ -59,6 +59,15 @@ h1          { text-align : center;  }
 	/* filter  : url(#inset-shadow); */
 }
 
+.slotWindowRect {
+	
+}
+
+.slotWindowTxt {
+	fill		: red;
+	text-anchor : middle;
+}
+
 .topVeneer {
 	fill : rgb(93,109,126);
 	padding : 3px;
