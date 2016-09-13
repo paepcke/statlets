@@ -44,6 +44,33 @@ var ProbabilityViz = function(width, height) {
 	// Between slot window and go button:
 	var GO_BUTTON_TOP_GAP         = 30;
 
+	// Percentages of total deaths in 2013. This is an
+	// excerpt of all death causes. The numbers are converted
+	// to normalized probabilities in the constructor:
+	let DEATH_CAUSES = {
+			"Atherosclerotic heart disease" : 0.0778452,
+			"Bronchus or lung" : 0.0633627,
+			"Obstructive pulmonary disease" : 0.0407527,
+			"Stroke" : 0.0305610,
+			"Unspecified dementia" : 0.0297248,
+			"Alzheimer's disease" : 0.0281592,
+			"Accidental poisoning" : 0.0046834,
+			"Self-harm by firearm discharge" : 0.0045441,
+			"Assault with firearm discharge" : 0.0040516,
+			"Alcoholic cirrhosis of liver" : 0.0038670,
+			"Fall on same level" : 0.0023345,
+			"Pedestrian injured in collision" : 0.0009915,
+			"Exposure to natural cold" : 0.0002686,
+			"Bacterial infection" : 0.0002003,
+			"Sick sinus syndrome" : 0.0001744,
+			"Fall on and from ladder" : 0.0001584,
+			"Drowning while in bath-tub" : 0.0001466,
+			"Jumping/lying before moving object" : 0.0001444,
+			"Bicycle accident" : 0.0000718,
+			"Explosion of other materials" : 0.0000541,
+			"Furuncle and carbuncle of buttock" : 0.0000072,
+	};			
+	
 	
 	/*---------------------------
 	| constructor 
@@ -69,6 +96,13 @@ var ProbabilityViz = function(width, height) {
 			logger = Logger(alerter);
 		}
 		browserType = logger.browserType();
+		
+		// Turn death cause percentages to probabilities:
+		let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
+		let causes = Object.keys(DEATH_CAUSES);
+		for ( let i=0; i<normalizedProbs.length; i++ ) {
+			DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+		}
 
 		let machinesDiv = document.getElementById('machinesDiv');
 			
@@ -397,6 +431,30 @@ var ProbabilityViz = function(width, height) {
 		
 		return anSvg;  
 		
+	}
+	
+	/*---------------------------
+	| normalizeProbs 
+	-----------------*/
+	
+	var normalizeProbs = function(probArr) {
+		/*
+		 * Takes an array and returns an array
+		 * in which the elements add to 1. So
+		 * all elements are scaled to retain their
+		 * proportions, but they add to 1.
+		 */
+		
+		let sum = probArr.reduce(function(a,b) {
+			return a+b;
+		}, 0);
+		if ( sum === 0 ) {
+			return new Array(1+probArr.length).join('0').split('').map(parseFloat);
+		}
+		let normFactor = 1/sum;
+		return probArr.map(function(el) {
+			return el * normFactor;
+		})
 	}
 	
 	/*---------------------------
