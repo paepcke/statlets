@@ -67,6 +67,23 @@ case "${babelEnv}" in
         node_modules/.bin/browserify lib/html/correlation/js/correlationEng.js \
                                      -o lib/html/correlation/js/correlation.js
         ;;
+
+    probability)
+
+        echo "Babelizing statlet ${babelEnv}..."
+        node_modules/babel-cli/bin/babel.js src/html/ -d lib/html/
+
+        echo "Copying HTML..."
+        cp src/html/probability/*.css  lib/html/probability
+        cp src/html/probability/*.html lib/html/probability
+        cp src/html/utils/*.css src/html/utils/*.html lib/html/utils
+        cp src/html/utils/js/*.min.* lib/html/utils/js
+        
+        echo "Running Browserify to make package..."
+        node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
+                                     -o lib/html/probability/js/probability.js
+        ;;
+
     *)
         echo "Unknown statlet name '${babelEnv}'"
         exit 1

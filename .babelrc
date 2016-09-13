@@ -22,6 +22,19 @@
                       "src/html/utils/js/logging.js"
                      ],
             plugins: ["transform-runtime"]
+        },
+
+        probability: {
+            presets: ["es2015", "react"],
+            only:    ["src/html/probability/js/probabilityEng.js",
+                      "src/html/utils/js/tableManager.js",
+                      "src/html/utils/js/statsBarchartResizeHandler.js",
+                      "src/html/utils/js/statsDragClickHandler.js",
+                      "src/html/utils/js/softAlerts.js",
+                      "src/html/utils/js/cookieMonster.js",
+                      "src/html/utils/js/logging.js"
+                     ],
+            plugins: ["transform-runtime"]
         }
     }
 }
