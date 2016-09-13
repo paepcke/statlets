@@ -1,3 +1,6 @@
 .project
 .DS_Store
 .pydevproject
+.settings 
+lib
+node_modules
