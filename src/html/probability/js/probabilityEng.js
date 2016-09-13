@@ -33,8 +33,16 @@ var ProbabilityViz = function(width, height) {
 	var MACHINE_BODY_HEIGHT  = 300;
 	// Frame width around one slot window
 	// within a slot module:
-	var SLOT_WINDOW_X        = 4;
-	var SLOT_WINDOW_Y        = 4;
+	var SLOT_WINDOW_X             = 4;
+	var SLOT_WINDOW_Y             = 4;
+	// Percentage window size of module body height
+	var SLOT_WINDOW_HEIGHT_PERC   = 40/100;
+	// Percentage of button height of module body height:
+	var BUTTON_HEIGHT_PERC        = 10/100;
+	// Percentage of top veneer height of module body height:
+	var VENEER_HEIGHT_PERC        = 5/100;
+	// Between slot window and go button:
+	var GO_BUTTON_TOP_GAP         = 30;
 
 	
 	/*---------------------------
@@ -123,13 +131,55 @@ var ProbabilityViz = function(width, height) {
 			thisMachineSvg.attr("id", moduleId);
 		}
 		
-		thisMachineSvg
+		// Add the window for the text.
+		// Embed in its own svg to see whether
+		// we can figure out an inner shadow later:
+		let slotWindowSvg = thisMachineSvg
+			.append("svg")
+			   //.style("width", "90%")
+			   //.style("height", "40%")
+			   .attr("class", "slotWindowSvg")
+		slotWindowSvg
 			.append("rect")
-			   .attr("class", "slotWindow innerShadow")
 			   .attr("x", SLOT_WINDOW_X)
 			   .attr("y", SLOT_WINDOW_Y)
 			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * 40/100) // 40% of module body.
+			   .attr("height", MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC) // 40% of module body.			   
+			   
+		// addInnerShadow(slotWindowSvg);
+			
+		// Gray border at top of module:
+		let topVeneer = thisMachineSvg
+			.append("rect")
+			   .attr("x", SLOT_WINDOW_X)
+			   .attr("y", SLOT_WINDOW_Y)
+			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
+			   .attr("height", MACHINE_BODY_HEIGHT * VENEER_HEIGHT_PERC)
+			   .attr("class", "topVeneer");
+		
+		let goButton = thisMachineSvg
+			.append("rect")
+			   .attr("x", SLOT_WINDOW_X)
+			   .attr("y", SLOT_WINDOW_Y + 
+					   	  MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC +
+					   	  GO_BUTTON_TOP_GAP
+					   	  )
+			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
+			   .attr("height", MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC)
+			   .attr("class", "goButton");
+		
+		let goText = thisMachineSvg
+		    .append("text")
+		    	.text("Go")
+		    	.attr("class", "goText")
+		    	.attr("x", MACHINE_BODY_WIDTH / 2.)
+		    	.attr("y",SLOT_WINDOW_Y + 
+					   	  MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC +
+					   	  GO_BUTTON_TOP_GAP +            // vert middle of Go button:
+					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
+		    	)
+			    .attr("dy", ".35em");
+		
 	}
 	
 	/*---------------------------
@@ -266,6 +316,63 @@ var ProbabilityViz = function(width, height) {
 				.attr("class", "button sampleBtn");
 		}
 	} 
+
+	/*---------------------------
+	| addInnerShadow 
+	-----------------*/
+	
+	var addInnerShadow = function(anSvg) {
+		
+		var defs = anSvg.append("svg:defs");
+
+		var inset_shadow = defs.append("svg:filter")
+		.attr("id", "inset-shadow");
+
+		inset_shadow.append("svg:feOffset")
+		.attr({
+			dx:0,
+			dy:0
+		});
+
+		inset_shadow.append("svg:feGaussianBlur")
+		.attr({
+			stdDeviation:4,
+			result:'offset-blur'
+		});
+
+		inset_shadow.append("svg:feComposite")
+		.attr({
+			operator:'out',
+			in:'SourceGraphic',
+			in2:'offset-blur',
+			result:'inverse'
+		});
+
+		inset_shadow.append("svg:feFlood")
+		.attr({
+			'flood-color':'black',
+			'flood-opacity':.7,
+			result:'color'
+		});
+
+		inset_shadow.append("svg:feComposite")
+		.attr({
+			operator:'in',
+			in:'color',
+			in2:'inverse',
+			result:'shadow'
+		});
+
+		inset_shadow.append("svg:feComposite")
+		.attr({
+			operator:'over',
+			in:'shadow',
+			in2:'SourceGraphic'
+		});
+		
+		return anSvg;  
+		
+	}
 	
 	/*---------------------------
 	| log 

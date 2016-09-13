@@ -53,13 +53,25 @@ h1          { text-align : center;  }
 .machinesBody {
 	fill   : green;
 }
-.slotWindow   {
+.slotWindowSvg   {
 	fill    : rgb(246,239,238); /* very light gray */
+	padding : 3px;
+	/* filter  : url(#inset-shadow); */
+}
+
+.topVeneer {
+	fill : rgb(93,109,126);
 	padding : 3px;
 }
 
-.innerShadow {
-	box-shadow : inset 0px 0px 4px 0px; 
+.goButton {
+	fill : rgb(93,109,126);
+	padding : 3px;
+}
+
+.goText {
+	fill : rgb(242,243,244); /* Almost white */
+	text-anchor : middle;
 }
 
 /* -------------  OLD -------------- */
