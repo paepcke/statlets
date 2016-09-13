@@ -147,6 +147,16 @@ var ProbabilityViz = function(width, height) {
 			   .attr("height", MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC) // 40% of module body.
 			   .attr("class", "slotWindowRect")
 
+		// Gray border at top of module:
+		let topVeneer = thisMachineSvg
+			.append("rect")
+			   .attr("x", SLOT_WINDOW_X)
+			   .attr("y", SLOT_WINDOW_Y)
+			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
+			   .attr("height", MACHINE_BODY_HEIGHT * VENEER_HEIGHT_PERC)
+			   .attr("class", "topVeneer");
+		
+			   
   	    // Add text to the slot window:
 		let slotWindHeight = slotWindowSvg.select(".slotWindowRect").attr("height");
 		let slotWindWidth  = slotWindowSvg.select(".slotWindowRect").attr("width");
@@ -157,20 +167,11 @@ var ProbabilityViz = function(width, height) {
 				.attr("class", "slotWindowTxt")
 				//.attr("transform", `translate(10,40)`);
 				.attr("transform", 
-					  `translate(${slotWindWidth / 2.}, ${veneerHeight + slotWindHeight / 2.})`
+					  `translate(${slotWindWidth / 2.}, ${slotWindHeight / 2.})`
 						)
 			   
 		// addInnerShadow(slotWindowSvg);
 			
-		// Gray border at top of module:
-		let topVeneer = thisMachineSvg
-			.append("rect")
-			   .attr("x", SLOT_WINDOW_X)
-			   .attr("y", SLOT_WINDOW_Y)
-			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * VENEER_HEIGHT_PERC)
-			   .attr("class", "topVeneer");
-		
 		let goButton = thisMachineSvg
 			.append("rect")
 			   .attr("x", SLOT_WINDOW_X)
