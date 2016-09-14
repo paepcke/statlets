@@ -11,6 +11,8 @@ var ProbabilityViz = function(width, height) {
 
 	var width   	     = width;
 	var height  	     = height;
+	var slotWinWidth  	 = null;
+	var slotWinHeight 	 = null;
 	var dragClickHandler = null;
 	var currBtn		 	 = null; // Currently active exercise-step button.
 	
@@ -192,8 +194,8 @@ var ProbabilityViz = function(width, height) {
 		
 			   
   	    // Add text to the slot window:
-		let slotWinHeight  = parseInt(slotWindowSvg.select(".slotWindowRect").attr("height"));
-		let slotWinWidth   = parseInt(slotWindowSvg.select(".slotWindowRect").attr("width"));
+		slotWinHeight  = parseInt(slotWindowSvg.select(".slotWindowRect").attr("height"));
+		slotWinWidth   = parseInt(slotWindowSvg.select(".slotWindowRect").attr("width"));
 		let veneerHeight   = parseInt(topVeneer.attr("height"));
 		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2. 
 		slotWindowSvg
@@ -216,7 +218,11 @@ var ProbabilityViz = function(width, height) {
 					   	  )
 			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
 			   .attr("height", MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC)
-			   .attr("class", "goButton");
+			   .attr("class", "goButton")
+			   .on("click", function(evt) {
+				   let deathCauses = Object.keys(DEATH_CAUSES);
+				   setSlotWindowTxt(deathCauses[getRandomInt(0,deathCauses.length)]);
+			   });
 		
 		let goText = thisMachineSvg
 		    .append("text")
@@ -236,9 +242,11 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(slotModuleSel, txt) {
+	var setSlotWindowTxt = function(txt) {
 		
-		slotModuleSel.text(txt);
+		let txtSel = d3.select(".slotWindowTxt");
+		txtSel.text(txt);
+		wrapTxt(txtSel, slotWinWidth);
 	}
 	
 	/*---------------------------
@@ -455,6 +463,47 @@ var ProbabilityViz = function(width, height) {
 		return probArr.map(function(el) {
 			return el * normFactor;
 		})
+	}
+	
+	/*---------------------------
+	| getRandomInt 
+	-----------------*/
+	
+	/**
+	 * Returns a random integer between min (inclusive) and max (inclusive)
+	 * Using Math.round() will give you a non-uniform distribution!
+	 */
+	
+	var getRandomInt = function(min, max) {
+	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
+	/*---------------------------
+	| wrapTxt
+	-----------------*/
+
+	var wrapTxt = function(txtSel, width) {
+		txtSel.each(function() {
+			var text = d3.select(this),
+			words = text.text().split(/\s+/).reverse(),
+			word,
+			line = [],
+			lineNumber = 0,
+			lineHeight = 1.1, // ems
+			y = text.attr("y"),
+			dy = parseFloat(text.attr("dy")),
+			tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+			while (word = words.pop()) {
+				line.push(word);
+				tspan.text(line.join(" "));
+				if (tspan.node().getComputedTextLength() > width) {
+					line.pop();
+					tspan.text(line.join(" "));
+					line = [word];
+					tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+				}
+			}
+		});
 	}
 	
 	/*---------------------------
