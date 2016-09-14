@@ -27,6 +27,7 @@
         probability: {
             presets: ["es2015", "react"],
             only:    ["src/html/probability/js/probabilityEng.js",
+                      "src/html/probability/js/biasedEventGenerator.js",
                       "src/html/utils/js/tableManager.js",
                       "src/html/utils/js/statsBarchartResizeHandler.js",
                       "src/html/utils/js/statsDragClickHandler.js",

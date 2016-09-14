@@ -1,3 +1,4 @@
+import { EventGenerator } from "./biasedEventGenerator";
 import { StatsBarchartResizeHandler } from "./../../utils/js/statsBarchartResizeHandler";
 import { SoftAlert } from "./../../utils/js/softAlerts";
 import { CookieMonster } from "./../../utils/js/cookieMonster";
@@ -27,6 +28,8 @@ var ProbabilityViz = function(width, height) {
 	var cookieMonster    = null;
 	
 	var svgMachines      = null;
+	
+	var eventGenerator   = null;
 	
 	// Constants
 	
@@ -138,6 +141,7 @@ var ProbabilityViz = function(width, height) {
 			svgMachines.attr("viewBox", `0 -60 ${width} 500`);
 		}
 
+		eventGenerator = EventGenerator(DEATH_CAUSES);
 		createSlotModuleWell();
         addControlButtons();
 		
@@ -224,7 +228,7 @@ var ProbabilityViz = function(width, height) {
 			   .attr("class", "goButton")
 			   .on("click", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
-				   setSlotWindowTxt(deathCauses[getRandomInt(0,deathCauses.length)]);
+				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		
 		let goText = thisMachineSvg

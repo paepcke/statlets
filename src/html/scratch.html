@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Scratch</title>
-	<script type="text/javascript" src="js/cookieMonster.js"></script>	    	
     
 </head>
 <body>
@@ -10,23 +9,183 @@
 	
 	</div>
 	<script>
-	var monster = new CookieMonster();
-	var cookie  = monster.getCookie("test");
- 	alert(cookie); // null
-	monster.setCookie("test", "My un:safe=string");
-	alert(monster.getCookie("test")); // "My un:safe=string"
-	monster.delCookie("test")
-	alert(monster.getCookie("test"));  // null
-/	
-	monster.setCookie("test", "firstCookie");
-	monster.setCookie("test1", "secondCookie");
-	alert(monster.getCookie("test1")); // "secondCookie"
-	alert(monster.getCookie("test"));  // "firstCookie"
-	monster.delCookie("test1");        
-	alert(monster.getCookie("test1")); // null
-	monster.delCookie("test");
-	alert(monster.getCookie("test"));  // null
 	
+		var DEATH_CAUSES = {
+			"Athero sclerotic heart disease" : 0.0778452,
+			"Bronchus or lung" : 0.0633627,
+			"Obstructive pulmonary disease" : 0.0407527,
+			"Stroke" : 0.0305610,
+			"Unspecified dementia" : 0.0297248,
+			"Alzheimer's disease" : 0.0281592,
+			"Accidental poisoning" : 0.0046834,
+			"Self-harm by firearm discharge" : 0.0045441,
+			"Assault with firearm discharge" : 0.0040516,
+			"Alcoholic cirrhosis of liver" : 0.0038670,
+			"Fall on same level" : 0.0023345,
+			"Pedestrian vehicle collision" : 0.0009915,
+			"Exposure to natural cold" : 0.0002686,
+			"Bacterial infection" : 0.0002003,
+			"Sick sinus syndrome" : 0.0001744,
+			"Fall on or from ladder" : 0.0001584,
+			"Drowning in bath-tub" : 0.0001466,
+			"Jumping or lying before moving object" : 0.0001444,
+			"Bicycle accident" : 0.0000718,
+			"Explosion of other materials" : 0.0000541,
+			"Furuncle and carbuncle of buttock" : 0.0000072
+		};
+		
+		var probabilities = Object.values(DEATH_CAUSES);
+		var deathCauses   = Object.keys(DEATH_CAUSES);
+
+var AliasMethod;
+
+AliasMethod = (function() {
+
+  function AliasMethod(object) {
+    var avg, count, i, label, large, less, more, p, probabilities, small, sum, _i, _j, _len;
+    probabilities = [];
+    this.labelmap = [];
+    for (label in object) {
+      if (object.hasOwnProperty(label)) {
+        this.labelmap.push(label);
+        probabilities.push(object[label]);
+      }
+    }
+    count = probabilities.length;
+    sum = 0;
+    for (_i = 0, _len = probabilities.length; _i < _len; _i++) {
+      p = probabilities[_i];
+      sum += p;
+    }
+    probabilities = (function() {
+      var _j, _len1, _results;
+      _results = [];
+      for (_j = 0, _len1 = probabilities.length; _j < _len1; _j++) {
+        p = probabilities[_j];
+        _results.push(p / sum);
+      }
+      return _results;
+    })();
+    this.alias = [];
+    this.prob = [];
+    avg = 1 / count;
+    small = [];
+    large = [];
+    for (i = _j = 0; 0 <= count ? _j < count : _j > count; i = 0 <= count ? ++_j : --_j) {
+      if (probabilities[i] >= avg) {
+        large.push(i);
+      } else {
+        small.push(i);
+      }
+    }
+    while (!(small.length === 0 || large.length === 0)) {
+      less = small.pop();
+      more = large.pop();
+      this.prob[less] = probabilities[less] * count;
+      this.alias[less] = more;
+      probabilities[more] += probabilities[less] - avg;
+      if (probabilities[more] >= avg) {
+        large.push(more);
+      } else {
+        small.push(more);
+      }
+    }
+    while (small.length !== 0) {
+      this.prob[small.pop()] = 1;
+    }
+    while (large.length !== 0) {
+      this.prob[large.pop()] = 1;
+    }
+  }
+
+  AliasMethod.prototype.next = function() {
+    var col;
+    col = Math.floor(Math.random() * this.prob.length);
+    if (Math.random() < this.prob[col]) {
+      return this.labelmap[col];
+    } else {
+      return this.labelmap[this.alias[col]];
+    }
+  };
+
+  return AliasMethod;
+
+})();		
+		
+deathCauseGenerator = new AliasMethod(DEATH_CAUSES);
+
+		
+		
+// 		function generate_random_question_selector(probabilities, deathCauses) {
+// 			// Generates a random selector function using the Alias Method
+// 			// for discrete probability distributions (see
+// 			// https://en.wikipedia.org/wiki/Alias_method for an explanation)
+// 			var i = 0;
+// 			// var probabilities = [], aliases = [];
+// 			var probSum = 0;
+// 			//****
+// 			var aliases = deathCauses;
+
+// 			/* ... Business logic to fill probabilities array ... */
+
+// 			// Normalize all probabilities to average to 1
+// 			// and categorize each probability as to where it fits
+// 			// in that scale
+// 			//****var probMultiplier = probabilities.length / probSum;
+// 			var probMultiplier = probabilities.length;
+// 			var overFull = [], underFull = [];
+// 			probabilities = probabilities.map(function(p, i) {
+// 				var newP = p * probMultiplier;
+// 				if (newP > 1)
+// 					overFull.push(i);
+// 				else if (newP < 1)
+// 					underFull.push(i);
+// 				else if (newP !== 1) {
+// 					throw "Non-numerical value got into scores";
+// 				}
+// 				return newP;
+// 			});
+// 			overFull.sort();
+// 			underFull.sort();
+
+// 			// Process both queues by having each under-full entry
+// 			// have the rest of its space occupied by the fullest
+// 			// over-full entry, re-categorizing the over-full entry
+// 			// as needed
+// 			while (overFull.length > 0 || underFull.length > 0) {
+// 				if (!(overFull.length > 0 && underFull.length > 0)) {
+// 					// only reached due to rounding errors.
+// 					// Just assign all the remaining probabilities to 1
+// 					var notEmptyArray = overFull.length > 0 ? overFull
+// 							: underFull;
+// 					notEmptyArray.forEach(function(index) {
+// 						probabilities[index] = 1;
+// 					});
+// 					break; // get out of the while loop
+// 				}
+
+// 				aliases[underFull[0]] = overFull[0];
+// 				probabilities[overFull[0]] += probabilities[underFull[0]] - 1;
+// 				underFull.shift();
+// 				if (probabilities[overFull[0]] > 1)
+// 					overFull.push(overFull.shift());
+// 				else if (probabilities[overFull[0]] < 1)
+// 					underFull.push(overFull.shift());
+// 				else
+// 					overFull.shift();
+// 			}
+
+// 			return function() {
+// 				var index = Math.floor(Math.random() * probabilities.length);
+// 				return Math.random() < probabilities[index] ? index
+// 						: aliases[index];
+// 			}
+// 		}
+		
+// 		var selFunc = generate_random_question_selector(probabilities, deathCauses);
+// 		var getCause = function() {
+// 			return deathCauses[selFunc()];
+// 		}
 	</script>
 	
 </body>
