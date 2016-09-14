@@ -45,12 +45,15 @@ var ProbabilityViz = function(width, height) {
 	var VENEER_HEIGHT_PERC        = 5/100;
 	// Between slot window and go button:
 	var GO_BUTTON_TOP_GAP         = 30;
+	// Padding between slot window text and the left
+	// edge of the slot window:
+	var SLOT_WINDOW_LEFT_PADDING  = 4;
 
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
 	// to normalized probabilities in the constructor:
 	let DEATH_CAUSES = {
-			"Atherosclerotic heart disease" : 0.0778452,
+			"Athero sclerotic heart disease" : 0.0778452,
 			"Bronchus or lung" : 0.0633627,
 			"Obstructive pulmonary disease" : 0.0407527,
 			"Stroke" : 0.0305610,
@@ -61,16 +64,16 @@ var ProbabilityViz = function(width, height) {
 			"Assault with firearm discharge" : 0.0040516,
 			"Alcoholic cirrhosis of liver" : 0.0038670,
 			"Fall on same level" : 0.0023345,
-			"Pedestrian injured in collision" : 0.0009915,
+			"Pedestrian vehicle collision" : 0.0009915,
 			"Exposure to natural cold" : 0.0002686,
 			"Bacterial infection" : 0.0002003,
 			"Sick sinus syndrome" : 0.0001744,
-			"Fall on and from ladder" : 0.0001584,
-			"Drowning while in bath-tub" : 0.0001466,
-			"Jumping/lying before moving object" : 0.0001444,
+			"Fall on or from ladder" : 0.0001584,
+			"Drowning in bath-tub" : 0.0001466,
+			"Jumping or lying before moving object" : 0.0001444,
 			"Bicycle accident" : 0.0000718,
 			"Explosion of other materials" : 0.0000541,
-			"Furuncle and carbuncle of buttock" : 0.0000072,
+			"Furuncle and carbuncle of buttock" : 0.0000072
 	};			
 	
 	
@@ -197,14 +200,14 @@ var ProbabilityViz = function(width, height) {
 		slotWinHeight  = parseInt(slotWindowSvg.select(".slotWindowRect").attr("height"));
 		slotWinWidth   = parseInt(slotWindowSvg.select(".slotWindowRect").attr("width"));
 		let veneerHeight   = parseInt(topVeneer.attr("height"));
-		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2. 
+		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2.
+		let toQuarterSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 4.
 		slotWindowSvg
 			.append("text")
 				.text("Foo")
 				.attr("class", "slotWindowTxt")
-				//.attr("transform", `translate(10,40)`);
 				.attr("transform", 
-					  `translate(${slotWinWidth / 2.}, ${toHalfSlotWinY})`
+					  `translate(${slotWinWidth / 2.}, ${toQuarterSlotWinY})`
 						)
 			   
 		// addInnerShadow(slotWindowSvg);
@@ -246,7 +249,8 @@ var ProbabilityViz = function(width, height) {
 		
 		let txtSel = d3.select(".slotWindowTxt");
 		txtSel.text(txt);
-		wrapTxt(txtSel, slotWinWidth);
+		// Wrap text within slot window; padding left and right:
+		wrapTxt(txtSel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
 	}
 	
 	/*---------------------------
@@ -482,7 +486,27 @@ var ProbabilityViz = function(width, height) {
 	| wrapTxt
 	-----------------*/
 
-	var wrapTxt = function(txtSel, width) {
+	var wrapTxt = function(txtSel, width, sidePadding) {
+		/*
+		 * Given a text object selection and a width in
+		 * pixels, make lines fit into horizontal space by
+		 * checking for line length after each word.
+		 * Overflow can still happen vertically.
+		 * 
+		 * :param txtSel: d3 selection of a text element
+		 * :type txtSel: d3-selection
+		 * :param width: pixel width of space into which text must fit
+		 * :type width: { float | int }
+		 * :param sidePadding: pixel distance from left edge of container. NOT WORKING!
+		 * :type sidePadding: { float | int }
+		 */
+		
+		if ( typeof (sidePadding) !== "undefined" ) {
+			width -= 2*sidePadding;
+		} else {
+			sidePadding = 0;
+		}
+		sidePadding = sidePadding.toString();
 		txtSel.each(function() {
 			var text = d3.select(this),
 			words = text.text().split(/\s+/).reverse(),
@@ -491,8 +515,16 @@ var ProbabilityViz = function(width, height) {
 			lineNumber = 0,
 			lineHeight = 1.1, // ems
 			y = text.attr("y"),
-			dy = parseFloat(text.attr("dy")),
-			tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+			dy = text.attr("dy");
+			
+			if ( dy === null ) {
+				dy = 0.0;				
+			} else {
+				dy = parseFloat(text.attr("dy"));
+			}
+			if ( y === null ) { y = "0"};
+
+			var tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
 			while (word = words.pop()) {
 				line.push(word);
 				tspan.text(line.join(" "));
@@ -500,7 +532,13 @@ var ProbabilityViz = function(width, height) {
 					line.pop();
 					tspan.text(line.join(" "));
 					line = [word];
-					tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+					tspan = text
+							 .append("tspan")
+								.attr("x", sidePadding)
+								.attr("y", y)
+								.attr("dy", ++lineNumber * lineHeight + dy + "em")
+								.attr("text-anchor", "middle")
+								.text(word);
 				}
 			}
 		});
