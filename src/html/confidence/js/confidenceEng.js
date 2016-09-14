@@ -1347,6 +1347,6 @@ var ConfidenceViz = function(width, height) {
 	
 	return constructor(width, height);
 }
-var ciViz = ConfidenceViz(700, 400);
+var ciViz = ConfidenceViz(700, 600);
 
 var bar = 10;	

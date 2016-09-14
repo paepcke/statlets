@@ -44,8 +44,20 @@ h1          { text-align : center;  }
            background-color : #F6F6F6;
          }
          
+.distribDiv { 
+           /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
+           flex : 1 1;
+           flex-basis : 20%;
+           background-color : #F6F6F6;
+         }
+         
 .machinesSvg  {
     border   : 1px solid BurlyWood;
+    overflow : scroll;
+}
+
+.distribSvg  {
+    border : 1px solid BurlyWood;
     overflow : scroll;
 }			
 

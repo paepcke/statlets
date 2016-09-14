@@ -22,16 +22,32 @@ var ProbabilityViz = function(width, height) {
 	var xDomainAllStates = null;
 	var xDomainSaved     = null;
 	
+	var tooltipDivSel    = null;
+	var tooltipTxtSel	 = null;
+	
+	var scalesDistrib    = null;
+	var distribCauses    = null;
+	
 	var browserType      = null;
 	var alerter          = null;
 	var logger           = null;
 	var cookieMonster    = null;
 	
-	var svgMachines      = null;
+	var machinesSvg      = null;
+	var distribSvg       = null;
 	
 	var eventGenerator   = null;
 	
+	var selectedSlotModules = [];
+	
 	// Constants
+	
+	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
+	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
+	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
+	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
+	const Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
+	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	// Dimensions of one slot module:
 	var MACHINE_BODY_WIDTH   = 100;
@@ -105,13 +121,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		browserType = logger.browserType();
 		
-		// Turn death cause percentages to probabilities:
-		let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
-		let causes = Object.keys(DEATH_CAUSES);
-		for ( let i=0; i<normalizedProbs.length; i++ ) {
-			DEATH_CAUSES[causes[i]] = normalizedProbs[i];
-		}
-
+		normalizeDeathCauses();
 		let machinesDiv = document.getElementById('machinesDiv');
 			
 		width  = machinesDiv.clientWidth;
@@ -129,23 +139,54 @@ var ProbabilityViz = function(width, height) {
 		d3.select('#machinesDiv')
 			.style("height", height + 40)
 					
-		svgMachines = d3.select("#machinesDiv").append("svg")
+		machinesSvg = d3.select("#machinesDiv").append("svg")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("id", "machinesSvg")
 		.attr("class", "machinesSvg")
 		
 		if (browserType === 'Firefox1+') {
-			svgMachines.attr("viewBox", `0 -60 ${width} 500`);
+			machinesSvg.attr("viewBox", `0 -60 ${width} 500`);
 		} else {
-			svgMachines.attr("viewBox", `0 -60 ${width} 500`);
+			machinesSvg.attr("viewBox", `0 -60 ${width} 500`);
+		}
+		
+		distribSvg = d3.select("#distribDiv").append("svg")
+		   .attr("width", "100%")
+		   .attr("height", "100%")
+		   .attr("id", "distribSvg")
+		   .attr("class", "distribSvg")
+		
+		if (browserType === 'Firefox1+') {
+			distribSvg.attr("viewBox", `0 -60 ${width} 500`);
+		} else {
+			distribSvg.attr("viewBox", `0 -60 ${width} 500`);
 		}
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
 		createSlotModuleWell();
+		createCauseDistrib();
+		createTooltip() 
         addControlButtons();
 		
 		return {}
+	}
+	
+	/*---------------------------
+	| createTooltip 
+	-----------------*/
+	
+	var createTooltip = function() {
+		
+		// Define the div for the tooltip
+		
+		tooltipDivSel = d3.select("body")
+							.append("div")	
+							   .attr("class", "div tooltip");
+		tooltipTxtSel = tooltipDivSel					   
+						.append("text")
+						  .attr("class", "div tooltip state")
+						  .text("");
 	}
 	
 	/*---------------------------
@@ -159,7 +200,7 @@ var ProbabilityViz = function(width, height) {
 		 * that contains the parts of the machine.
 		 */
 
-		let thisMachineSvg = svgMachines
+		let thisMachineSvg = machinesSvg
 		   .append("svg")
 			  .attr("class", "slotModuleAssembly")
 		thisMachineSvg
@@ -242,6 +283,203 @@ var ProbabilityViz = function(width, height) {
 					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
 		    	)
 			    .attr("dy", ".35em");
+		
+	}
+	
+	/*---------------------------
+	| createCauseDistrib
+	-----------------*/
+	
+	var createCauseDistrib = function() {
+		
+		let distribDiv = document.getElementById('distribDiv');
+			
+		width  = distribDiv.clientWidth;
+		height = distribDiv.clientHeight;
+		
+		//*************
+		height = 400;
+		//*************			
+		
+
+		// The "+40" is a kludge! It accounts
+		// for the additional space that the x-axis
+		// labels will take once they are rotated
+		// 45 degrees: 
+		d3.select('#distribDiv')
+			.style("height", height + 40)
+					
+		dragClickHandler = StatsBarchartResizeHandler(distribSvg);
+		
+        yDomain      = [0, 1];
+        xDomain      = Object.keys(DEATH_CAUSES);
+        
+        // Remember original samples for resetting (via reset button):
+        xDomainSaved = xDomain.map(function(el) { return el });
+        
+        // Argument for makeCoordSys:
+        let extentDict  = {svg           : distribSvg, 
+        				   x: {scaleType : 'ordinal',
+        					   domain    : xDomain,
+        					   axisLabel : 'Cause of Death Probabilities',
+        					 axisLabelId : 'distribXLabel',
+        					 axisGrpName : 'distribXAxisGrp'
+            				  },
+            			   y: {scaleType : 'linear',
+            				      domain : yDomain,
+            				   axisLabel : 'Probability US 2013',
+            			     axisLabelId : 'distribYLabel',
+            			     axisGrpName : 'distribYAxisGrp'            			    	 
+            			      }
+                          };
+
+		scalesDistrib = makeCoordSys(extentDict);
+				
+		// Generate bar chart for cause of death probabilities:
+        updateDistribChart(DEATH_CAUSES, scalesDistrib);
+	}
+	
+	/*---------------------------
+	| updateDistribChart
+	-----------------*/
+	
+	var updateDistribChart = function(deathCauseObj, scalesDistrib) {
+		
+		let xScale = scalesDistrib.xScale;
+		let yScale = scalesDistrib.yScale;
+		let causesToInclude = xDomain;
+		
+		// Get function barPulled() 
+		// a chance to see which bar moved, and to mirror
+		// on the confidence interval chart:
+		let dispatch = d3.dispatch('drag', barPulled);
+		dispatch.on("drag.deathCauseBar", barPulled);
+				
+		d3.select('#distribSvg').selectAll('.deathCauseBar')
+			// Data are the states:
+			.data(causesToInclude)
+			 // Narrow existing bars:
+	      	.attr('x', function(causeOfDeath) { return xScale(causeOfDeath) })
+	      	.attr('width', xScale.bandwidth())
+	      .enter().append("rect")
+	      	.attr('class', 'deathCauseBar')
+	      	.attr('id', function(deathCause) { 
+	      		return 'distribgBar' + deathCause })
+	      	.attr('deathCause', function(deathCause) { return deathCause } )
+	      	.attr('x', function(deathCause) { return xScale(deathCause) })
+	      	.attr('width', xScale.bandwidth())
+	      	.attr('y', function(deathCause) { return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING })
+	      	.attr('height', function(deathCause) { return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) })
+	      	.on("mouseover", function() {
+	      		let evt         = d3.event;
+	      		let deathCause	= d3.select(this).attr("deathCause");
+
+	      		tooltipTxtSel.html(deathCause + '<p><i>Drag me up or down</i>');
+	      		let txtWidth  = tooltipTxtSel.node().getBoundingClientRect().width;
+	      		let txtHeight = tooltipTxtSel.node().getBoundingClientRect().height;	      		
+
+	      		let tooltipHeight = tooltipDivSel.node().getBoundingClientRect().height;
+	      		tooltipDivSel.style("left", `${evt.pageX}px`)
+	      		.style("top", `${evt.pageY - tooltipHeight}px`)
+	      		.style("width", txtWidth)
+	      		.style("height", txtHeight);
+
+	      		tooltipDivSel.classed("visible", true);
+	      		tooltipTxtSel.classed("visible", true);
+	      		
+	      		d3.timeout(function(elapsed) {
+	      			tooltipDivSel.classed("visible", false);
+	      			tooltipTxtSel.classed("visible", false);
+	      		}, 1000);
+	      		
+	      	})
+	      	.on("mouseleave", function(evt) {
+	      		tooltipTxtSel.classed("visible", false);
+	      		tooltipDivSel.classed("visible", false);
+	      	})
+	      	
+	      	// Attach drag-start behavior to this bar.
+	      	// Couldn't get a separate function to work
+	      	// here: The dragstart/drag/dragend below should
+	      	// be in a function that returns the behavior.
+	      	// Didn't work.
+	      	.call(d3.drag()
+				.on('start', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let barSel = d3.select(this);
+					
+					// Is the element one of our bars?
+					if (barSel.attr('class') !== 'teenBirthBar') {
+						// Was running mouse over something other than
+						// one of our circles:
+						return;
+					}
+					
+					// Allow us to style a moving bar if we want:
+					barSel.classed("dragging", true);
+
+					// Remember the bar that's in motion:
+					d3.drag.currBar = this;
+					
+				})
+				.on('drag', function(d) {
+					let barSel = d3.select(this);
+					if (barSel.empty()) {
+						// Not over a bar:
+						return;
+					} 
+					
+					let mouseY  = d3.event.y;
+					let barX = barSel.attr('x');
+					let barY = barSel.attr('y');
+					
+					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
+						// Mouse got ahead of the bar being resized.
+						// Select the bar we are dragging instead:
+						barSel = d3.select(d3.drag.currBar);
+						if (barSel.empty()) {
+							// Not over a bar:
+							return;
+						} 
+					}
+					
+					if (! barSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					dragClickHandler.dragmove(barSel);
+					// Let interested parties know that a bar was resized.
+					// Used to sync (synchronize) CI chart with data chart:
+					//******dispatch.drag(this, barSel);
+					dispatch.call("drag", this, barSel);
+				})
+				.on ('end', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.drag.currBar = undefined;
+					log("dragDeathCause")
+				})
+	      	)
+	}
+	
+	
+	/*---------------------------
+	| barPulled
+	-----------------*/
+	
+	var barPulled = function(distribBarSel) {
+		/*
+		 * Called when a cause-of-death distribution bar is dragged up or down.
+		 * Updates probabilities in selected slot module.
+		 */
+		
+		let deathCause = dataBarSel.attr("deathCause");
+		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
+		DEATH_CAUSES[deathCause] = deathProb;
+		normalizeDeathCauses();
+		updateDistribChart(DEATH_CAUSES, scalesDistrib);
 		
 	}
 	
@@ -346,19 +584,19 @@ var ProbabilityViz = function(width, height) {
 		
 		switch (stepName) {
 		case 'home':
-			d3.select("#allStatesDiv")
+			d3.select("#machinesDiv")
 			colBtnsVisible(false);
 			break;
 //		case "step1":
-//			d3.select('#allStatesDiv')
+//			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
 //			break;
 //		case "step2":
-//			d3.select('#allStatesDiv')
+//			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
 //			break;
 //		case "step3":
-//			d3.select('#allStatesDiv')
+//			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
 //			break;
 //		case "reset":
@@ -548,6 +786,212 @@ var ProbabilityViz = function(width, height) {
 		});
 	}
 	
+	/*---------------------------
+	| makeCoordSys 
+	-----------------*/
+	
+	var makeCoordSys = function(extentDict) {
+		
+		/*
+		 * :param extentDict:
+		 *  	extentDict: {
+		 *  	               x : {scaleType    : <linear | ordinal | time> },
+		 *  	                       domain    : <[min,max]>                   // if linear scale
+		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
+		 *  	                     axisLabelId : <axis description>
+		 *  	                       subclass  : <additionalClass>             // optional
+		 *  						 rightPadding: <padding-right px>            // optional
+		 *  						 axisGrpName : <ID for axis group>           // optional
+		 *  	                   },
+		 *  	               y : {scaleType    : <linear | ordinal | time> },
+		 *  	                       domain    : <[min,max]>                   // if linear scale
+		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
+		 *  	                     axisLabelId : <axis description>
+		 *  	                       subclass  : <additionalClass>             // optional
+		 *  						 axisGrpName : <ID for axis group>           // optional
+		 *  	            }
+		 *      Notes:
+		 *          o <axis description> is the label for an axis is a
+		 *            whole, i.e. not the tick labels.
+		 *          o <additionalClass>, if present, will be used to
+		 *            class the axis *in addition to* class "axis".
+		 *            Example: <additionalClass> == 'noTicks' will 
+		 *                     cause the axis to be of CSS class axis.noTicks.
+		 *                     
+		 * Returns an object with three properties: xScale, yScale,
+		 * and bandWidth, the width in pixels between two x-axis ticks.
+		 * 
+		 */
+		
+		/* ---------------------------- X AXIS ---------------------------- */		
+
+		let svg = extentDict.svg;
+		let yAxis     = null;
+		let xScale    = null;
+		let yScale    = null;
+		let bandWidth = null; // width in pixels between two x-axis ticks.
+
+		let X_AXIS_RIGHT = X_AXIS_RIGHT_PADDING;
+		
+		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
+			X_AXIS_RIGHT = extentDict.x.rightPadding; 
+		}
+		
+		// X Scale:
+		
+		switch(extentDict.x.scaleType) {
+		case 'linear':
+			xScale = d3.scaleLinear()
+							 .domain(extentDict.x.domain)
+							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
+			break;
+		case 'ordinal':
+			xScale = d3.scaleBand()
+							 .domain(extentDict.x.domain)
+							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT])
+							 .paddingInner(0.1);
+							 
+			// Width between two ticks is (for instance) pixel-pos
+			// at first domain value minus pixel pos at zeroeth domain
+			// value:
+			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
+
+		break;
+		default:
+			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+		}
+		
+
+		// Y Scale
+		switch(extentDict.y.scaleType) {
+		case 'linear':
+			yScale = d3.scaleLinear()	
+			 			 .domain(extentDict.y.domain)
+						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
+			break;
+		case 'ordinal':
+			yScale = d3.scaleBand()
+							 .domain(extentDict.y.domain)
+							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING])
+							 .innerPadding(0.1);
+			break;
+		default:
+			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
+		}
+		
+		// Make the visual coordinate system:
+		
+		// Create a group, and call the xAxis function to create the axis.
+		let xAxisGroup = distribSvg.append("g")
+			 .attr("class", "axis")
+			 .attr("id", "xAxisGrp")
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .call(d3.axisBottom(xScale));
+		
+		//xAxis = d3.select("#xAxisGrp .*******)
+		   
+		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
+			xAxisGroup.classed(extentDict.x.subclass, true)
+		}
+		
+		if (typeof(extentDict.x.axisGrpName) !== 'undefined') {
+			xAxisGroup.attr('id', extentDict.x.axisGrpName);
+		}
+		
+		// For ordinal X-axes: rotate tick labels by 45%
+		// and move them to center between x-axis ticks:
+		if (extentDict.x.scaleType == 'ordinal') {
+			
+			// Find distance between X-ticks;
+			// xScale.range() returns array with
+			// pixel coords of each tick:
+			let tickArr    = xScale.range();
+			let tickWidth  = tickArr[1] - tickArr[0];
+			let txtSel     = xAxisGroup.selectAll("text");
+			
+	    	txtSel
+		    	.attr("y", 0)
+		    	.attr("x", 0)
+		    	.attr("class", "axis x label");
+		    	//*****.attr("transform", "rotate(45)")
+		    	//*****.style("text-anchor", "start")
+		}
+		
+		/* ---------------------------- Y AXIS ---------------------------- */		
+		
+		// Create a group, and call the xAxis function to create the axis:
+		let yAxisGroup = svg.append("g")
+			 .attr("class", "axis")
+			 .attr("id", "yAxisGrp")
+			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
+			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
+		     .call(d3.axisLeft(yScale));
+
+		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
+			yAxisGroup.classed(extentDict.y.subclass, true)
+		}
+		
+		if (typeof(extentDict.y.axisGrpName) !== 'undefined') {
+			yAxisGroup.attr('id', extentDict.y.axisGrpName);
+		}
+		
+		
+		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
+		
+		let xAxisLabel = svg.append("text")
+						.attr("class", "x label")
+						.attr("id", extentDict.x.axisLabelId)
+						.attr("text-anchor", "middle")
+						.attr("x", width / 2.0)
+						.attr("y", height + 20)
+						.text(extentDict.x.axisLabel)
+						
+		let yAxisLabel = svg.append("text")
+						.attr("class", "axis y label")
+						.attr("id", extentDict.y.axisLabelId)
+						.text(extentDict.y.axisLabel)
+						
+		d3.selectAll('.axis text').classed('unselectable', true);			
+		d3.selectAll('.x.label').classed('unselectable', true);
+		d3.selectAll('.y.label').classed('unselectable', true);
+		
+		return {xScale    : xScale,
+				yScale    : yScale,
+				bandWidth : bandWidth,
+			   }
+	}
+	
+	/*---------------------------
+	| normalizeDeathCauses 
+	-----------------*/
+
+	var normalizeDeathCauses = function() {
+		
+		// Turn death cause percentages to probabilities:
+		let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
+		let causes = Object.keys(DEATH_CAUSES);
+		for ( let i=0; i<normalizedProbs.length; i++ ) {
+			DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+		}
+	}
+	
+	/*---------------------------
+	| createTooltip 
+	-----------------*/
+	
+	var createTooltip = function() {
+		
+		// Define the div for the tooltip
+		
+		tooltipDivSel = d3.select("body")
+							.append("div")	
+							   .attr("class", "div tooltip");
+		tooltipTxtSel = tooltipDivSel					   
+						.append("text")
+						  .attr("class", "div tooltip state")
+						  .text("");
+	}
+
 	/*---------------------------
 	| log 
 	-----------------*/
