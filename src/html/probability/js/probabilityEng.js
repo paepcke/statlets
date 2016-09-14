@@ -311,7 +311,7 @@ var ProbabilityViz = function(width, height) {
 					
 		dragClickHandler = StatsBarchartResizeHandler(distribSvg);
 		
-        yDomain      = [0, 1];
+        yDomain      = [0, Math.max.apply(null, Object.values(DEATH_CAUSES))];
         xDomain      = Object.keys(DEATH_CAUSES);
         
         // Remember original samples for resetting (via reset button):
@@ -411,7 +411,7 @@ var ProbabilityViz = function(width, height) {
 					let barSel = d3.select(this);
 					
 					// Is the element one of our bars?
-					if (barSel.attr('class') !== 'teenBirthBar') {
+					if (barSel.attr('class') !== 'deathCauseBar') {
 						// Was running mouse over something other than
 						// one of our circles:
 						return;
@@ -475,7 +475,7 @@ var ProbabilityViz = function(width, height) {
 		 * Updates probabilities in selected slot module.
 		 */
 		
-		let deathCause = dataBarSel.attr("deathCause");
+		let deathCause = distribBarSel.attr("deathCause");
 		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
 		DEATH_CAUSES[deathCause] = deathProb;
 		normalizeDeathCauses();
