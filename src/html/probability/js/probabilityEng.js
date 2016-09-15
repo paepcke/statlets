@@ -48,7 +48,8 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	const Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
+	//******const Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
+	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	// Dimensions of one slot module:
@@ -102,7 +103,7 @@ var ProbabilityViz = function(width, height) {
 	| constructor 
 	-----------------*/
 	
-	var constructor = function() {
+	var constructor = function(width, height) {
 
 		// For non-modal alerts:
 		alerter     = SoftAlert();
@@ -126,8 +127,8 @@ var ProbabilityViz = function(width, height) {
 		normalizeDeathCauses();
 		let machinesDiv = document.getElementById('machinesDiv');
 			
-		width  = machinesDiv.clientWidth;
-		height = machinesDiv.clientHeight;
+		//******width  = machinesDiv.clientWidth;
+		//******height = machinesDiv.clientHeight;
 		
 		//*************
 		//height = 400;
@@ -138,31 +139,32 @@ var ProbabilityViz = function(width, height) {
 		// for the additional space that the x-axis
 		// labels will take once they are rotated
 		// 45 degrees: 
-		d3.select('#machinesDiv')
-			.style("height", height + 40)
+//		d3.select('#machinesDiv')
+//			//*****.style("height", height + 40)
+//			.attr("height", "100%")
 					
 		machinesSvg = d3.select("#machinesDiv").append("svg")
-		.attr("width", "100%")
-		.attr("height", "100%")
+		// .attr("width", "100%")
+		//.attr("height", "100%")
 		.attr("id", "machinesSvg")
 		.attr("class", "machinesSvg")
 		
 		if (browserType === 'Firefox1+') {
-			machinesSvg.attr("viewBox", `0 -60 ${width} 500`);
+			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
 		} else {
-			machinesSvg.attr("viewBox", `0 -60 ${width} 500`);
+			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
 		}
 		
 		distribSvg = d3.select("#distribDiv").append("svg")
-		   .attr("width", "100%")
-		   .attr("height", "100%")
+		   .attr("width", "300")
+		   .attr("height", "600")
 		   .attr("id", "distribSvg")
 		   .attr("class", "distribSvg")
 		
 		if (browserType === 'Firefox1+') {
-			distribSvg.attr("viewBox", `0 -60 ${width} 500`);
+			distribSvg.attr("viewBox", `0 -60 ${width} 600`);
 		} else {
-			distribSvg.attr("viewBox", `0 -60 ${width} 500`);
+			distribSvg.attr("viewBox", `0 -60 ${width} 600`); //****
 		}
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
@@ -1046,5 +1048,5 @@ var ProbabilityViz = function(width, height) {
 	return constructor(width, height);
 }
 
-var probViz = ProbabilityViz(700, 400);
+var probViz = ProbabilityViz(400, 500);
 
