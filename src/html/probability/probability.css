@@ -24,13 +24,14 @@ h1          { text-align : center;  }
 				  flex-direction : row;
 				  flex-wrap : nowrap;
 				  align-items : start;      /* Vertical align within content divs */
-				  width : 95%;
+				  width : 85%;
 				  justify-content : space-around;
                 }
 
 .instructionsDiv {
            		  padding : 10px;
 			      min-height : 20em;
+			      width : 25%;
 		           /* ******* */
 		           border   : 1px solid red;
 		           /* ******* */
@@ -59,6 +60,7 @@ h1          { text-align : center;  }
          
 .machinesSvg  {
     border   : 1px solid BurlyWood;
+    min-width    : 100%;
 }
 
 .distribSvg  {

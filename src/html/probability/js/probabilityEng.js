@@ -92,10 +92,10 @@ var ProbabilityViz = function(width, height) {
 			"Sick sinus syndrome" : 0.0001744,
 			"Fall on or from ladder" : 0.0001584,
 			"Drowning in bath-tub" : 0.0001466,
-			"Jumping or lying before moving object" : 0.0001444,
+			"Jumping/lying before moving object" : 0.0001444,
 			"Bicycle accident" : 0.0000718,
 			"Explosion of other materials" : 0.0000541,
-			"Furuncle and carbuncle of buttock" : 0.0000072
+			"Furuncle of buttock" : 0.0000072
 	};			
 	
 	
@@ -987,7 +987,7 @@ var ProbabilityViz = function(width, height) {
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", width / 2.0)
-						.attr("y", height + 20)
+						.attr("y", height + 100)
 						.text(extentDict.x.axisLabel)
 						
 		let yAxisLabel = svg.append("text")
