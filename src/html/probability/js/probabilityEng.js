@@ -38,6 +38,10 @@ var ProbabilityViz = function(width, height) {
 	
 	var eventGenerator   = null;
 	
+	// Bar-sliding dispatch for interested
+	// listeners:
+	var dispatch         = null;
+	
 	var selectedSlotModules = [];
 	
 	// Constants
@@ -338,6 +342,15 @@ var ProbabilityViz = function(width, height) {
                           };
 
 		scalesDistrib = makeCoordSys(extentDict);
+
+		// Get function barPulled() 
+		// a chance to see which bar moved, and to 
+		// adjust other bars to keep the sum of bar
+		// heights equalling 1.
+
+		dispatch = d3.dispatch('drag', barPulled);
+		dispatch.on("drag.deathCauseBar", barPulled);
+
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, scalesDistrib);
         //*******
@@ -357,11 +370,6 @@ var ProbabilityViz = function(width, height) {
 		let yScale = scalesDistrib.yScale;
 		let causesToInclude = xDomain;
 		
-		// Get function barPulled() 
-		// a chance to see which bar moved, and to mirror
-		// on the confidence interval chart:
-		let dispatch = d3.dispatch('drag', barPulled);
-		dispatch.on("drag.deathCauseBar", barPulled);
 				
 		let barsSel = d3.select('#distribSvg').selectAll('.deathCauseBar')
 			// Data are the causes of death:
@@ -503,6 +511,10 @@ var ProbabilityViz = function(width, height) {
 				.on ('end', function(d) {
 					d3.select(this).classed("dragging", false);
 					d3.drag.currBar = undefined;
+					// Re-normalize the death cause probabilities,
+					// and update all other bars:
+					normalizeDeathCauses();
+					updateDistribChart(DEATH_CAUSES, scalesDistrib);
 					log("dragDeathCause")
 				})
 	      	)
@@ -522,7 +534,6 @@ var ProbabilityViz = function(width, height) {
 		let deathCause = distribBarSel.attr("deathCause");
 		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
 		DEATH_CAUSES[deathCause] = deathProb;
-		normalizeDeathCauses();
 		updateDistribChart(DEATH_CAUSES, scalesDistrib);
 		
 	}
