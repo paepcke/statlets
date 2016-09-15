@@ -101,7 +101,8 @@ h1          { text-align : center;  }
 
 .deathCauseBar {
 	stroke : gray;
-	
+	stroke-linecap : round;
+
 }
 
 .deathCauseBarHandle {

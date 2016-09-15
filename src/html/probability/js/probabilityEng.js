@@ -42,8 +42,10 @@ var ProbabilityViz = function(width, height) {
 	
 	// Constants
 	
+	const BARS_ARE_LINES              = true;
+	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
-	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge  50
+	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
 	const Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
@@ -334,9 +336,13 @@ var ProbabilityViz = function(width, height) {
                           };
 
 		scalesDistrib = makeCoordSys(extentDict);
-				
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, scalesDistrib);
+        //*******
+        // Redraw the axes so that the rounded butts of
+        // the bars are behind the X-axis:
+		scalesDistrib = makeCoordSys(extentDict);
+		//*******
 	}
 	
 	/*---------------------------
@@ -366,26 +372,24 @@ var ProbabilityViz = function(width, height) {
 	      		})
 	      		.attr('deathCause', function(deathCause) { return deathCause } )
 	      		.attr('x1', function(deathCause) { 
-	      			return xScale(deathCause) 
+	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
 	      		.attr('x2', function(deathCause) { 
-	      			return xScale(deathCause) 
+	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
 	      		.attr('y1', function(deathCause) { 
 	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
 
 	      		})
 	      		.attr('y2', function(deathCause) { 
-	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
+	      			//return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
+	      			return (height - X_AXIS_BOTTOM_PADDING);
 	      		})
-	      		.style("strokeWidth", xScale.bandwidth());
-	      
-//	      	.append("svg")
-//	      		.attr('id', function(deathCause) { 
-//	      			return 'distribBarGrp' + deathCause.replace(/ /g, '_').replace(/'/, ''); 
-//	      		})
-//	      		.attr("class", "barGroup")
-//	      		.append("rect")
+	      		.attr("stroke-width", xScale.bandwidth())
+		
+//	      	// This commented-out part creates rects for bars instead
+//			// of the above lines with rounded butts:
+//     		.append("rect")
 //	      		.attr('class', 'deathCauseBar')
 //	      		.attr('id', function(deathCause) { 
 //	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
@@ -394,28 +398,15 @@ var ProbabilityViz = function(width, height) {
 //	      		.attr('x', function(deathCause) { 
 //	      			return xScale(deathCause) 
 //	      		})
-//	      		.attr('width', xScale.bandwidth())
+//	      		.attr('width', Xscale.Bandwidth())
 //	      		.attr('y', function(deathCause) { 
 //	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING 
 //	      		})
 //	      		.attr('height', function(deathCause) { 
 //	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) 
 //	      		});
-//
-//		d3.selectAll(".barGroup")
-//	      	.append("circle")
-//	      		.attr("class", "deathBarHandle")
-//	      		.attr("r", xScale.bandwidth() / 2)
-//	      		.attr("cx", function(deathCause) {
-//	      			let myBar = d3.select("#distribBar" + deathCause.replace(/ /g, '_').replace(/'/, '')); 
-//	      			let rVal  = this.r.baseVal.value; 
-//	      			return parseFloat(myBar.attr('x')) + rVal;
-//	      		})
-//	      		.attr("cy", function(deathCause) {
-//	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
-//	      		});
 
-	     barsSel
+
 	      	.on("mouseover", function() {
 	      		let evt         = d3.event;
 	      		let deathCause	= d3.select(this).attr("deathCause");
@@ -478,10 +469,15 @@ var ProbabilityViz = function(width, height) {
 					} 
 					
 					let mouseY  = d3.event.y;
-					let barX = barSel.attr('x');
-					let barY = barSel.attr('y');
+					// For rect as bars, replace y1/y2 with y:
+					let barY = null
+					if ( BARS_ARE_LINES ) {
+						barY = barSel.attr('y');
+					} else {
+						barY    = barSel.attr('y1');
+					}
 					
-					if (mouseY < barSel.y || mouseY > height - X_AXIS_BOTTOM_PADDING) {
+					if (mouseY < barY || mouseY > height - X_AXIS_BOTTOM_PADDING) {
 						// Mouse got ahead of the bar being resized.
 						// Select the bar we are dragging instead:
 						barSel = d3.select(d3.drag.currBar);
@@ -496,7 +492,7 @@ var ProbabilityViz = function(width, height) {
 						return;
 					}
 					
-					dragClickHandler.dragmove(barSel);
+					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
 					//******dispatch.drag(this, barSel);
