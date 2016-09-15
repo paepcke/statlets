@@ -353,6 +353,7 @@ var ProbabilityViz = function(width, height) {
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, scalesDistrib);
+        attachBarBehaviors();
         //*******
         // Redraw the axes so that the rounded butts of
         // the bars are behind the X-axis:
@@ -374,13 +375,17 @@ var ProbabilityViz = function(width, height) {
 		let barsSel = d3.select('#distribSvg').selectAll('.deathCauseBar')
 			// Data are the causes of death:
    		  .data(causesToInclude)
+	      		.attr('y1', function(deathCause) { 
+	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING
+	      		})
 	      .enter()
       		.append("line")
 	      		.attr('class', 'deathCauseBar')
 	      		.attr('id', function(deathCause) { 
 	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
-	      		.attr('deathCause', function(deathCause) { return deathCause } )
+	      		.attr('deathCause', function(deathCause) { return deathCause })
+	      		.attr('deathProb', function(deathCause)  { return DEATH_CAUSES[deathCause] })
 	      		.attr('x1', function(deathCause) { 
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
@@ -416,7 +421,37 @@ var ProbabilityViz = function(width, height) {
 //	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) 
 //	      		});
 
+	}
+	
+	
+	/*---------------------------
+	| barPulled
+	-----------------*/
+	
+	var barPulled = function(distribBarSel) {
+		/*
+		 * Called when a cause-of-death distribution bar is dragged up or down.
+		 * Updates probabilities in selected slot module.
+		 */
+		
+		let deathCause = distribBarSel.attr("deathCause");
+		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
+		DEATH_CAUSES[deathCause] = deathProb;
+	}
 
+	/*---------------------------
+	| attachBarBehaviors
+	-----------------*/
+	
+	var attachBarBehaviors = function() {
+		
+		/*
+		 * For each probability distripution bar, attach
+		 * tooltip-showing on mouseover, and dragging behavior.
+		 */
+		
+		d3.selectAll(".deathCauseBar")
+		
 	      	.on("mouseover", function() {
 	      		let evt         = d3.event;
 	      		let deathCause	= d3.select(this).attr("deathCause");
@@ -469,6 +504,9 @@ var ProbabilityViz = function(width, height) {
 
 					// Remember the bar that's in motion:
 					d3.drag.currBar = this;
+					// Remember its original position so that
+					// we can later re-normalize the other probs:
+					d3.drag.origY    = this.y1.baseVal.value; // For rect-bars: change to "y"
 					
 				})
 				.on('drag', function(d) {
@@ -512,30 +550,14 @@ var ProbabilityViz = function(width, height) {
 					d3.select(this).classed("dragging", false);
 					d3.drag.currBar = undefined;
 					// Re-normalize the death cause probabilities,
-					// and update all other bars:
-					normalizeDeathCauses();
+					// and update all other bars. We pass the selection
+					// of the bar that was raised/lowered, and the
+					// amount it moved (change to "y" for rects):
+					normalizeDeathCauses(d3.select(this), d3.drag.origY - this.y1.baseVal.value);
 					updateDistribChart(DEATH_CAUSES, scalesDistrib);
-					log("dragDeathCause")
+					upLog("dragDeathCause")
 				})
 	      	)
-	}
-	
-	
-	/*---------------------------
-	| barPulled
-	-----------------*/
-	
-	var barPulled = function(distribBarSel) {
-		/*
-		 * Called when a cause-of-death distribution bar is dragged up or down.
-		 * Updates probabilities in selected slot module.
-		 */
-		
-		let deathCause = distribBarSel.attr("deathCause");
-		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
-		DEATH_CAUSES[deathCause] = deathProb;
-		updateDistribChart(DEATH_CAUSES, scalesDistrib);
-		
 	}
 	
 	/*---------------------------
@@ -635,7 +657,7 @@ var ProbabilityViz = function(width, height) {
 			d3.select('#' + stepName + 'Txt').classed('visible', true);
 		}
 
-		log(stepName);
+		upLog(stepName);
 		
 		switch (stepName) {
 		case 'home':
@@ -1020,13 +1042,70 @@ var ProbabilityViz = function(width, height) {
 	| normalizeDeathCauses 
 	-----------------*/
 
-	var normalizeDeathCauses = function() {
+	var normalizeDeathCauses = function(barSel, pixelDelta) {
+		/*
+		 * Without the two parameters, normalizes all probabilities
+		 * in DEATH_CAUSES so they add to 1. Modifies DEATH_CAUSES values
+		 * in place.
+		 * 
+		 * If barSel and pixelDelta are provided, re-normalizes all
+		 * DEATH_CAUSES probability values, except for the one 
+		 * that is provided. This functionality is needed when
+		 * users change the height of a bar, changing the corresponding
+		 * cause of death's probability.
+		 * 
+		 * All probabilities other than the user-adjusted one are adjusted
+		 * to compensate for the given bar's changed height. The compensatory
+		 * action is distributing across all bars other than the
+		 * one given in the parameter.
+		 * 
+		 * :param barSel: optional: a D3 selection of a bar whose value changed
+		 * :type barSel: { undefined | D3-sel }
+		 * :param pixelDelta: optional: the number of pixel by which the bar moved.
+		 * 		If positive, the bar moved down by pixelDelta pixels 
+		 * 		(.i.e. the bar's y increased by pixelDelta).
+		 * :type pixelDelta: { undefined | float }
+		 * 
+		 */
 		
-		// Turn death cause percentages to probabilities:
-		let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
-		let causes = Object.keys(DEATH_CAUSES);
-		for ( let i=0; i<normalizedProbs.length; i++ ) {
-			DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+		if ( typeof(barSel) === 'undefined') {
+			// Turn death cause percentages to probabilities:
+			let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
+			let causes = Object.keys(DEATH_CAUSES);
+			for ( let i=0; i<normalizedProbs.length; i++ ) {
+				DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+			}
+		} else {
+			
+			// Update the just-dragged bar with its new probability:
+			let thisBarCause 		   = barSel.attr("deathCause");
+			let origProb               = barSel.attr("deathProb");
+			DEATH_CAUSES[thisBarCause] = scalesDistrib.yScale.invert(barSel.attr("y1"));
+
+			// Incremental re-norm; convert pixelDelta to probability delta:
+			let probDelta = scalesDistrib.yScale.invert(Math.abs(pixelDelta));
+
+			if ( pixelDelta < 0 ) {
+				probDelta = -probDelta;
+			}
+
+			let causes = Object.keys(DEATH_CAUSES);
+
+			let scaleFactor = 1/(1-origProb) - origProb + (- probDelta);
+
+			// Distribute the probability delta over all the other bars:
+			for ( let cause of causes ) {
+				if ( cause === thisBarCause ) {
+					// Leave the given bar's probability alone:
+					continue;
+				}
+				DEATH_CAUSES[cause] = scaleFactor * DEATH_CAUSES[cause] 
+			}
+			//************
+			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
+			//log.console(`Sum = ${sum}`);
+			//************
+
 		}
 	}
 	
@@ -1048,11 +1127,14 @@ var ProbabilityViz = function(width, height) {
 	}
 
 	/*---------------------------
-	| log 
+	| upLog 
 	-----------------*/
 	
-	var log = function log( txt ) {
-		// Convenience method for logging:
+	var upLog = function( txt ) {
+		/*
+		 *  Convenience method for logging.
+		 *  The 'up' stands for "up-to-the-server".
+		 */
 		logger.log(txt);
 	}
 	
