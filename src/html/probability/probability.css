@@ -45,6 +45,7 @@ h1          { text-align : center;  }
 .machinesDiv { 
            background-color : #F6F6F6;
            /* ******* */
+           padding-right : 200px;
            border   : 1px solid red;
            /* ******* */
          }
