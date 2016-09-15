@@ -4,3 +4,5 @@
 .settings 
 lib
 node_modules
+src/html/scratch.css
+src/html/tableManagerTest.html
