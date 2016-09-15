@@ -359,40 +359,61 @@ var ProbabilityViz = function(width, height) {
 			// Data are the causes of death:
    		  .data(causesToInclude)
 	      .enter()
-	      	.append("svg")
-	      		.attr('id', function(deathCause) { 
-	      			return 'distribBarGrp' + deathCause.replace(/ /g, '_').replace(/'/, ''); 
-	      		})
-	      		.attr("class", "barGroup")
-	      		.append("rect")
+      		.append("line")
 	      		.attr('class', 'deathCauseBar')
 	      		.attr('id', function(deathCause) { 
 	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
 	      		.attr('deathCause', function(deathCause) { return deathCause } )
-	      		.attr('x', function(deathCause) { 
+	      		.attr('x1', function(deathCause) { 
 	      			return xScale(deathCause) 
 	      		})
-	      		.attr('width', xScale.bandwidth())
-	      		.attr('y', function(deathCause) { 
-	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING 
+	      		.attr('x2', function(deathCause) { 
+	      			return xScale(deathCause) 
 	      		})
-	      		.attr('height', function(deathCause) { 
-	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) 
-	      		});
-
-		d3.selectAll(".barGroup")
-	      	.append("circle")
-	      		.attr("class", "deathBarHandle")
-	      		.attr("r", xScale.bandwidth() / 2)
-	      		.attr("cx", function(deathCause) {
-	      			let myBar = d3.select("#distribBar" + deathCause.replace(/ /g, '_').replace(/'/, '')); 
-	      			let rVal  = this.r.baseVal.value; 
-	      			return parseFloat(myBar.attr('x')) + rVal;
-	      		})
-	      		.attr("cy", function(deathCause) {
+	      		.attr('y1', function(deathCause) { 
 	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
-	      		});
+
+	      		})
+	      		.attr('y2', function(deathCause) { 
+	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
+	      		})
+	      		.style("strokeWidth", xScale.bandwidth());
+	      
+//	      	.append("svg")
+//	      		.attr('id', function(deathCause) { 
+//	      			return 'distribBarGrp' + deathCause.replace(/ /g, '_').replace(/'/, ''); 
+//	      		})
+//	      		.attr("class", "barGroup")
+//	      		.append("rect")
+//	      		.attr('class', 'deathCauseBar')
+//	      		.attr('id', function(deathCause) { 
+//	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
+//	      		})
+//	      		.attr('deathCause', function(deathCause) { return deathCause } )
+//	      		.attr('x', function(deathCause) { 
+//	      			return xScale(deathCause) 
+//	      		})
+//	      		.attr('width', xScale.bandwidth())
+//	      		.attr('y', function(deathCause) { 
+//	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING 
+//	      		})
+//	      		.attr('height', function(deathCause) { 
+//	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) 
+//	      		});
+//
+//		d3.selectAll(".barGroup")
+//	      	.append("circle")
+//	      		.attr("class", "deathBarHandle")
+//	      		.attr("r", xScale.bandwidth() / 2)
+//	      		.attr("cx", function(deathCause) {
+//	      			let myBar = d3.select("#distribBar" + deathCause.replace(/ /g, '_').replace(/'/, '')); 
+//	      			let rVal  = this.r.baseVal.value; 
+//	      			return parseFloat(myBar.attr('x')) + rVal;
+//	      		})
+//	      		.attr("cy", function(deathCause) {
+//	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
+//	      		});
 
 	     barsSel
 	      	.on("mouseover", function() {
