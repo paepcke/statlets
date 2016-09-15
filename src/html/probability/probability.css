@@ -25,41 +25,49 @@ h1          { text-align : center;  }
 				  flex-wrap : nowrap;
 				  align-items : start;      /* Vertical align within content divs */
 				  width : 95%;
+				  justify-content : space-around;
                 }
 
 .instructionsDiv {
            		  padding : 10px;
 			      min-height : 20em;
-           		  flex   : 1 1 20%;        /* Get 1 unit of free space for either grow or shrink. */
-			                               /* The 20% is the base value: within div. */
+		           /* ******* */
+		           border   : 1px solid red;
+		           /* ******* */
+			      
+           		  /* flex   : 1 1 20%; */       /* Get 1 unit of free space for either grow or shrink. */
+			                                    /* The 20% is the base value: within div. */
 			      }
 			      
 .instrTxt          { display : none; }
 .instrTxt.visible  { display : inline; }
 
 .machinesDiv { 
-           /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
-           flex : 1 1;
-           flex-basis : 10%;
            background-color : #F6F6F6;
+           /* ******* */
+           border   : 1px solid red;
+           /* ******* */
          }
          
 .distribDiv { 
-           /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
-           flex : 1 1;
-           flex-basis : 20%;
            background-color : #F6F6F6;
+           /* ******* */
+           border   : 1px solid red;
+           /* ******* */
          }
          
 .machinesSvg  {
     border   : 1px solid BurlyWood;
-    overflow : scroll;
 }
 
 .distribSvg  {
     border : 1px solid BurlyWood;
-    overflow : scroll;
-}			
+    padding-top  : 50px;
+    padding-left : 40px;
+    padding-right : 100px;
+    padding-bottom :  70px;
+	background-color : #F6F6F6;    
+}
 
 .slotModuleAssembly  { }
 .machinesBody {

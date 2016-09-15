@@ -144,28 +144,28 @@ var ProbabilityViz = function(width, height) {
 //			.attr("height", "100%")
 					
 		machinesSvg = d3.select("#machinesDiv").append("svg")
-		// .attr("width", "100%")
-		//.attr("height", "100%")
-		.attr("id", "machinesSvg")
-		.attr("class", "machinesSvg")
+			.attr("width", "100%")
+			.attr("height", "100%")
+			.attr("id", "machinesSvg")
+			.attr("class", "machinesSvg")
 		
-		if (browserType === 'Firefox1+') {
-			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
-		} else {
-			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
-		}
+//		if (browserType === 'Firefox1+') {
+//			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
+//		} else {
+//			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
+//		}
 		
 		distribSvg = d3.select("#distribDiv").append("svg")
-		   .attr("width", "300")
-		   .attr("height", "600")
+		   .attr("width", "100%")
+		   .attr("height", "100%")
 		   .attr("id", "distribSvg")
 		   .attr("class", "distribSvg")
 		
-		if (browserType === 'Firefox1+') {
-			distribSvg.attr("viewBox", `0 -60 ${width} 600`);
-		} else {
-			distribSvg.attr("viewBox", `0 -60 ${width} 600`); //****
-		}
+//		if (browserType === 'Firefox1+') {
+//			distribSvg.attr("viewBox", `0 -60 ${width} 600`);
+//		} else {
+//			distribSvg.attr("viewBox", `0 -60 ${width} 600`); //****
+//		}
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
 		createSlotModuleWell();
