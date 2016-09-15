@@ -1081,6 +1081,7 @@ var ProbabilityViz = function(width, height) {
 			let thisBarCause 		   = barSel.attr("deathCause");
 			let origProb               = barSel.attr("deathProb");
 			DEATH_CAUSES[thisBarCause] = scalesDistrib.yScale.invert(barSel.attr("y1"));
+			let newProb                = DEATH_CAUSES[thisBarCause]; 
 
 			// Incremental re-norm; convert pixelDelta to probability delta:
 			let probDelta = scalesDistrib.yScale.invert(Math.abs(pixelDelta));
@@ -1091,7 +1092,7 @@ var ProbabilityViz = function(width, height) {
 
 			let causes = Object.keys(DEATH_CAUSES);
 
-			let scaleFactor = 1/(1-origProb) - origProb + (- probDelta);
+			let scaleFactor = (newProb/origProb) / (causes.length - 1); 
 
 			// Distribute the probability delta over all the other bars:
 			for ( let cause of causes ) {
