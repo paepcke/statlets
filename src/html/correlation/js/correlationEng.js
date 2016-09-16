@@ -710,7 +710,11 @@ var CorrelationViz = function(width, height) {
 						// Not over something being dragged:
 						return;
 					}
-					
+					// Prevent circle from going negative:
+					let evY = d3.event.y;
+					if ( evY > height - X_AXIS_BOTTOM_PADDING) {
+						d3.event.y = height - X_AXIS_BOTTOM_PADDING;
+					}
 					handleDrag(circleSel, yScale, xScale, dragDirections, updateTable);
 					
 					// Update position info of this state's stick,
