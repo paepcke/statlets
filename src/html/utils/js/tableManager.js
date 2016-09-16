@@ -276,7 +276,8 @@ var TableManager = function(dataArr, headerArr) {
 		}
 		
 		let cellNum = 0;
-		for (let cell of rowEl.cells) {
+		for (let i=0; i<rowEl.cells.length; i++) {
+			let cell = rowEl.cells[i];
 			cell.innerHTML = newRow[cellNum++];
 		}
 		return newRow;
@@ -337,7 +338,8 @@ var TableManager = function(dataArr, headerArr) {
 				tableEl.rows[rowNum].className = clName;
 			} else {				
 				// Change class of all rows:				
-				for (let trEl of tableEl.rows) {
+				for (let i=0; i<tableEl.rows.length; i++) {
+					let trEl = tableEl.rows[i];
 					trEl.className = clName;
 				}
 			}
@@ -364,7 +366,9 @@ var TableManager = function(dataArr, headerArr) {
 				}
 			} else {
 				// Multiple rows affected:
-				for (let rowEl of tableEl.rows) {
+				for (let i=0; i<tableEl.rows.length; i++) {
+					let rowEl = tableEl.rows[i];
+				
 					// Only one cell in each row?
 					if (typeof(colNum) === 'number') {
 						// Only one cell in each row:
@@ -426,7 +430,8 @@ var TableManager = function(dataArr, headerArr) {
 				tableEl.rows[rowNum].id = IDName;
 			} else {				
 				// Change class of all rows:				
-				for (let trEl of tableEl.rows) {
+				for (let i=0; i<tableEl.rows.length; i++) {
+					let trEl = tableEl.rows[i];
 					trEl.id = IDName;
 				}
 			}
@@ -453,7 +458,8 @@ var TableManager = function(dataArr, headerArr) {
 				}
 			} else {
 				// Multiple rows affected:
-				for (let rowEl of tableEl.rows) {
+				for (let i=0; i<tableEl.rows.length; i++) {
+					let rowEl = tableEl.rows[i];
 					// Only one cell in each row?
 					if (typeof(colNum) === 'number') {
 						// Only one cell in each row:
@@ -475,7 +481,8 @@ var TableManager = function(dataArr, headerArr) {
 	-----------------*/
 	
 	var classCellsInOneRow = function(className, rowEl) {
-		for (let cellEl of rowEl.cells) {
+		for (let i=0; i<rowEl.cells.length; i++) {
+			let cellEl = rowEl.cells[i];
 			cellEl.className = className;
 		}
 	}
@@ -485,7 +492,8 @@ var TableManager = function(dataArr, headerArr) {
 	-----------------*/
 		
 	var idCellsInOneRow = function(IDName, rowEl) {
-		for (let cellEl of rowEl.cells) {
+		for (let i=0; i<rowEl.cells.length; i++) {
+			let cellEl = rowEl.cells[i];
 			cellEl.id = IDName;
 		}
 	}

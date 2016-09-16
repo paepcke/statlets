@@ -1,5 +1,6 @@
 import { EventGenerator } from "./biasedEventGenerator";
 import { StatsBarchartResizeHandler } from "./../../utils/js/statsBarchartResizeHandler";
+import { DragHandler } from "./../../utils/js/generalDragHandler";
 import { SoftAlert } from "./../../utils/js/softAlerts";
 import { CookieMonster } from "./../../utils/js/cookieMonster";
 import { Logger } from "./../../utils/js/logging";
@@ -116,8 +117,8 @@ var ProbabilityViz = function(width, height) {
 		// button, then don't ask for login again.
 		// The button handler will have set a cookie:
 		
-		cookieMonster = CookieMonster();
-		
+		cookieMonster  = CookieMonster();
+
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
 			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
@@ -291,6 +292,88 @@ var ProbabilityViz = function(width, height) {
 					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
 		    	)
 			    .attr("dy", ".35em");
+		addSlotModuleDragging(thisMachineSvg);
+	}
+	
+	/*---------------------------
+	| addSlotModuleDragging 
+	-----------------*/
+	
+	var addSlotModuleDragging = function(slotModuleSel) {
+		
+		// Create a drag handler for this slot module,
+		// passing the base assembly's SVG:
+		slotModuleSel.attr("dragHandler",  DragHandler(slotModuleSel.node()));
+		
+		slotModuleSel
+	      	// Attach drag-start behavior to this bar.
+	      	// Couldn't get a separate function to work
+	      	// here: The dragstart/drag/dragend below should
+	      	// be in a function that returns the behavior.
+	      	// Didn't work.
+	      	.call(d3.drag()
+				.on('start', function(d) {
+					
+					// D3-select the DOM element that's trying
+					// to be dragged:
+					let modSel = d3.select(this);
+					
+					// Is the element one of our bars?
+					if (modSel.attr('class') !== 'slotModuleAssembly') {
+						// Was running mouse over something other than
+						// one of our slot module bodies:
+						return;
+					}
+					
+					// Allow us to style a moving slot module if we want:
+					modSel.classed("dragging", true);
+
+					// Remember the slot module that's in motion:
+					d3.drag.currSlotMod = this;
+					// Remember its original position so that
+					// we can return it there if needed:
+					d3.drag.origSlotModPos = { x : this.x, y : this.y };
+					
+				})
+				.on('drag', function(d) {
+					let modSel = d3.select(this);
+					if (modSel.empty()) {
+						// Not over a slot module:
+						return;
+					} 
+					
+					let mouseY  = d3.event.y;
+					let slotModX = modSel.x;
+					let slotModY = modSel.y;
+					
+//					if (mouseY < slotModY 
+//						// Mouse got ahead of the bar being resized.
+//						// Select the bar we are dragging instead:
+//						barSel = d3.select(d3.drag.currBar);
+//						if (barSel.empty()) {
+//							// Not over a bar:
+//							return;
+//						} 
+//					}
+					
+					if (! modSel.classed("dragging")) {
+						// Not over something being dragged:
+						return;
+					}
+					
+					d3.select(this).attr("dragHandler").dragmove(modSel);
+					// Let interested parties know that a bar was resized.
+					// Used to sync (synchronize) CI chart with data chart:
+					//******dispatch.drag(this, barSel);
+					dispatch.call("drag", this, dragSel);
+				})
+				.on ('end', function(d) {
+					d3.select(this).classed("dragging", false);
+					d3.drag.currSlotMod = undefined;
+					
+					upLog("dragSlotMod");
+				})
+	      	)
 		
 	}
 	

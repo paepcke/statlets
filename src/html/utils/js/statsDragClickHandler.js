@@ -2,6 +2,13 @@
 import * as d3 from "./d3.min";
 
 var StatsDragClickHandler = function(svg) {
+	/*
+	 * Facility allowing users to drag points on 
+	 * a chart, and to create new points. Motion
+	 * can be constrained to vertical/horizontal,
+	 * or be free-form. Motion can also be entirely
+	 * disallowd.
+	 */
 	
 	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating.
 	

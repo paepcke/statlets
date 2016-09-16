@@ -3,6 +3,10 @@
 import * as d3 from "./d3.min";
 
 var StatsBarchartResizeHandler = function (svg) {
+	/*
+	 * Facility allowing users to make bars in 
+	 * a chart larger or smaller.
+	 */
 	
 	var svg = svg;    // may be undefined; if so callers need to call setSvg() before operating.
 	
