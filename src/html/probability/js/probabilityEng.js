@@ -44,6 +44,7 @@ var ProbabilityViz = function(width, height) {
 	var dispatch         = null;
 	
 	var selectedSlotModules = [];
+	var slotModPeripherals  = {};
 	
 	// Constants
 	
@@ -173,7 +174,10 @@ var ProbabilityViz = function(width, height) {
 //		}
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
-		createSlotModuleWell();
+		// Create one slot module that will serve as
+		// the source of others; it will be semi-transparent:
+		let urSlotSel = createSlotModuleWell('urSlotModule');
+		urSlotSel.attr("opacity", 0.5);
 		createCauseDistrib();
 		createTooltip() 
         addControlButtons();
@@ -207,27 +211,29 @@ var ProbabilityViz = function(width, height) {
 		 * Create one slot module. The optional 
 		 * moduleId will be the id of the svg
 		 * that contains the parts of the machine.
+		 * 
+		 * Returns a D3 selection of the outermost SVG
+		 * that holds all the inner machinery of a slot module.
 		 */
 
-		let thisMachineSvg = machinesSvg
+		let thisMachineDivSel = d3.select("#machinesDiv")
+			.append("div")
+				.attr("id", moduleId)
+				.attr("class", "slotModuleAssembly");
+		// SVG inside the new div:
+		let thisMachineSvgSel = thisMachineDivSel
 		   .append("svg")
-			  .attr("class", "slotModuleAssembly")
-		thisMachineSvg
-		   .append("rect")
+		   .append("rect")   // Outermost body.
 		   	  .attr("x", 0)
 		   	  .attr("y", 0)
 		   	  .attr("width", MACHINE_BODY_WIDTH)
 		   	  .attr("height", MACHINE_BODY_HEIGHT)
 		   	  .attr("class", "machinesBody")
 		
-		if ( typeof(moduleId) !== 'undefined') {
-			thisMachineSvg.attr("id", moduleId);
-		}
-		
 		// Add the window for the text.
 		// Embed in its own svg to see whether
 		// we can figure out an inner shadow later:
-		let slotWindowSvg = thisMachineSvg
+		let slotWindowSvg = thisMachineSvgSel
 			.append("svg")
 			   //.style("width", "90%")
 			   //.style("height", "40%")
@@ -241,7 +247,7 @@ var ProbabilityViz = function(width, height) {
 			   .attr("class", "slotWindowRect")
 
 		// Gray border at top of module:
-		let topVeneer = thisMachineSvg
+		let topVeneer = thisMachineSvgSel
 			.append("rect")
 			   .attr("x", SLOT_WINDOW_X)
 			   .attr("y", SLOT_WINDOW_Y)
@@ -266,7 +272,7 @@ var ProbabilityViz = function(width, height) {
 			   
 		// addInnerShadow(slotWindowSvg);
 			
-		let goButton = thisMachineSvg
+		let goButton = thisMachineSvgSel
 			.append("rect")
 			   .attr("x", SLOT_WINDOW_X)
 			   .attr("y", SLOT_WINDOW_Y + 
@@ -281,7 +287,7 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		
-		let goText = thisMachineSvg
+		let goText = thisMachineSvgSel
 		    .append("text")
 		    	.text("Go")
 		    	.attr("class", "goText")
@@ -292,7 +298,9 @@ var ProbabilityViz = function(width, height) {
 					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
 		    	)
 			    .attr("dy", ".35em");
-		addSlotModuleDragging(thisMachineSvg);
+		addSlotModuleDragging(thisMachineSvgSel);
+		
+		return thisMachineSvgSel;
 	}
 	
 	/*---------------------------
@@ -302,8 +310,13 @@ var ProbabilityViz = function(width, height) {
 	var addSlotModuleDragging = function(slotModuleSel) {
 		
 		// Create a drag handler for this slot module,
-		// passing the base assembly's SVG:
-		slotModuleSel.attr("dragHandler",  DragHandler(slotModuleSel.node()));
+		// passing the base assembly's SVG. 
+		let slotModId = slotModuleSel.attr("id");
+		if ( typeof(slotModId) === 'undefined') {
+			throw("Slot modules must have an 'id' property.");
+		}
+		// Register this module, and add the drag handler:
+		slotModPeripherals[slotModId] = {"dragHandler" : DragHandler(slotModuleSel.node())}; 
 		
 		slotModuleSel
 	      	// Attach drag-start behavior to this bar.
@@ -361,7 +374,8 @@ var ProbabilityViz = function(width, height) {
 						return;
 					}
 					
-					d3.select(this).attr("dragHandler").dragmove(modSel);
+					let dragHandler = slotModPeripherals[slotModId]["dragHandler"];
+					dragHandler.dragmove(modSel);
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
 					//******dispatch.drag(this, barSel);
