@@ -149,11 +149,13 @@ var ProbabilityViz = function(width, height) {
 //			//*****.style("height", height + 40)
 //			.attr("height", "100%")
 					
-		machinesSvg = d3.select("#machinesDiv").append("svg")
-			.attr("width", "100%")
-			.attr("height", "100%")
-			.attr("id", "machinesSvg")
-			.attr("class", "machinesSvg")
+		//************?????
+//		machinesSvg = d3.select("#machinesDiv").append("svg")
+//			.attr("width", "100%")
+//			.attr("height", "100%")
+//			.attr("id", "machinesSvg")
+//			.attr("class", "machinesSvg")
+		//***********????
 		
 //		if (browserType === 'Firefox1+') {
 //			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
