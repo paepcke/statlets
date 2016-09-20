@@ -3,6 +3,37 @@
 <head>
     <title>Scratch</title>
     <script type="text/javascript" src="./utils/js/d3.min"></script>
+    <style>
+    
+	.machinesBody { 
+	    position:relative;
+	    width : 10%;
+	    height : 15%;
+	    border: 2px solid black;
+	    background-color: green;
+	    opacity: 0.4;
+	    display: block;
+       	border-radius : 10px;
+	    box-shadow: 10px 10px 5px #888888;
+	    }
+    
+    .machinesSvg {
+    	position : relative;
+    	height	 : 100%;
+    	width    : 100%;
+		fill     : blue;
+      	border-radius : 25px;
+    }
+    
+	.slotWindowRect {
+		position: relative;
+		x       : 5.5%;
+		y       : 4%;
+		width   : 90%;
+		height  : 40%;
+		fill    : rgb(246,239,238); /* very light gray */
+	}    
+    </style>
     
 </head>
 <body>
@@ -10,21 +41,17 @@
 	
 	var slotModDivSel = d3.select("body")
 		.append("div")
-	slotModSvgSel = slotModDivSel
-		.append("svg")
-	slotModSvgSel
 		.append("rect")
 			.attr("x", 10)
 			.attr("y", 10)
-			.attr("width", 100)
-			.attr("height", 200)
-			.attr("fill", "red")
-	slotModSvgSel.append("rect")
-			.attr("x", 10)
-			.attr("y", 10)
-			.attr("width", 40)
-			.attr("height", 30)
-			.attr("fill", "blue")
+			.attr("id", "slotModule1")
+			.attr("class", "machinesBody")
+	var slotModSvgSel = slotModDivSel
+		.append("svg")
+			.attr("class", "machinesSvg")
+	slotModSvgSel
+		.append("rect")
+			.attr("class", "slotWindowRect")
 
 		// 		var DEATH_CAUSES = {
 		// 			"Athero sclerotic heart disease" : 0.0778452,

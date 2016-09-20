@@ -225,6 +225,9 @@ var ProbabilityViz = function(width, height) {
 		// SVG inside the new div:
 		let thisMachineSvgSel = thisMachineDivSel
 		   .append("svg")
+		      .attr("class", "machinesSvg");
+		   
+		thisMachineSvgSel
 		   .append("rect")   // Outermost body.
 		   	  .attr("x", 0)
 		   	  .attr("y", 0)
@@ -235,12 +238,7 @@ var ProbabilityViz = function(width, height) {
 		// Add the window for the text.
 		// Embed in its own svg to see whether
 		// we can figure out an inner shadow later:
-		let slotWindowSvg = thisMachineSvgSel
-			.append("svg")
-			   //.style("width", "90%")
-			   //.style("height", "40%")
-			   .attr("class", "slotWindowSvg")
-		slotWindowSvg
+		let slotWindowRect = thisMachineSvgSel
 			.append("rect")
 			   .attr("x", SLOT_WINDOW_X)
 			   .attr("y", SLOT_WINDOW_Y)
@@ -257,14 +255,13 @@ var ProbabilityViz = function(width, height) {
 			   .attr("height", MACHINE_BODY_HEIGHT * VENEER_HEIGHT_PERC)
 			   .attr("class", "topVeneer");
 		
-			   
   	    // Add text to the slot window:
-		slotWinHeight  = parseInt(slotWindowSvg.select(".slotWindowRect").attr("height"));
-		slotWinWidth   = parseInt(slotWindowSvg.select(".slotWindowRect").attr("width"));
+		slotWinHeight      = parseInt(slotWindowRect.attr("height"));
+		slotWinWidth       = parseInt(slotWindowRect.attr("width"));
 		let veneerHeight   = parseInt(topVeneer.attr("height"));
 		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2.
 		let toQuarterSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 4.
-		slotWindowSvg
+		thisMachineSvgSel
 			.append("text")
 				.text("Foo")
 				.attr("class", "slotWindowTxt")
@@ -300,9 +297,9 @@ var ProbabilityViz = function(width, height) {
 					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
 		    	)
 			    .attr("dy", ".35em");
-		addSlotModuleDragging(thisMachineSvgSel);
+		addSlotModuleDragging(thisMachineDivSel);
 		
-		return thisMachineSvgSel;
+		return thisMachineDivSel;
 	}
 	
 	/*---------------------------
@@ -318,7 +315,8 @@ var ProbabilityViz = function(width, height) {
 			throw("Slot modules must have an 'id' property.");
 		}
 		// Register this module, and add the drag handler:
-		slotModPeripherals[slotModId] = {"dragHandler" : DragHandler(slotModuleSel.node())}; 
+		slotModPeripherals[slotModId] = {"dragHandler" : DragHandler(slotModuleSel.node())};
+		slotModPeripherals[slotModId]["slotModDivSel"] = slotModuleSel;
 		
 		slotModuleSel
 	      	// Attach drag-start behavior to this bar.
@@ -376,8 +374,9 @@ var ProbabilityViz = function(width, height) {
 						return;
 					}
 					
-					let dragHandler = slotModPeripherals[slotModId]["dragHandler"];
-					dragHandler.dragmove(modSel);
+					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
+					let slotModDivSel  = slotModPeripherals[slotModId]["slotModDivSel"];
+					dragHandler.dragmove(slotModDivSel);
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
 					//******dispatch.drag(this, barSel);
@@ -1226,6 +1225,29 @@ var ProbabilityViz = function(width, height) {
 						  .text("");
 	}
 
+	/*---------------------------
+	| getClassedUnderCoords
+	-----------------*/
+	
+	var getClassedUnderCoords = function(theClass, x,y) {
+		let baseRockSel = d3.select("html") 
+		let elementMouseIsOverSel = d3.select(document.elementFromPoint(x, y));
+
+		try {
+			while (elementMouseIsOverSel !== baseRockSel ) {
+				if ( elementMouseIsOverSel.classed(theClass) ) {
+					return elementMouseIsOverSel.node();
+				}
+				elementMouseIsOverSel.classed("noPointerEvents", true);
+				elementMouseIsOverSel = d3.select(document.elementFromPoint(x, y));
+			}
+		} finally {
+			/* Now clean it up */
+			d3.select(".noPointerEvents")
+			.classed("noPointerEvents", false);
+		}
+	}
+	
 	/*---------------------------
 	| upLog 
 	-----------------*/
