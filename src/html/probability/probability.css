@@ -1,5 +1,11 @@
 /* Probability Statlet */
 
+/*
+rgb(0, 102, 255)     dark blue
+rgb(153, 204, 255)   light blue
+rgb(255, 255, 0)     bright yellow
+*/
+
 body        { background-color : Bisque; }
 
 h1          { text-align : center;  }
@@ -35,9 +41,6 @@ h1          { text-align : center;  }
 		           /* ******* */
 		           border   : 1px solid red;
 		           /* ******* */
-			      
-           		  /* flex   : 1 1 20%; */       /* Get 1 unit of free space for either grow or shrink. */
-			                                    /* The 20% is the base value: within div. */
 			      }
 			      
 .instrTxt          { display : none; }
@@ -45,14 +48,15 @@ h1          { text-align : center;  }
 
 .machinesDiv {
            background-color : #F6F6F6;          /* off-white */
-           /* ******* */
-           /* padding-right : 200px; */
+           width  : 50%;
+           /* ******* */           
            border   : 1px solid red;
            /* ******* */
          }
          
 .distribDiv { 
            background-color : #F6F6F6;          /* off-white */
+           width  : 35%;
            /* ******* */
            border   : 1px solid red;
            /* ******* */
@@ -60,14 +64,42 @@ h1          { text-align : center;  }
  
 .noPointerEvents {
 	pointer-events : "none";
-}         
-         
-.machinesSvg  {
-    border  : 1px solid BurlyWood;
-     width  : 100%;
-    height  : 100%;
 }
 
+
+.machinesBody {             /* An HTML5 rect, not SVG */
+    position:relative;
+    width : 20%;
+    height : 35%;
+    border: 2px solid black;
+    opacity: 0.6;
+    display: block;
+   	border-radius : 10px;
+    box-shadow: 10px 10px 5px #888888;
+    /* Gradient light blue to dark blue: */
+    background : linear-gradient(rgb(153, 204, 255), rgb(0, 102, 255));  
+    }
+
+.machinesSvg {
+	position : relative;
+	height	 : 100%;
+	width    : 100%;
+	fill     : blue;
+  	border-radius : 25px;
+}
+
+.slotWindowRect {
+	position: relative;
+	x       : 5.5%;
+	y       : 4%;
+	width   : 90%;
+	height  : 80px;
+	/*padding-bottom : 10px;*/
+	fill    : rgb(246,239,238); /* very light gray */
+}    
+
+         
+         
 .distribSvg  {
     border : 1px solid BurlyWood;
     padding-top  : 50px;
@@ -77,38 +109,24 @@ h1          { text-align : center;  }
 	background-color : #F6F6F6;                 /* off-white */    
 }
 
-.slotModuleAssembly  { }
-.machinesBody  {
-	position : relative;
-    x	     : 100px;
-	y        : 10px;
-	
-	fill     : green;
-}
-
-.slotWindowRect {
-	fill    : rgb(246,239,238); /* very light gray */
-	padding : 3px;
-	/* filter  : url(#inset-shadow); */
-}
-
 .slotWindowTxt {
 	fill		: red;
 	text-anchor : middle;
 }
 
-.topVeneer {
-	fill : rgb(93,109,126);
-	padding : 3px;
-}
-
 .goButton {
-	fill : rgb(93,109,126);
-	padding : 3px;
+	position : relative;
+	fill     : rgb(93,109,126);
+	x        : 5.5%;
+	/* y        : 80%;  ***** */
+	width    : 90%;
+	height   : 10%;
 }
 
 .goText {
+	display : block;
 	fill : rgb(242,243,244); /* Almost white */
+	font-size : 11pt;
 	text-anchor : middle;
 }
 
@@ -125,31 +143,7 @@ h1          { text-align : center;  }
 .deathCauseBarHandle {
 	
 }
-/* -------------  OLD -------------- */
-.largeLabel {font-size : 150%;
-   		     font-weight : bold; 
-   		     color : blue;
-   		     }
-   		     
-.statsLabel {font-size : 150%;
-   		     font-weight : bold; 
-   		     color : black;
-   		     }   
-   		     
-.inputTable, th, td {border-bottom : 1px solid black;
-					 border-collapse : collapse;
-	 				 text-align : center; 
-	 				 padding : 15px;
-	 				 margin  : auto;
-			}
 
-
-.svgAllStates  {
-    border : 1px solid BurlyWood;
-}			
-
-.legend {font-size : 12pt;
-		}
 
 .axis path,
 .axis line   { fill : none;
@@ -181,110 +175,6 @@ h1          { text-align : center;  }
 				   
 .axis.label.invisible { opacity   : 0; }
 
-
-.meanLineSample    { stroke : rgb(144, 12, 63) ;  /* Dark red. */
-					 stroke-width : 2px;
-					 fill 		  : none;					 
-				   }
-.meanLineAllStates { stroke 	  : Blue;
-					 stroke-width : 2px;
-					 fill 		  : none;
-					} 
-					
-.confIntLine       { stroke       : rgb(144, 12, 63); 
-					 stroke-width : 2px;
-					 fill		  : none;
-				   }		
-					            
-.legendText  { font-size : 10pt; }
-
-.allStatesStateLabelTxt {
-				     font-size : 12pt;
-				     fill      : White;
-				     opacity   : 0.8;
-				   }
-
-
-.teenBirthBar       { fill : rgb(144, 12, 63) ; } /* Dark Red. */
-.allStatesBar       { Fill : CornFlowerBlue ;
-					}
-
-.controlBarWrapper  { margin-left : 200px;
-			          margin-right : auto;
-			          border : 1px;
-			        }
-.controlButtonBar    { }
-			           
-.button.cntBtn:focus { outline : 0 !important; }
-
-			           
-.button.cntBtn { background : DarkGray;
- 				 border-radius : 25px;
- 				 width : 60px;
- 				 margin-left : 8px;
- 				 margin-bottom : 2px;
-		       }
-
-.button.cntBtn.current { background : LightGray; } /* the currently active exercise. */              		 
-
-.button.cntBtn.reset { margin-left : 35px; }
-
-
-.buttonCol        { display : flex;
-				    flex-direction : column;
-				    flex-wrap : nowrap;
-				    align-items : start;
-				  }
-.button.sampleBtn { background : rgb(221, 159, 183);     /* rose */
- 				    border-radius : 25px;
- 				    width : 100px;
- 				    margin-right : 20px;
- 				    margin-bottom : 2px;
-                                    transition : opacity 2s;
-                                    opacity : 0;
-		          }
-.button.sampleBtn.first { margin-top : 40px; }		          
-.button.sampleBtn:focus { outline : 0 !important; }
-
-.button.sampleBtn.visible { opacity : 1; }
-
-.sdGrp   { }
-.sdTxt   { transform   : translate(1em, -1em);
-		   font-size   : 12pt;
-		   font-weight : bold;		   
-         }
-.sdTxt.allStates { fill  	   : Blue; }
-.sdTxt.data      { fill  	   : rgb(144, 12, 63); } /* Dark Red. */
-
-.legendGrp       { transform : translate(8em, 0.3em); }
-.legendTxt       { font-size : 0.9em; }
-
-.legendSampleTxt.data        { fill  : rgb(144, 12, 63);  /* Dark Red. */
-							   transform : translate(2.3em, 0em); 
-							 }
-.legendPopulationTxt.data    { fill  : CornFlowerBlue;
-							   transform : translate(-2.3em, 0em); 
-							 }
-
-.legendPopulationTxt.data.ci {
-							   transform : translate(-2.3em, 1em); 
-							 }
-  
-.sampleLegendMeanLine        { stroke        : rgb(144, 12, 63);  /* Dark Red. */
-							   stroke-width  : 2px;
-						  	   transform     : translate(6em, -0.2em);
-					  	     }
-
-.populationLegendMeanLine    { stroke : blue;
-							   stroke-width  : 2px;
-							   transform : translate(6em, 0.7em);
-						     }
-.populationLegendConfIntLine { stroke : rgb(144, 12, 63);  /* Dark Red. */
-							   stroke-width  : 2px;
-							   transform : translate(6em, -0.2em);
-							 }
-							 
-
 div.tooltip 				 {	
     						   position: absolute;        
     						   text-align: center;
@@ -306,7 +196,4 @@ div.tooltip.state.visible    {
 							   opacity : 1;
 							   transition : opacity 1s;  
 							 }
-
-.sampleHeader,
-.populationHeader     		 { font-size : 18pt; }
 

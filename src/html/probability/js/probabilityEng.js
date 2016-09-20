@@ -58,7 +58,13 @@ var ProbabilityViz = function(width, height) {
 	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
+	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
+	const SLOT_MODULE_LEFT_PADDING    = 5;  // Between left edge of outer slot module body and the slot text window.	
+	const INTER_BUTTON_PADDING        = 3;  // vertical padding between Go buttons
+	const ABOVE_BUTTON_PADDING        = 5;  // vertical padding between slot window and first Go button.
+	
 	// Dimensions of one slot module:
+	
 	var MACHINE_BODY_WIDTH   = 100;
 	var MACHINE_BODY_HEIGHT  = 300;
 	// Frame width around one slot window
@@ -133,53 +139,17 @@ var ProbabilityViz = function(width, height) {
 		normalizeDeathCauses();
 		let machinesDiv = document.getElementById('machinesDiv');
 			
-		//******width  = machinesDiv.clientWidth;
-		//******height = machinesDiv.clientHeight;
-		
-		//*************
-		//height = 400;
-		//*************			
-		
-
-		// The "+40" is a kludge! It accounts
-		// for the additional space that the x-axis
-		// labels will take once they are rotated
-		// 45 degrees: 
-//		d3.select('#machinesDiv')
-//			//*****.style("height", height + 40)
-//			.attr("height", "100%")
-					
-		//************?????
-//		machinesSvg = d3.select("#machinesDiv").append("svg")
-//			.attr("width", "100%")
-//			.attr("height", "100%")
-//			.attr("id", "machinesSvg")
-//			.attr("class", "machinesSvg")
-		//***********????
-		
-//		if (browserType === 'Firefox1+') {
-//			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
-//		} else {
-//			machinesSvg.attr("viewBox", `0 -60 ${width} 600`);
-//		}
-		
 		distribSvg = d3.select("#distribDiv").append("svg")
 		   .attr("width", "100%")
 		   .attr("height", "100%")
 		   .attr("id", "distribSvg")
 		   .attr("class", "distribSvg")
-		
-//		if (browserType === 'Firefox1+') {
-//			distribSvg.attr("viewBox", `0 -60 ${width} 600`);
-//		} else {
-//			distribSvg.attr("viewBox", `0 -60 ${width} 600`); //****
-//		}
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
 		// Create one slot module that will serve as
 		// the source of others; it will be semi-transparent:
 		let urSlotSel = createSlotModuleWell('urSlotModule');
-		urSlotSel.attr("opacity", 0.5);
+		// urSlotSel.attr("opacity", 0.5);
 		createCauseDistrib();
 		createTooltip() 
         addControlButtons();
@@ -218,88 +188,94 @@ var ProbabilityViz = function(width, height) {
 		 * that holds all the inner machinery of a slot module.
 		 */
 
-		let thisMachineDivSel = d3.select("#machinesDiv")
-			.append("div")
+		// Outer body of this slot module (not an SVG rect!)
+		let slotModDivSel = d3.select("#machinesDiv")
+			.append("rect")
+				.attr("x", SLOT_MODULE_TOP_PADDING)
+				.attr("y", SLOT_MODULE_LEFT_PADDING)
 				.attr("id", moduleId)
-				.attr("class", "slotModuleAssembly");
-		// SVG inside the new div:
-		let thisMachineSvgSel = thisMachineDivSel
-		   .append("svg")
-		      .attr("class", "machinesSvg");
-		   
-		thisMachineSvgSel
-		   .append("rect")   // Outermost body.
-		   	  .attr("x", 0)
-		   	  .attr("y", 0)
-		   	  .attr("width", MACHINE_BODY_WIDTH)
-		   	  .attr("height", MACHINE_BODY_HEIGHT)
-		   	  .attr("class", "machinesBody")
+				.attr("class", "machinesBody")
+				
+		// SVG that will hold all machine parts within the outer body:
+		let slotModSvgSel = slotModDivSel
+			.append("svg")
+				.attr("class", "machinesSvg");
 		
-		// Add the window for the text.
-		// Embed in its own svg to see whether
-		// we can figure out an inner shadow later:
-		let slotWindowRect = thisMachineSvgSel
+		// The slot window for the death causes text:
+		let slotWindowRect = slotModSvgSel
 			.append("rect")
-			   .attr("x", SLOT_WINDOW_X)
-			   .attr("y", SLOT_WINDOW_Y)
-			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC) // 40% of module body.
-			   .attr("class", "slotWindowRect")
+				.attr("class", "slotWindowRect");
 
-		// Gray border at top of module:
-		let topVeneer = thisMachineSvgSel
-			.append("rect")
-			   .attr("x", SLOT_WINDOW_X)
-			   .attr("y", SLOT_WINDOW_Y)
-			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * VENEER_HEIGHT_PERC)
-			   .attr("class", "topVeneer");
-		
   	    // Add text to the slot window:
-		slotWinHeight      = parseInt(slotWindowRect.attr("height"));
-		slotWinWidth       = parseInt(slotWindowRect.attr("width"));
-		let veneerHeight   = parseInt(topVeneer.attr("height"));
-		let toHalfSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 2.
-		let toQuarterSlotWinY = veneerHeight + (slotWinHeight - veneerHeight) / 4.
-		thisMachineSvgSel
+		slotWinHeight      = slotWindowRect.node().getBBox().height;
+		slotWinWidth       = slotWindowRect.node().getBBox().width;
+		let toQuarterSlotWinY = slotWinHeight / 4.
+		slotModSvgSel
 			.append("text")
 				.text("Foo")
 				.attr("class", "slotWindowTxt")
 				.attr("transform", 
 					  `translate(${slotWinWidth / 2.}, ${toQuarterSlotWinY})`
-						)
+						);
 			   
-		// addInnerShadow(slotWindowSvg);
-			
-		let goButton = thisMachineSvgSel
-			.append("rect")
-			   .attr("x", SLOT_WINDOW_X)
-			   .attr("y", SLOT_WINDOW_Y + 
-					   	  MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC +
-					   	  GO_BUTTON_TOP_GAP
-					   	  )
-			   .attr("width", MACHINE_BODY_WIDTH - 2*SLOT_WINDOW_X)
-			   .attr("height", MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC)
-			   .attr("class", "goButton")
-			   .on("click", function(evt) {
+		
+		addButton(slotModSvgSel, "Go", function(evt) {
+				   let deathCauses = Object.keys(DEATH_CAUSES);
+				   setSlotWindowTxt(eventGenerator.next());
+			   });
+		addButton(slotModSvgSel, "Go x10", function(evt) {
+				   let deathCauses = Object.keys(DEATH_CAUSES);
+				   setSlotWindowTxt(eventGenerator.next());
+			   });
+		addButton(slotModSvgSel, "Go x100", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		
-		let goText = thisMachineSvgSel
-		    .append("text")
-		    	.text("Go")
-		    	.attr("class", "goText")
-		    	.attr("x", MACHINE_BODY_WIDTH / 2.)
-		    	.attr("y",SLOT_WINDOW_Y + 
-					   	  MACHINE_BODY_HEIGHT * SLOT_WINDOW_HEIGHT_PERC +
-					   	  GO_BUTTON_TOP_GAP +            // vert middle of Go button:
-					   	  MACHINE_BODY_HEIGHT * BUTTON_HEIGHT_PERC / 2.
-		    	)
-			    .attr("dy", ".35em");
-		addSlotModuleDragging(thisMachineDivSel);
+		addSlotModuleDragging(slotModSvgSel);
 		
-		return thisMachineDivSel;
+		return slotModSvgSel;
+	}
+	
+	/*---------------------------
+	| addButton 
+	-----------------*/
+	
+	var addButton = function(slotModSvgSel, text, clickFunc) {
+
+		// Find the already-existing buttons
+		// to compute where the new button should
+		// go (vertical dim):
+		let distanceBelowSlotWin = SLOT_MODULE_TOP_PADDING +
+								   slotModSvgSel.select(".slotWindowRect").node().getBBox().height +
+								   ABOVE_BUTTON_PADDING;
+		
+		slotModSvgSel.selectAll(".goButton")
+			.each(function() {
+				distanceBelowSlotWin += this.getBBox().height + INTER_BUTTON_PADDING;
+			});
+
+		// Go button rect
+		let goButtonSel = slotModSvgSel
+			.append("rect")
+			   .attr("class", "goButton")
+			   .attr("id", `goButton_${text.replace(' ', '_')}`)
+			   .attr("y", distanceBelowSlotWin)
+			   .on("click", clickFunc);
+		
+	    // Go button text:
+		let goButtonCoords = goButtonSel.node().getBBox();
+		let txtX = goButtonCoords.x + goButtonCoords.width / 2.;
+		let txtY = goButtonCoords.y + goButtonCoords.height * 6. / 8.;
+		let goTextSel = slotModSvgSel
+		    .append("text")
+		    	.text(text)
+		    	.attr("x", txtX)
+		    	.attr("y", txtY)
+		    	.attr("class", "goText")
+		    	.attr("id", `goText_${text.replace(' ', '_')}`)
+		    	.on("click", clickFunc);
+		
 	}
 	
 	/*---------------------------
@@ -1208,22 +1184,6 @@ var ProbabilityViz = function(width, height) {
 		}
 	}
 	
-	/*---------------------------
-	| createTooltip 
-	-----------------*/
-	
-	var createTooltip = function() {
-		
-		// Define the div for the tooltip
-		
-		tooltipDivSel = d3.select("body")
-							.append("div")	
-							   .attr("class", "div tooltip");
-		tooltipTxtSel = tooltipDivSel					   
-						.append("text")
-						  .attr("class", "div tooltip state")
-						  .text("");
-	}
 
 	/*---------------------------
 	| getClassedUnderCoords
