@@ -189,15 +189,15 @@ var ProbabilityViz = function(width, height) {
 		 */
 
 		// Outer body of this slot module (not an SVG rect!)
-		let slotModDivSel = d3.select("#machinesDiv")
+		let slotModBodySel = d3.select("#machinesDiv")
 			.append("rect")
-				.attr("x", SLOT_MODULE_TOP_PADDING)
-				.attr("y", SLOT_MODULE_LEFT_PADDING)
+				.style("left", `${SLOT_MODULE_TOP_PADDING}px`)
+				.style("top", `${SLOT_MODULE_LEFT_PADDING}px`)
 				.attr("id", moduleId)
 				.attr("class", "machinesBody")
 				
 		// SVG that will hold all machine parts within the outer body:
-		let slotModSvgSel = slotModDivSel
+		let slotModSvgSel = slotModBodySel
 			.append("svg")
 				.attr("class", "machinesSvg");
 		
@@ -232,7 +232,7 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		
-		addSlotModuleDragging(slotModSvgSel);
+		addSlotModuleDragging(slotModBodySel);
 		
 		return slotModSvgSel;
 	}
@@ -292,7 +292,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		// Register this module, and add the drag handler:
 		slotModPeripherals[slotModId] = {"dragHandler" : DragHandler(slotModuleSel.node())};
-		slotModPeripherals[slotModId]["slotModDivSel"] = slotModuleSel;
+		slotModPeripherals[slotModId]["slotModBodySel"] = slotModuleSel;
 		
 		slotModuleSel
 	      	// Attach drag-start behavior to this bar.
@@ -308,7 +308,7 @@ var ProbabilityViz = function(width, height) {
 					let modSel = d3.select(this);
 					
 					// Is the element one of our bars?
-					if (modSel.attr('class') !== 'slotModuleAssembly') {
+					if (modSel.attr('class') !== 'machinesBody') {
 						// Was running mouse over something other than
 						// one of our slot module bodies:
 						return;
@@ -351,12 +351,11 @@ var ProbabilityViz = function(width, height) {
 					}
 					
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
-					let slotModDivSel  = slotModPeripherals[slotModId]["slotModDivSel"];
-					dragHandler.dragmove(slotModDivSel);
+					let slotModBodySel  = slotModPeripherals[slotModId]["slotModBodySel"];
+					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
-					//******dispatch.drag(this, barSel);
-					dispatch.call("drag", this, dragSel);
+					//dispatch.call("drag", this, dragSel);
 				})
 				.on ('end', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -617,7 +616,6 @@ var ProbabilityViz = function(width, height) {
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
-					//******dispatch.drag(this, barSel);
 					dispatch.call("drag", this, barSel);
 				})
 				.on ('end', function(d) {

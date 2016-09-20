@@ -42,7 +42,8 @@
 	var slotModDivSel = d3.select("body")
 		.append("div")
 		.append("rect")
-			.attr("x", 10)
+			.style("left", "100px")
+			.attr("x", 60)
 			.attr("y", 10)
 			.attr("id", "slotModule1")
 			.attr("class", "machinesBody")
@@ -52,6 +53,7 @@
 	slotModSvgSel
 		.append("rect")
 			.attr("class", "slotWindowRect")
+			.attr("id", "svgModule")
 
 		// 		var DEATH_CAUSES = {
 		// 			"Athero sclerotic heart disease" : 0.0778452,
