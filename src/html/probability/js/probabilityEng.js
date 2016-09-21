@@ -51,11 +51,13 @@ var ProbabilityViz = function(width, height) {
 	const BARS_ARE_LINES              = true;
 	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
-	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
+	//*******const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
+	const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
 	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 	//****const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
+	const Y_AXIS_TOP_MARGIN           = 0;
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
@@ -454,11 +456,7 @@ var ProbabilityViz = function(width, height) {
 			// Data are the causes of death:
    		  .data(causesToInclude)
 	      		.attr('y1', function(deathCause) {
-	      			if ( d3.drag.currBar === this ) {
-	      				return yScale(deathCauseObj[deathCause]);
-	      			} else {
-	      				return yScale(deathCauseObj[deathCause]) - Y_AXIS_TOP_PADDING;
-	      			}
+	      			return prob2Px(deathCauseObj[deathCause]);
 	      		})
 	      .enter()
       		.append("line")
@@ -475,12 +473,12 @@ var ProbabilityViz = function(width, height) {
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
 	      		.attr('y1', function(deathCause) { 
-	      			return yScale(deathCauseObj[deathCause]) - Y_AXIS_TOP_PADDING;
+	      			return prob2Px(deathCauseObj[deathCause]);
 
 	      		})
 	      		.attr('y2', function(deathCause) { 
 	      			//return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
-	      			return (height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING);
+	      			return (height - X_AXIS_BOTTOM_PADDING);
 	      		})
 	      		.attr("stroke-width", xScale.bandwidth())
 		
@@ -640,7 +638,10 @@ var ProbabilityViz = function(width, height) {
 					// and update all other bars. We pass the selection
 					// of the bar that was raised/lowered, and the
 					// amount it moved (change to "y" for rects):
-					normalizeDeathCauses(d3.select(this), d3.drag.origY - this.y1.baseVal.value);
+					let barSel = d3.select(this);
+					let deathCause = barSel.attr("deathCause");
+					DEATH_CAUSES[deathCause] = px2Prob(d3.event.y);
+					normalizeDeathCauses(barSel, d3.drag.origY - this.y1.baseVal.value);
 					updateDistribChart(DEATH_CAUSES, scalesDistrib);
 					d3.drag.currBar = undefined;
 					upLog("dragDeathCause")
@@ -1048,7 +1049,7 @@ var ProbabilityViz = function(width, height) {
 			 .attr("class", "axis")
 			 .attr("id", "xAxisGrp")
 			 //****.attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
-			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
 			 .call(d3.axisBottom(xScale));
 		
 		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
@@ -1083,7 +1084,7 @@ var ProbabilityViz = function(width, height) {
 			 .attr("class", "axis")
 			 .attr("id", "yAxisGrp")
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
-			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${- Y_AXIS_TOP_PADDING})`)	
+			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_MARGIN})`)	
 		     .call(d3.axisLeft(yScale));
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
@@ -1222,6 +1223,32 @@ var ProbabilityViz = function(width, height) {
 			d3.select(".noPointerEvents")
 			.classed("noPointerEvents", false);
 		}
+	}
+	
+	/*---------------------------
+	| px2Prob 
+	-----------------*/
+	
+	var px2Prob = function(pixelYVal) {
+		let trueY = pixelYVal + Y_AXIS_TOP_MARGIN;
+		// Don't return a negative probability
+		let prob  = Math.max(scalesDistrib.yScale.invert(trueY), 0);
+		return prob;
+	}
+	
+	/*---------------------------
+	| prob2Px 
+	-----------------*/
+	
+	var prob2Px = function(prob) {
+		/*
+		 * Given a probability, return the corresponding
+		 * Y pixel value. If the result would have the
+		 * y value dip below the X axis, the y value of
+		 * the X axis is returned instead.
+		 */
+		let y = scalesDistrib.yScale(prob) - Y_AXIS_TOP_MARGIN;
+		return Math.min(y, height - X_AXIS_BOTTOM_PADDING );
 	}
 	
 	/*---------------------------
