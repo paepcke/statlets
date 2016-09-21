@@ -54,7 +54,8 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
+	//****const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
+	const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
