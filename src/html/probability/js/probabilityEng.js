@@ -54,8 +54,8 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	//****const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
-	const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
+	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
+	//****const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
@@ -362,12 +362,11 @@ var ProbabilityViz = function(width, height) {
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
 					// Let interested parties know that a bar was resized.
 					// Used to sync (synchronize) CI chart with data chart:
-					//dispatch.call("drag", this, dragSel);
+					dispatch.call("drag", this, dragSel);
 				})
-				.on ('end', function(d) {
+				.on('end', function(d) {
 					d3.select(this).classed("dragging", false);
 					d3.drag.currSlotMod = undefined;
-					
 					upLog("dragSlotMod");
 				})
 	      	)
@@ -455,8 +454,11 @@ var ProbabilityViz = function(width, height) {
 			// Data are the causes of death:
    		  .data(causesToInclude)
 	      		.attr('y1', function(deathCause) {
-	      			//******return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
-	      			return yScale(deathCauseObj[deathCause]);
+	      			if ( d3.drag.currBar === this ) {
+	      				return yScale(deathCauseObj[deathCause]);
+	      			} else {
+	      				return yScale(deathCauseObj[deathCause]) - Y_AXIS_TOP_PADDING;
+	      			}
 	      		})
 	      .enter()
       		.append("line")
@@ -473,7 +475,7 @@ var ProbabilityViz = function(width, height) {
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
 	      		.attr('y1', function(deathCause) { 
-	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
+	      			return yScale(deathCauseObj[deathCause]) - Y_AXIS_TOP_PADDING;
 
 	      		})
 	      		.attr('y2', function(deathCause) { 
@@ -517,8 +519,9 @@ var ProbabilityViz = function(width, height) {
 		 */
 		
 		let deathCause = distribBarSel.attr("deathCause");
-		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') + Y_AXIS_TOP_PADDING); 
-		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
+		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1') + Y_AXIS_TOP_PADDING); 
+		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1') - Y_AXIS_TOP_PADDING); 
+		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1')); 
 		DEATH_CAUSES[deathCause] = deathProb;
 	}
 
@@ -629,17 +632,17 @@ var ProbabilityViz = function(width, height) {
 					
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					// Let interested parties know that a bar was resized.
-					dispatch.call("drag", this, barSel);
+					//*****dispatch.call("drag", this, barSel);
 				})
-				.on ('end', function(d) {
+				.on('end', function(d) {
 					d3.select(this).classed("dragging", false);
-					d3.drag.currBar = undefined;
 					// Re-normalize the death cause probabilities,
 					// and update all other bars. We pass the selection
 					// of the bar that was raised/lowered, and the
 					// amount it moved (change to "y" for rects):
 					normalizeDeathCauses(d3.select(this), d3.drag.origY - this.y1.baseVal.value);
 					updateDistribChart(DEATH_CAUSES, scalesDistrib);
+					d3.drag.currBar = undefined;
 					upLog("dragDeathCause")
 				})
 	      	)
@@ -1044,6 +1047,7 @@ var ProbabilityViz = function(width, height) {
 		let xAxisGroup = distribSvg.append("g")
 			 .attr("class", "axis")
 			 .attr("id", "xAxisGrp")
+			 //****.attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
 			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
 			 .call(d3.axisBottom(xScale));
 		
