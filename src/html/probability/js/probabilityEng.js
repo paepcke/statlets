@@ -63,6 +63,8 @@ var ProbabilityViz = function(width, height) {
 	const INTER_BUTTON_PADDING        = 3;  // vertical padding between Go buttons
 	const ABOVE_BUTTON_PADDING        = 5;  // vertical padding between slot window and first Go button.
 	
+	const TOOLTIP_SHOW_DURATION       = 2000; // msecs
+	
 	// Dimensions of one slot module:
 	
 	var MACHINE_BODY_WIDTH   = 100;
@@ -104,11 +106,15 @@ var ProbabilityViz = function(width, height) {
 			"Sick sinus syndrome" : 0.0001744,
 			"Fall on or from ladder" : 0.0001584,
 			"Drowning in bath-tub" : 0.0001466,
-			"Jumping/lying before moving object" : 0.0001444,
+			"Jumping or lying before moving object" : 0.0001444,
 			"Bicycle accident" : 0.0000718,
 			"Explosion of other materials" : 0.0000541,
 			"Furuncle of buttock" : 0.0000072
-	};			
+	};
+	
+	// Keep a copy of the original, i.e. true probabilities
+	// to use for resetting to initial state:
+	let savedDeathCauses = Object.assign({}, DEATH_CAUSES);
 	
 	
 	/*---------------------------
@@ -135,6 +141,7 @@ var ProbabilityViz = function(width, height) {
 			logger = Logger(alerter);
 		}
 		browserType = logger.browserType();
+		
 		
 		normalizeDeathCauses();
 		let machinesDiv = document.getElementById('machinesDiv');
@@ -295,7 +302,7 @@ var ProbabilityViz = function(width, height) {
 		slotModPeripherals[slotModId]["slotModBodySel"] = slotModuleSel;
 		
 		slotModuleSel
-	      	// Attach drag-start behavior to this bar.
+	      	// Attach drag-start behavior to this slot module.
 	      	// Couldn't get a separate function to work
 	      	// here: The dragstart/drag/dragend below should
 	      	// be in a function that returns the behavior.
@@ -307,7 +314,7 @@ var ProbabilityViz = function(width, height) {
 					// to be dragged:
 					let modSel = d3.select(this);
 					
-					// Is the element one of our bars?
+					// Is the element one of our slot modules?
 					if (modSel.attr('class') !== 'machinesBody') {
 						// Was running mouse over something other than
 						// one of our slot module bodies:
@@ -448,8 +455,13 @@ var ProbabilityViz = function(width, height) {
 		let barsSel = d3.select('#distribSvg').selectAll('.deathCauseBar')
 			// Data are the causes of death:
    		  .data(causesToInclude)
-	      		.attr('y1', function(deathCause) { 
-	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING
+	      		.attr('y1', function(deathCause) {
+	      			//******
+	      			if (deathCause === "Athero sclerotic heart disease") {
+	      				return yScale(deathCauseObj[deathCause]);
+	      			}
+	      			//******	      			
+	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
 	      		})
 	      .enter()
       		.append("line")
@@ -504,10 +516,13 @@ var ProbabilityViz = function(width, height) {
 	var barPulled = function(distribBarSel) {
 		/*
 		 * Called when a cause-of-death distribution bar is dragged up or down.
-		 * Updates probabilities in selected slot module.
+		 * Updates probability in selected slot module.
+		 * Note: the re-normalization of the other probabilities
+		 *       happens in  
 		 */
 		
 		let deathCause = distribBarSel.attr("deathCause");
+		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') + Y_AXIS_TOP_PADDING); 
 		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y') - Y_AXIS_TOP_PADDING); 
 		DEATH_CAUSES[deathCause] = deathProb;
 	}
@@ -529,7 +544,11 @@ var ProbabilityViz = function(width, height) {
 	      		let evt         = d3.event;
 	      		let deathCause	= d3.select(this).attr("deathCause");
 
-	      		tooltipTxtSel.html(deathCause + '<p><i>Drag me up or down</i>');
+	      		tooltipTxtSel.html(deathCause + ': ' + DEATH_CAUSES[deathCause].toPrecision(3) + 
+	      						   '<p><i>Drag me up or down</i>'
+	      						   
+	      		);
+	      		
 	      		let txtWidth  = tooltipTxtSel.node().getBoundingClientRect().width;
 	      		let txtHeight = tooltipTxtSel.node().getBoundingClientRect().height;	      		
 
@@ -545,14 +564,14 @@ var ProbabilityViz = function(width, height) {
 	      		d3.timeout(function(elapsed) {
 	      			tooltipDivSel.classed("visible", false);
 	      			tooltipTxtSel.classed("visible", false);
-	      		}, 1000);
+	      		}, TOOLTIP_SHOW_DURATION);
 	      		
 	      	})
 	      	.on("mouseleave", function(evt) {
 	      		tooltipTxtSel.classed("visible", false);
 	      		tooltipDivSel.classed("visible", false);
 	      	})
-	      	
+				
 	      	// Attach drag-start behavior to this bar.
 	      	// Couldn't get a separate function to work
 	      	// here: The dragstart/drag/dragend below should
@@ -615,7 +634,6 @@ var ProbabilityViz = function(width, height) {
 					
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					// Let interested parties know that a bar was resized.
-					// Used to sync (synchronize) CI chart with data chart:
 					dispatch.call("drag", this, barSel);
 				})
 				.on ('end', function(d) {
@@ -748,15 +766,12 @@ var ProbabilityViz = function(width, height) {
 //			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
 //			break;
-//		case "reset":
-//			// Restore true birth rates:
-//			teenBirthObj = JSON.parse(JSON.stringify(origTeenBirthObj));
-//			// Restore original state sample:
-//			xDomain = xDomainSaved.map(function(el) { return el });
-//			// Remake the X axis, and redraw mean and CI bracket:
-//			replaceXAxis( xDomain, true );
-//			ensureRectHeights();			
-//			break;
+		case "reset":
+			// Restore true cause-of-death probabilities:
+			Object.assign(DEATH_CAUSES, savedDeathCauses);
+			normalizeDeathCauses();
+			updateDistribChart(DEATH_CAUSES, scalesDistrib);
+			break;
 		}
 	}
 
@@ -1120,11 +1135,13 @@ var ProbabilityViz = function(width, height) {
 		 * in DEATH_CAUSES so they add to 1. Modifies DEATH_CAUSES values
 		 * in place.
 		 * 
-		 * If barSel and pixelDelta are provided, re-normalizes all
-		 * DEATH_CAUSES probability values, except for the one 
-		 * that is provided. This functionality is needed when
-		 * users change the height of a bar, changing the corresponding
-		 * cause of death's probability.
+		 * If barSel and pixelDelta are provided, the DEATH_CAUSES 
+		 * probability values are assumed to have been normalized 
+		 * already, but that one value was raised or lowered. 
+		 * This method re-normalizes all DEATH_CAUSES probability 
+		 * values, keeping constant the one that is provided. This 
+		 * functionality is needed when users change the height of 
+		 * a bar, changing the corresponding cause of death's probability.
 		 * 
 		 * All probabilities other than the user-adjusted one are adjusted
 		 * to compensate for the given bar's changed height. The compensatory
@@ -1155,7 +1172,7 @@ var ProbabilityViz = function(width, height) {
 			DEATH_CAUSES[thisBarCause] = scalesDistrib.yScale.invert(barSel.attr("y1"));
 			let newProb                = DEATH_CAUSES[thisBarCause]; 
 
-			// Incremental re-norm; convert pixelDelta to probability delta:
+			// Convert pixelDelta to probability delta:
 			let probDelta = scalesDistrib.yScale.invert(Math.abs(pixelDelta));
 
 			if ( pixelDelta < 0 ) {
@@ -1164,15 +1181,17 @@ var ProbabilityViz = function(width, height) {
 
 			let causes = Object.keys(DEATH_CAUSES);
 
-			let scaleFactor = (newProb/origProb) / (causes.length - 1); 
+			//*****let scaleFactor = (newProb/origProb) / (causes.length - 1); 
+			let fractionalDiff = (newProb - origProb) / (causes.length - 1); 
 
 			// Distribute the probability delta over all the other bars:
 			for ( let cause of causes ) {
 				if ( cause === thisBarCause ) {
 					// Leave the given bar's probability alone:
+					barSel.attr("deathProb", newProb);
 					continue;
 				}
-				DEATH_CAUSES[cause] = scaleFactor * DEATH_CAUSES[cause] 
+				DEATH_CAUSES[cause] = DEATH_CAUSES[cause] - fractionalDiff; 
 			}
 			//************
 			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
@@ -1180,6 +1199,11 @@ var ProbabilityViz = function(width, height) {
 			//************
 
 		}
+		
+		// Get a new event generator that is biased
+		// according to the new distribution:
+		eventGenerator = EventGenerator(DEATH_CAUSES);
+
 	}
 	
 
