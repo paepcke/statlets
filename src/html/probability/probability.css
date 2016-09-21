@@ -56,8 +56,7 @@ h1          { text-align : center;  }
          
 .distribDiv { 
            background-color : #F6F6F6;          /* off-white */
-           /* width  : 35%; */
-           width : 40%;
+		   width  : 35%;
            /* ******* */
            border   : 1px solid red;
            /* ******* */

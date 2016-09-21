@@ -54,7 +54,6 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	//******const Y_AXIS_TOP_PADDING          = 10; // Y axis distance from SVG top
 	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
@@ -434,11 +433,10 @@ var ProbabilityViz = function(width, height) {
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, scalesDistrib);
         attachBarBehaviors();
-        //*******
+
         // Redraw the axes so that the rounded butts of
         // the bars are behind the X-axis:
 		scalesDistrib = makeCoordSys(extentDict);
-		//*******
 	}
 	
 	/*---------------------------
@@ -456,12 +454,8 @@ var ProbabilityViz = function(width, height) {
 			// Data are the causes of death:
    		  .data(causesToInclude)
 	      		.attr('y1', function(deathCause) {
-	      			//******
-	      			if (deathCause === "Athero sclerotic heart disease") {
-	      				return yScale(deathCauseObj[deathCause]);
-	      			}
-	      			//******	      			
-	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
+	      			//******return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING;
+	      			return yScale(deathCauseObj[deathCause]);
 	      		})
 	      .enter()
       		.append("line")
@@ -483,7 +477,7 @@ var ProbabilityViz = function(width, height) {
 	      		})
 	      		.attr('y2', function(deathCause) { 
 	      			//return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
-	      			return (height - X_AXIS_BOTTOM_PADDING);
+	      			return (height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING);
 	      		})
 	      		.attr("stroke-width", xScale.bandwidth())
 		
@@ -1031,7 +1025,7 @@ var ProbabilityViz = function(width, height) {
 		case 'linear':
 			yScale = d3.scaleLinear()	
 			 			 .domain(extentDict.y.domain)
-						 .range([height - Y_AXIS_BOTTOM_PADDING, Y_AXIS_TOP_PADDING]);
+						 .range([height - Y_AXIS_BOTTOM_PADDING, - Y_AXIS_TOP_PADDING]);
 			break;
 		case 'ordinal':
 			yScale = d3.scaleBand()
@@ -1049,11 +1043,9 @@ var ProbabilityViz = function(width, height) {
 		let xAxisGroup = distribSvg.append("g")
 			 .attr("class", "axis")
 			 .attr("id", "xAxisGrp")
-			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
 			 .call(d3.axisBottom(xScale));
 		
-		//xAxis = d3.select("#xAxisGrp .*******)
-		   
 		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
 			xAxisGroup.classed(extentDict.x.subclass, true)
 		}
@@ -1077,8 +1069,6 @@ var ProbabilityViz = function(width, height) {
 		    	.attr("y", 0)
 		    	.attr("x", 0)
 		    	.attr("class", "axis x label");
-		    	//*****.attr("transform", "rotate(45)")
-		    	//*****.style("text-anchor", "start")
 		}
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
@@ -1088,7 +1078,7 @@ var ProbabilityViz = function(width, height) {
 			 .attr("class", "axis")
 			 .attr("id", "yAxisGrp")
 			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
-			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_PADDING})`)	
+			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${- Y_AXIS_TOP_PADDING})`)	
 		     .call(d3.axisLeft(yScale));
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
@@ -1181,7 +1171,6 @@ var ProbabilityViz = function(width, height) {
 
 			let causes = Object.keys(DEATH_CAUSES);
 
-			//*****let scaleFactor = (newProb/origProb) / (causes.length - 1); 
 			let fractionalDiff = (newProb - origProb) / (causes.length - 1); 
 
 			// Distribute the probability delta over all the other bars:
