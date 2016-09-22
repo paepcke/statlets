@@ -1205,9 +1205,9 @@ var ProbabilityViz = function(width, height) {
 				// Blank out the user-adjusted probability:
 				let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
 				currentProbs[currCauseIndx] = 0;
-				currentProbs = normalizedProbs(currentProbs);
+				currentProbs = normalizeProbs(currentProbs);
 				// Put the true current prob back in:
-				currentProbs[currCauseIndx] = barSel.attr("deathProb");
+				currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
 //*****
 				
 				// More to absorb?
