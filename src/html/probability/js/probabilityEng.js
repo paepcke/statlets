@@ -850,21 +850,34 @@ var ProbabilityViz = function(width, height) {
 	| normalizeProbs 
 	-----------------*/
 	
-	var normalizeProbs = function(probArr) {
+	var normalizeProbs = function(probArr, normTarget) {
 		/*
 		 * Takes an array and returns an array
 		 * in which the elements add to 1. So
 		 * all elements are scaled to retain their
-		 * proportions, but they add to 1.
+		 * proportions, but they add to normTarget.
+		 * 
+		 * :param probArr: array of numbers to processd
+		 * :type probArr: [number]
+		 * :param normTarget: number to which all elements are to sum.
+		 *     default is 1
+		 * :type normTarget: number
+		 * :returns array of normalized elements.
+		 * :rType: [number]
 		 */
 		
+		if ( typeof(normTarget) === 'undefined' ) {
+			normTarget = 1.0;
+		}
 		let sum = probArr.reduce(function(a,b) {
 			return a+b;
 		}, 0);
+
 		if ( sum === 0 ) {
+			// Return an array of 0.0: 
 			return new Array(1+probArr.length).join('0').split('').map(parseFloat);
 		}
-		let normFactor = 1/sum;
+		let normFactor = normTarget/sum;
 		return probArr.map(function(el) {
 			return el * normFactor;
 		})
@@ -1160,63 +1173,21 @@ var ProbabilityViz = function(width, height) {
 			
 			// Update the just-dragged bar with its new probability:
 			let thisBarCause 		   = barSel.attr("deathCause");
-			let origProb               = parseFloat(barSel.attr("deathProb"));
 			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
 			let newProb                = DEATH_CAUSES[thisBarCause];
 			barSel.attr("deathProb", newProb);
-			let causes = Object.keys(DEATH_CAUSES);
-			let probDiff = newProb - origProb;
-			let newZeroes = true;
-			let numZeroProbsInitial = numZeroProbs();
-			
-			while ( newZeroes ) {
 				
-				let fractionalDiff = null;
-				let numCausesToChange = causes.length - 1;
-			
-				fractionalDiff = probDiff / numCausesToChange;
-
-				// If needing to *lower* causes probabilities, find all 
-				// causes that are already at zero, and don't include 
-				// them in the  possible death cause probabilities to lower: the
-				// non-zero causes need to carry the brunt:
-
-				if ( fractionalDiff > 0 ) {
-					numCausesToChange = numCausesToChange - numZeroProbsInitial;
-				}
-					
-				// Distribute the probability delta over all the other bars:
-				for ( let cause of causes ) {
-					if ( cause === thisBarCause ) {
-						// Leave the given bar's probability alone:
-						continue;
-					}
-					// Modify this death cause, preventing negative values.
-					// Some probabilities will now to go zero without having
-					// absorbed all of their share. We'll take care of that
-					// on the next round. If this cause's probability has already
-					// reached zero, go to the next cause:
-					if ( DEATH_CAUSES[cause] > 0. || fractionalDiff < 0 ) {
-						DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff);
-					}
-				}
-				
-				let currentProbs = Object.values(DEATH_CAUSES);
-				// Blank out the user-adjusted probability:
-				let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
-				currentProbs[currCauseIndx] = 0;
-				currentProbs = normalizeProbs(currentProbs);
-				// Put the true current prob back in:
-				currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
-//*****
-				
-				// More to absorb?
-				//******probDiff = 1 - sumDeathCauseProbabilities();
-				probDiff = sumDeathCauseProbabilities() - 1; 
-				let numZeroProbsPost = numZeroProbs();
-				newZeroes = numZeroProbsPost > numZeroProbsInitial;
-				numZeroProbsInitial = numZeroProbsPost;
+			let currentProbs = Object.values(DEATH_CAUSES);
+			// Blank out the user-adjusted probability:
+			let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
+			currentProbs[currCauseIndx] = 0;
+			currentProbs = normalizeProbs(currentProbs, 1-newProb);
+			// Put the true current prob back in:
+			currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
+			for ( let i=0; i<currentProbs.length; i++ ) {
+				DEATH_CAUSES[Object.keys(DEATH_CAUSES)[i]] = currentProbs[i];
 			}
+				
 			//************
 			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
 			1+1; // just a statement to attach a breakpoint to
