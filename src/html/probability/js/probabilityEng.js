@@ -362,9 +362,8 @@ var ProbabilityViz = function(width, height) {
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
 					let slotModBodySel  = slotModPeripherals[slotModId]["slotModBodySel"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
-					// Let interested parties know that a bar was resized.
-					// Used to sync (synchronize) CI chart with data chart:
-					dispatch.call("drag", this, dragSel);
+					// Let interested parties know that a slot module was moved:
+					dispatch.call("drag", this, modSel);
 				})
 				.on('end', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -515,12 +514,7 @@ var ProbabilityViz = function(width, height) {
 		 * Note: the re-normalization of the other probabilities
 		 *       happens in  
 		 */
-		
-		let deathCause = distribBarSel.attr("deathCause");
-		let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1') + Y_AXIS_TOP_PADDING); 
-		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1') - Y_AXIS_TOP_PADDING); 
-		//*****let deathProb  = scalesDistrib.yScale.invert(distribBarSel.attr('y1')); 
-		DEATH_CAUSES[deathCause] = deathProb;
+		return;
 	}
 
 	/*---------------------------
@@ -1165,7 +1159,7 @@ var ProbabilityViz = function(width, height) {
 			// Update the just-dragged bar with its new probability:
 			let thisBarCause 		   = barSel.attr("deathCause");
 			let origProb               = barSel.attr("deathProb");
-			DEATH_CAUSES[thisBarCause] = scalesDistrib.yScale.invert(barSel.attr("y1"));
+			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
 			let newProb                = DEATH_CAUSES[thisBarCause]; 
 
 			// Convert pixelDelta to probability delta:
@@ -1177,7 +1171,25 @@ var ProbabilityViz = function(width, height) {
 
 			let causes = Object.keys(DEATH_CAUSES);
 
-			let fractionalDiff = (newProb - origProb) / (causes.length - 1); 
+			let probDiff = newProb - origProb;
+			let fractionalDiff = null;
+			let numCausesToChange = causes.length - 1;
+			
+			// If needing to lower causes probabilities, find all causes that are
+			// already at zero, and don't include them in the 
+			// possible death causes probabilities to lower: the
+			// non-zero causes need to carry the brunt:
+			
+			if ( probDiff > 0 ) {
+				// Will need to lower other bars:
+				causes.map(function(cause) {
+					if ( DEATH_CAUSES[cause] <= 0 ) {
+						numCausesToChange--;
+					}
+				})
+			}
+			fractionalDiff = probDiff / numCausesToChange;
+			
 
 			// Distribute the probability delta over all the other bars:
 			for ( let cause of causes ) {
@@ -1186,7 +1198,8 @@ var ProbabilityViz = function(width, height) {
 					barSel.attr("deathProb", newProb);
 					continue;
 				}
-				DEATH_CAUSES[cause] = DEATH_CAUSES[cause] - fractionalDiff; 
+				// Modify this death cause, preventing negative values:
+				DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff); 
 			}
 			//************
 			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
@@ -1230,6 +1243,22 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var px2Prob = function(pixelYVal) {
+		/*
+		 * Given a pixel value that is assumed to be the
+		 * the Y-reading in the distribution chart, return
+		 * the corresponding probability. If the probability
+		 * would be negative, it is returned as zero.
+		 * 
+		 * :param pixelYVal: the y-value to convert. If the value is
+		 *     a string it will be converted to a float. Examples of
+		 *     legal values: 5, -14, "30", "50.3px"
+		 * :type pixelYVal: { number | string }
+		 * :returns: probability, pegged to zero.
+		 */
+		
+		if ( typeof(pixelYVal) !== "number" ) {
+			pixelYVal = parseFloat(pixelYVal);
+		}
 		let trueY = pixelYVal + Y_AXIS_TOP_MARGIN;
 		// Don't return a negative probability
 		let prob  = Math.max(scalesDistrib.yScale.invert(trueY), 0);
@@ -1246,9 +1275,22 @@ var ProbabilityViz = function(width, height) {
 		 * Y pixel value. If the result would have the
 		 * y value dip below the X axis, the y value of
 		 * the X axis is returned instead.
+		 * 
+		 * :param prob: the probability to convert.
+		 * :type prob: number
+		 * :returns: pixel value, or y-value of x-axis if
+		 *     value would be larger than y-value of the x-axis. 
 		 */
 		let y = scalesDistrib.yScale(prob) - Y_AXIS_TOP_MARGIN;
 		return Math.min(y, height - X_AXIS_BOTTOM_PADDING );
+	}
+	
+	/*---------------------------
+	| sumDeathCauseProbabilities 
+	-----------------*/
+	
+	var sumDeathCauseProbabilities = function() {
+		return Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
 	}
 	
 	/*---------------------------
