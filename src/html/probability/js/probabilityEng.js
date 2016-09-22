@@ -1200,6 +1200,16 @@ var ProbabilityViz = function(width, height) {
 						DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff);
 					}
 				}
+				
+				let currentProbs = Object.values(DEATH_CAUSES);
+				// Blank out the user-adjusted probability:
+				let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
+				currentProbs[currCauseIndx] = 0;
+				currentProbs = normalizedProbs(currentProbs);
+				// Put the true current prob back in:
+				currentProbs[currCauseIndx] = barSel.attr("deathProb");
+//*****
+				
 				// More to absorb?
 				//******probDiff = 1 - sumDeathCauseProbabilities();
 				probDiff = sumDeathCauseProbabilities() - 1; 
