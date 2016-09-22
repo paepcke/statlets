@@ -1294,6 +1294,25 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| numZeroProbs 
+	-----------------*/
+
+	var numZeroProbs = function() {
+		/*
+		 * Counts and returns the number of death causes that
+		 * are zero. 
+		 */
+		let numZeroesSoFar = 0;
+		for ( let prob of Object.values(DEATH_CAUSES) ) {
+			if ( prob === 0 ) {
+				numZeroesSoFar++;
+			}
+		}
+		return numZeroesSoFar;
+	}
+										   
+	
+	/*---------------------------
 	| upLog 
 	-----------------*/
 	
