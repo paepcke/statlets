@@ -1174,6 +1174,8 @@ var ProbabilityViz = function(width, height) {
 				let fractionalDiff = null;
 				let numCausesToChange = causes.length - 1;
 			
+				fractionalDiff = probDiff / numCausesToChange;
+
 				// If needing to *lower* causes probabilities, find all 
 				// causes that are already at zero, and don't include 
 				// them in the  possible death cause probabilities to lower: the
@@ -1182,9 +1184,7 @@ var ProbabilityViz = function(width, height) {
 				if ( fractionalDiff > 0 ) {
 					numCausesToChange = numCausesToChange - numZeroProbsInitial;
 				}
-
-				fractionalDiff = probDiff / numCausesToChange;
-
+					
 				// Distribute the probability delta over all the other bars:
 				for ( let cause of causes ) {
 					if ( cause === thisBarCause ) {
@@ -1196,7 +1196,7 @@ var ProbabilityViz = function(width, height) {
 					// absorbed all of their share. We'll take care of that
 					// on the next round. If this cause's probability has already
 					// reached zero, go to the next cause:
-					if ( DEATH_CAUSES[cause] > 0. ) {
+					if ( DEATH_CAUSES[cause] > 0. || fractionalDiff < 0 ) {
 						DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff);
 					}
 				}
