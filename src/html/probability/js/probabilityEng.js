@@ -459,23 +459,23 @@ var ProbabilityViz = function(width, height) {
 	      		})
 	      .enter()
       		.append("line")
-	      		.attr('class', 'deathCauseBar')
-	      		.attr('id', function(deathCause) { 
+	      		.attr("class", "deathCauseBar")
+	      		.attr("id", function(deathCause) { 
 	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
-	      		.attr('deathCause', function(deathCause) { return deathCause })
-	      		.attr('deathProb', function(deathCause)  { return DEATH_CAUSES[deathCause] })
-	      		.attr('x1', function(deathCause) { 
+	      		.attr("deathCause", function(deathCause) { return deathCause })
+	      		.attr("deathProb", function(deathCause)  { return DEATH_CAUSES[deathCause] })
+	      		.attr("x1", function(deathCause) { 
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
-	      		.attr('x2', function(deathCause) { 
+	      		.attr("x2", function(deathCause) { 
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
-	      		.attr('y1', function(deathCause) { 
+	      		.attr("y1", function(deathCause) { 
 	      			return prob2Px(deathCauseObj[deathCause]);
 
 	      		})
-	      		.attr('y2', function(deathCause) { 
+	      		.attr("y2", function(deathCause) { 
 	      			//return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
 	      			return (height - X_AXIS_BOTTOM_PADDING);
 	      		})
@@ -635,7 +635,9 @@ var ProbabilityViz = function(width, height) {
 					let barSel = d3.select(this);
 					let deathCause = barSel.attr("deathCause");
 					DEATH_CAUSES[deathCause] = px2Prob(d3.event.y);
-					normalizeDeathCauses(barSel, d3.drag.origY - this.y1.baseVal.value);
+					// If bar was dragged down, y increased. So the
+					// following will be positive:
+					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
 					updateDistribChart(DEATH_CAUSES, scalesDistrib);
 					d3.drag.currBar = undefined;
 					upLog("dragDeathCause")
@@ -1158,52 +1160,57 @@ var ProbabilityViz = function(width, height) {
 			
 			// Update the just-dragged bar with its new probability:
 			let thisBarCause 		   = barSel.attr("deathCause");
-			let origProb               = barSel.attr("deathProb");
+			let origProb               = parseFloat(barSel.attr("deathProb"));
 			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
-			let newProb                = DEATH_CAUSES[thisBarCause]; 
-
-			// Convert pixelDelta to probability delta:
-			let probDelta = scalesDistrib.yScale.invert(Math.abs(pixelDelta));
-
-			if ( pixelDelta < 0 ) {
-				probDelta = -probDelta;
-			}
-
+			let newProb                = DEATH_CAUSES[thisBarCause];
+			barSel.attr("deathProb", newProb);
 			let causes = Object.keys(DEATH_CAUSES);
-
 			let probDiff = newProb - origProb;
-			let fractionalDiff = null;
-			let numCausesToChange = causes.length - 1;
+			let newZeroes = true;
+			let numZeroProbsInitial = numZeroProbs();
 			
-			// If needing to lower causes probabilities, find all causes that are
-			// already at zero, and don't include them in the 
-			// possible death causes probabilities to lower: the
-			// non-zero causes need to carry the brunt:
+			while ( newZeroes ) {
+				
+				let fractionalDiff = null;
+				let numCausesToChange = causes.length - 1;
 			
-			if ( probDiff > 0 ) {
-				// Will need to lower other bars:
-				causes.map(function(cause) {
-					if ( DEATH_CAUSES[cause] <= 0 ) {
-						numCausesToChange--;
-					}
-				})
-			}
-			fractionalDiff = probDiff / numCausesToChange;
-			
+				// If needing to *lower* causes probabilities, find all 
+				// causes that are already at zero, and don't include 
+				// them in the  possible death cause probabilities to lower: the
+				// non-zero causes need to carry the brunt:
 
-			// Distribute the probability delta over all the other bars:
-			for ( let cause of causes ) {
-				if ( cause === thisBarCause ) {
-					// Leave the given bar's probability alone:
-					barSel.attr("deathProb", newProb);
-					continue;
+				if ( fractionalDiff > 0 ) {
+					numCausesToChange = numCausesToChange - numZeroProbsInitial;
 				}
-				// Modify this death cause, preventing negative values:
-				DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff); 
+
+				fractionalDiff = probDiff / numCausesToChange;
+
+				// Distribute the probability delta over all the other bars:
+				for ( let cause of causes ) {
+					if ( cause === thisBarCause ) {
+						// Leave the given bar's probability alone:
+						continue;
+					}
+					// Modify this death cause, preventing negative values.
+					// Some probabilities will now to go zero without having
+					// absorbed all of their share. We'll take care of that
+					// on the next round. If this cause's probability has already
+					// reached zero, go to the next cause:
+					if ( DEATH_CAUSES[cause] > 0. ) {
+						DEATH_CAUSES[cause] = Math.max(0, DEATH_CAUSES[cause] - fractionalDiff);
+					}
+				}
+				// More to absorb?
+				//******probDiff = 1 - sumDeathCauseProbabilities();
+				probDiff = sumDeathCauseProbabilities() - 1; 
+				let numZeroProbsPost = numZeroProbs();
+				newZeroes = numZeroProbsPost > numZeroProbsInitial;
+				numZeroProbsInitial = numZeroProbsPost;
 			}
 			//************
 			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
-			//log.console(`Sum = ${sum}`);
+			1+1; // just a statement to attach a breakpoint to
+			console.log(`Sum = ${sum}`);
 			//************
 
 		}
