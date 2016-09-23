@@ -27,6 +27,7 @@ var ProbabilityViz = function(width, height) {
 	var tooltipTxtSel	 = null;
 	
 	var scalesDistrib    = null;
+	var scalesHist       = null;
 	var distribCauses    = null;
 	
 	var browserType      = null;
@@ -241,10 +242,70 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		
+		// Add small death cause occurrences histogram
+		// at bottom of chassis:
+		addSlotModFrequencyChart(slotModSvgSel);
+		
 		addSlotModuleDragging(slotModBodySel);
 		
 		return slotModSvgSel;
 	}
+	
+	/*---------------------------
+	| addSlotModFrequencyChart
+	-----------------*/
+	
+	var addSlotModFrequencyChart = function(slotModSvgSel) {
+		
+		let histYDomain = [0, 50];
+        // Argument for makeCoordSys:
+		
+		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING;
+		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING;
+		let X_AXIS_LEFT       = X_AXIS_LEFT_PADDING;
+		    
+		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING;
+		let Y_AXIS_TOP        = Y_AXIS_TOP_PADDING;
+		let Y_AXIS_BOTTOM     = Y_AXIS_BOTTOM_PADDING;
+		let Y_AXIS_TOP_MARGIN_VAL = Y_AXIS_TOP_MARGIN;
+		
+		let body              = slotModSvgSel.node().parentNode;
+		let bodyHeight        = body.clientHeight;
+		let bodyWidth         = body.clientWidth;
+		let goButtonArr       = slotModSvgSel.node().getElementsByClassName("goButton");
+		let lowestBtn         = goButtonArr[goButtonArr.length - 1];
+		let lowestBtnDims     = lowestBtn.getBBox();
+		let histTop           = lowestBtnDims.y + lowestBtnDims.height;
+		let histHeight        = bodyHeight - histTop;
+		
+        let extentDict  = {svg           : slotModSvgSel, 
+        				   x: {scaleType : 'ordinal',
+        					   domain    : [],
+        					   axisLabel : 'Cause of Death Count',
+        					 axisLabelId : 'histXLabel',
+        					 axisGrpName : 'histXAxisGrp',
+        					rightPadding : 3,
+        				   bottomPadding : 3,
+        					leftPadding  : 0
+        				   },
+            			   y: {scaleType : 'linear',
+            				      domain : histYDomain,
+            				   axisLabel : '',
+            			     axisLabelId : 'histYLabel',
+            			     axisGrpName : 'histYAxisGrp',
+            			     leftPadding : 25,
+            			     topPadding  : -(histTop + 2*INTER_BUTTON_PADDING),
+            			   bottomPadding : 3,
+            			   topMargin     : 0,
+            			   },
+            			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
+        };
+        scalesHist  = makeCoordSys(extentDict);
+        
+        let histSel = scalesHist.coordSysSel;
+//        histSel
+//        	.attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP})`);
+	}	
 	
 	/*---------------------------
 	| addButton 
@@ -412,13 +473,14 @@ var ProbabilityViz = function(width, height) {
         					   axisLabel : 'Cause of Death Probabilities',
         					 axisLabelId : 'distribXLabel',
         					 axisGrpName : 'distribXAxisGrp'
-            				  },
+        				   },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
             				   axisLabel : 'Probability US 2013',
             			     axisLabelId : 'distribYLabel',
             			     axisGrpName : 'distribYAxisGrp'            			    	 
-            			      }
+            			   },
+            			          height : height 
                           };
 
 		scalesDistrib = makeCoordSys(extentDict);
@@ -1003,10 +1065,42 @@ var ProbabilityViz = function(width, height) {
 		let yScale    = null;
 		let bandWidth = null; // width in pixels between two x-axis ticks.
 
-		let X_AXIS_RIGHT = X_AXIS_RIGHT_PADDING;
+		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING;
+		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING;
+		let X_AXIS_LEFT       = X_AXIS_LEFT_PADDING;
+		    
+		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING;
+		let Y_AXIS_TOP        = Y_AXIS_TOP_PADDING;
+		let Y_AXIS_BOTTOM     = Y_AXIS_BOTTOM_PADDING;
+		let Y_AXIS_TOP_MARGIN_VAL = Y_AXIS_TOP_MARGIN;
+		
+		let height            = height;
+
 		
 		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
 			X_AXIS_RIGHT = extentDict.x.rightPadding; 
+		}
+		if (typeof(extentDict.x.bottomPadding) !== 'undefined') {
+			X_AXIS_BOTTOM = extentDict.x.bottomPadding; 
+		}
+		if (typeof(extentDict.x.leftPadding) !== 'undefined') {
+			X_AXIS_LEFT = extentDict.x.leftPadding; 
+		}
+		if (typeof(extentDict.y.leftPadding) !== 'undefined') {
+			Y_AXIS_LEFT= extentDict.y.leftPadding; 
+		}
+		if (typeof(extentDict.y.topPadding) !== 'undefined') {
+			Y_AXIS_TOP = extentDict.y.topPadding; 
+		}
+		if (typeof(extentDict.y.bottomPadding) !== 'undefined') {
+			Y_AXIS_BOTTOM = extentDict.y.bottomPadding; 
+		}
+		if (typeof(extentDict.x.topMargin) !== 'undefined') {
+			Y_AXIS_TOP_MARGIN_VAL = extentDict.y.topMargin; 
+		}
+		
+		if (typeof(extentDict.height) !== 'undefined') {
+			height = extentDict.height; 
 		}
 		
 		// X Scale:
@@ -1015,12 +1109,12 @@ var ProbabilityViz = function(width, height) {
 		case 'linear':
 			xScale = d3.scaleLinear()
 							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT]);
+							 .range([Y_AXIS_LEFT, width - X_AXIS_RIGHT]);
 			break;
 		case 'ordinal':
 			xScale = d3.scaleBand()
 							 .domain(extentDict.x.domain)
-							 .rangeRound([Y_AXIS_LEFT_PADDING, width - X_AXIS_RIGHT])
+							 .rangeRound([Y_AXIS_LEFT, width - X_AXIS_RIGHT])
 							 .paddingInner(0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
@@ -1039,12 +1133,12 @@ var ProbabilityViz = function(width, height) {
 		case 'linear':
 			yScale = d3.scaleLinear()	
 			 			 .domain(extentDict.y.domain)
-						 .range([height - Y_AXIS_BOTTOM_PADDING, - Y_AXIS_TOP_PADDING]);
+						 .range([height - Y_AXIS_BOTTOM, - Y_AXIS_TOP]);
 			break;
 		case 'ordinal':
 			yScale = d3.scaleBand()
 							 .domain(extentDict.y.domain)
-							 .range([Y_AXIS_TOP_PADDING, height- Y_AXIS_BOTTOM_PADDING])
+							 .range([Y_AXIS_TOP, height- Y_AXIS_BOTTOM])
 							 .innerPadding(0.1);
 			break;
 		default:
@@ -1054,19 +1148,14 @@ var ProbabilityViz = function(width, height) {
 		// Make the visual coordinate system:
 		
 		// Create a group, and call the xAxis function to create the axis.
-		let xAxisGroup = distribSvg.append("g")
+		let xAxisGroup = svg.append("g")
 			 .attr("class", "axis")
-			 .attr("id", "xAxisGrp")
-			 //****.attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING + Y_AXIS_TOP_PADDING})`)
-			 .attr("transform", `translate(${X_AXIS_LEFT_PADDING}, ${height - X_AXIS_BOTTOM_PADDING})`)
+			 .attr("id", extentDict.x.axisGrpName)
+			 .attr("transform", `translate(${X_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
 			 .call(d3.axisBottom(xScale));
 		
 		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
 			xAxisGroup.classed(extentDict.x.subclass, true)
-		}
-		
-		if (typeof(extentDict.x.axisGrpName) !== 'undefined') {
-			xAxisGroup.attr('id', extentDict.x.axisGrpName);
 		}
 		
 		// For ordinal X-axes: rotate tick labels by 45%
@@ -1091,17 +1180,12 @@ var ProbabilityViz = function(width, height) {
 		// Create a group, and call the xAxis function to create the axis:
 		let yAxisGroup = svg.append("g")
 			 .attr("class", "axis")
-			 .attr("id", "yAxisGrp")
-			 //.attr("transform", "translate("[Y_AXIS_LEFT_PADDING + (height - Y_AXIS_TOP_PADDING) + ")")	
-			 .attr("transform", `translate(${Y_AXIS_LEFT_PADDING}, ${Y_AXIS_TOP_MARGIN})`)	
+			 .attr("id", extentDict.y.axisGrpName)
+			 .attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP_MARGIN_VAL})`)	
 		     .call(d3.axisLeft(yScale));
 
 		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
 			yAxisGroup.classed(extentDict.y.subclass, true)
-		}
-		
-		if (typeof(extentDict.y.axisGrpName) !== 'undefined') {
-			yAxisGroup.attr('id', extentDict.y.axisGrpName);
 		}
 		
 		
@@ -1124,9 +1208,12 @@ var ProbabilityViz = function(width, height) {
 		d3.selectAll('.x.label').classed('unselectable', true);
 		d3.selectAll('.y.label').classed('unselectable', true);
 		
+		let coordSysSel = d3.selectAll(d3.merge([xAxisGroup.nodes(), yAxisGroup.nodes(), xAxisLabel.nodes(), yAxisLabel.nodes()]));
+		
 		return {xScale    : xScale,
 				yScale    : yScale,
 				bandWidth : bandWidth,
+				coordSysSel : coordSysSel 
 			   }
 	}
 	
