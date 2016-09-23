@@ -276,7 +276,8 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
-				   nextText(0);
+				   //*****nextText(0);
+					
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
@@ -754,10 +755,10 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txt, completionCallback) {
+	var setSlotWindowTxt = function(txt, numReps) {
 		
-		if ( typeof(completionCallback) === 'undefined' ) {
-			completionCallback = function() {};
+		if ( typeof(numReps) !== 'number' ) {
+			numReps = 0;
 		} 
 		
 		// Prepare (i.e. compute wrapping for) text in 
@@ -774,7 +775,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Start fading out the current text:
 		let fadeOutTrans = d3.transition();
-		let fadeInTrans = d3.transition()
+		let fadeInTrans = d3.transition();
 		
 		// And fade in the new text at the same time:
 		if ( parseFloat(slotTxt1Sel.style("opacity")) === 0 ) {
@@ -789,9 +790,17 @@ var ProbabilityViz = function(width, height) {
 			slotTxt1Sel
 				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 1)
-					.on("end", completionCallback());
-
+					.on("start", function repeat(i) {
+						if ( typeof(i) !== 'number') {
+							i = 0;
+						};
+						if ( i > numReps ) {
+							return;
+						};
+						d3.active(this)   // current transition
+							.style("opacity", 1)
+							.on("end", repeat, i++);
+					})
 		} else { // currently showing txt slot 1
 			
 			// Fade out txt 1:
@@ -803,8 +812,17 @@ var ProbabilityViz = function(width, height) {
 			slotTxt2Sel
 				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 1)
-					.on("end", completionCallback());
+					.on("start", function repeat(i) {
+						if ( typeof(i) !== 'number') {
+							i = 0;
+						};
+						if ( i > numReps ) {
+							return;
+						};
+						d3.active(this)   // current transition
+							.style("opacity", 1)
+							.on("end", repeat, i++);
+					})
 		}
 		return fadeInTrans;
 	}
