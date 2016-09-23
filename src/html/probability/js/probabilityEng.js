@@ -757,7 +757,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Prepare (i.e. compute wrapping for) text in 
 		// the currently invisible text element:
-		if ( currSlotTxtSel === slotTxt1Sel ) {
+		if ( parseFloat(slotTxt1Sel.style("opacity")) > 0 ) {
 			slotTxt2Sel.text(txt);
 			// Wrap text within slot window; padding left and right:
 			wrapTxt(slotTxt2Sel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
@@ -772,25 +772,33 @@ var ProbabilityViz = function(width, height) {
  
 		let fadeInTrans = d3.transition()
 		
-		currSlotTxtSel
-			.transition(fadeOutTrans)
-				.duration(SLOT_TXT_TRANSITION_SPEED)
-				.style("opacity", 0);
-			
-
 		// And fade in the new text at the same time:
-		if ( currSlotTxtSel === slotTxt1Sel ) {
+		if ( parseFloat(slotTxt1Sel.style("opacity")) === 0 ) {
+			// We are currently showing text slot 2
+			// Start fading out that currently active txt:
 			slotTxt2Sel
-				.transition(fadeInTrans)
+				.transition(fadeOutTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 1);
-			currSlotTxtSel = slotTxt2Sel;
-		} else { // currently text slot2
+					.style("opacity", 0);
+				
+			// And fade in the new text at the same time:
 			slotTxt1Sel
 				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
 					.style("opacity", 1);
-			currSlotTxtSel = slotTxt1Sel;
+
+		} else { // currently showing txt slot 1
+			
+			// Fade out txt 1:
+			slotTxt1Sel
+				.transition(fadeOutTrans)
+					.duration(SLOT_TXT_TRANSITION_SPEED)
+					.style("opacity", 0);
+			
+			slotTxt2Sel
+				.transition(fadeInTrans)
+					.duration(SLOT_TXT_TRANSITION_SPEED)
+					.style("opacity", 1);
 		}
 		return fadeInTrans;
 	}
