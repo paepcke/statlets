@@ -122,7 +122,7 @@ var ProbabilityViz = function(width, height) {
 			"Sick sinus syndrome" : 0.0001744,
 			"Fall on or from ladder" : 0.0001584,
 			"Drowning in bath-tub" : 0.0001466,
-			"Jumping or lying before moving object" : 0.0001444,
+			"Jump or lie before moving object" : 0.0001444,
 			"Bicycle accident" : 0.0000718,
 			"Explosion of other materials" : 0.0000541,
 			"Furuncle of buttock" : 0.0000072
@@ -261,19 +261,22 @@ var ProbabilityViz = function(width, height) {
 				);
 		
 		setSlotWindowTxt("Click a GO button");
+
+		let nextText = function(i) {
+							setSlotWindowTxt(eventGenerator.next(),
+											 function() {
+												if ( i++ <= 10 ) {
+													nextText(i);
+												};
+											 })
+		};
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
-				   let deathCauses = Object.keys(DEATH_CAUSES);
-				   for ( let i=0; i<10; i++) {
-					   d3.timeout(function() {
-						   setSlotWindowTxt(eventGenerator.next());
-					   },SLOT_TXT_TRANSITION_DELAY_10
-					   )
-				   }
+				   nextText(0);
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
@@ -751,9 +754,11 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txt) {
+	var setSlotWindowTxt = function(txt, completionCallback) {
 		
-		//let txtSel = d3.select(".slotWindowTxt");
+		if ( typeof(completionCallback) === 'undefined' ) {
+			completionCallback = function() {};
+		} 
 		
 		// Prepare (i.e. compute wrapping for) text in 
 		// the currently invisible text element:
@@ -769,7 +774,6 @@ var ProbabilityViz = function(width, height) {
 		
 		// Start fading out the current text:
 		let fadeOutTrans = d3.transition();
- 
 		let fadeInTrans = d3.transition()
 		
 		// And fade in the new text at the same time:
@@ -785,7 +789,8 @@ var ProbabilityViz = function(width, height) {
 			slotTxt1Sel
 				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 1);
+					.style("opacity", 1)
+					.on("end", completionCallback());
 
 		} else { // currently showing txt slot 1
 			
@@ -798,7 +803,8 @@ var ProbabilityViz = function(width, height) {
 			slotTxt2Sel
 				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 1);
+					.style("opacity", 1)
+					.on("end", completionCallback());
 		}
 		return fadeInTrans;
 	}

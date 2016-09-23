@@ -1,3 +1,7 @@
+/*
+ * Helps save and recall cookies in the browser.
+ */
+
 var CookieMonster = function() {
 	
 	
