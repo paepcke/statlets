@@ -95,8 +95,11 @@ var ProbabilityViz = function(width, height) {
 	var SLOT_WINDOW_LEFT_PADDING  = 8;
 
 	// Speed at which text in slot window
-	// fades and appears:
-	var SLOT_TXT_TRANSITION_SPEED = 1000; // msecs
+	// fades and appears with only one slot change:
+	var SLOT_TXT_TRANSITION_SPEED     = 1000; // msecs
+	// Delays between runs of 10:
+	var SLOT_TXT_TRANSITION_DELAY_10  = 1500; // msecs
+	var SLOT_TXT_TRANSITION_DELAY_100 = 300; // msecs
 	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -265,11 +268,18 @@ var ProbabilityViz = function(width, height) {
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
-				   setSlotWindowTxt(eventGenerator.next());
+				   for ( let i=0; i<10; i++) {
+					   d3.timeout(function() {
+						   setSlotWindowTxt(eventGenerator.next());
+					   },SLOT_TXT_TRANSITION_DELAY_10
+					   )
+				   }
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
-				   setSlotWindowTxt(eventGenerator.next());
+				   for ( let i=0; i<100; i++) {
+					   setSlotWindowTxt(eventGenerator.next());
+				   }
 			   });
 		
 		// Add small death cause occurrences histogram
@@ -758,26 +768,31 @@ var ProbabilityViz = function(width, height) {
 		}
 		
 		// Start fading out the current text:
+		let fadeOutTrans = d3.transition();
+ 
+		let fadeInTrans = d3.transition()
+		
 		currSlotTxtSel
-			.transition()
+			.transition(fadeOutTrans)
 				.duration(SLOT_TXT_TRANSITION_SPEED)
-				.attr("opacity", 0);
+				.style("opacity", 0);
+			
 
 		// And fade in the new text at the same time:
 		if ( currSlotTxtSel === slotTxt1Sel ) {
 			slotTxt2Sel
-				.transition()
+				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.attr("opacity", 1);
+					.style("opacity", 1);
 			currSlotTxtSel = slotTxt2Sel;
 		} else { // currently text slot2
 			slotTxt1Sel
-				.transition()
+				.transition(fadeInTrans)
 					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.attr("opacity", 1);
+					.style("opacity", 1);
 			currSlotTxtSel = slotTxt1Sel;
 		}
-		
+		return fadeInTrans;
 	}
 	
 	/*---------------------------
