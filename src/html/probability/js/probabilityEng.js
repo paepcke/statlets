@@ -1200,13 +1200,15 @@ var ProbabilityViz = function(width, height) {
 						.attr("class", "x label")
 						.attr("id", extentDict.x.axisLabelId)
 						.attr("text-anchor", "middle")
-						.attr("x", width / 2.0)
-						.attr("y", height + 100)
+						.attr("x", 2*width / 3.0)
+						.attr("y", height + 55)
 						.text(extentDict.x.axisLabel)
 						
 		let yAxisLabel = svg.append("text")
 						.attr("class", "axis y label")
 						.attr("id", extentDict.y.axisLabelId)
+						.attr("x", 5)
+						.attr("y", -5)
 						.text(extentDict.y.axisLabel)
 						
 		d3.selectAll('.axis text').classed('unselectable', true);			

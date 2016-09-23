@@ -112,7 +112,7 @@ h1          { text-align : center;  }
 }
 
 .slotWindowTxt {
-	fill		: red;
+	fill		: black;
 	text-anchor : middle;
 }
 
@@ -170,7 +170,7 @@ h1          { text-align : center;  }
 				transform   : translate(0.33em, 0.6em) rotate(45deg); 		        
 		        color		: black;
 		        font-family : sans-serif;
-		        font-size   : 9pt;
+		        font-size   : 8pt;
 		        /* font-weight : bold; */
 		        opacity     : 1;    	
 			  }
