@@ -47,6 +47,12 @@ var ProbabilityViz = function(width, height) {
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
 	
+	// Two text elements to switch
+	// between in the slot window:
+	var slotTxt1Sel      = null;
+	var slotTxt2Sel      = null;
+	var currSlotTxtSel   = null;
+	
 	// Constants
 	
 	const BARS_ARE_LINES              = true;
@@ -88,6 +94,10 @@ var ProbabilityViz = function(width, height) {
 	// edge of the slot window:
 	var SLOT_WINDOW_LEFT_PADDING  = 8;
 
+	// Speed at which text in slot window
+	// fades and appears:
+	var SLOT_TXT_TRANSITION_SPEED = 1000; // msecs
+	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
 	// to normalized probabilities in the constructor:
@@ -219,19 +229,34 @@ var ProbabilityViz = function(width, height) {
   	    // Add text to the slot window:
 		slotWinHeight      = slotWindowRect.node().getBBox().height;
 		slotWinWidth       = slotWindowRect.node().getBBox().width;
-		let winTxt = slotModSvgSel
+		slotTxt1Sel = slotModSvgSel
 			.append("text")
 				.text("")
-				.attr("class", "slotWindowTxt")
+				.attr("id", "slotTxt1Sel")
+				.attr("class", "slotWindowTxt");
 				
-		let fontSize = parseFloat(getComputedStyle(winTxt.node()).fontSize);
+	    // Get the font size, and move the text element
+		// down into the slot window:
+		let fontSize = parseFloat(getComputedStyle(slotTxt1Sel.node()).fontSize);
 		let toTxtBaseline  = fontSize + slotWinHeight / 4.
-
-		winTxt
+		slotTxt1Sel
 			.attr("transform", 
 				  `translate(${slotWinWidth / 2.}, ${toTxtBaseline})`
 			);
-			   
+		
+		currSlotTxtSel = slotTxt1Sel;
+		
+		// Build the second txt element on top of the
+		// first so the can be cross-faded:
+		slotTxt2Sel = slotModSvgSel
+			.append("text")
+				.text("")
+				.attr("id", "slotTxt2Sel")				
+				.attr("class", "slotWindowTxt")
+				.attr("transform", 
+						`translate(${slotWinWidth / 2.}, ${toTxtBaseline})`
+				);
+		
 		setSlotWindowTxt("Click a GO button");
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
@@ -718,10 +743,41 @@ var ProbabilityViz = function(width, height) {
 	
 	var setSlotWindowTxt = function(txt) {
 		
-		let txtSel = d3.select(".slotWindowTxt");
-		txtSel.text(txt);
-		// Wrap text within slot window; padding left and right:
-		wrapTxt(txtSel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
+		//let txtSel = d3.select(".slotWindowTxt");
+		
+		// Prepare (i.e. compute wrapping for) text in 
+		// the currently invisible text element:
+		if ( currSlotTxtSel === slotTxt1Sel ) {
+			slotTxt2Sel.text(txt);
+			// Wrap text within slot window; padding left and right:
+			wrapTxt(slotTxt2Sel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
+		} else {
+			slotTxt1Sel.text(txt);
+			// Wrap text within slot window; padding left and right:
+			wrapTxt(slotTxt1Sel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
+		}
+		
+		// Start fading out the current text:
+		currSlotTxtSel
+			.transition()
+				.duration(SLOT_TXT_TRANSITION_SPEED)
+				.attr("opacity", 0);
+
+		// And fade in the new text at the same time:
+		if ( currSlotTxtSel === slotTxt1Sel ) {
+			slotTxt2Sel
+				.transition()
+					.duration(SLOT_TXT_TRANSITION_SPEED)
+					.attr("opacity", 1);
+			currSlotTxtSel = slotTxt2Sel;
+		} else { // currently text slot2
+			slotTxt1Sel
+				.transition()
+					.duration(SLOT_TXT_TRANSITION_SPEED)
+					.attr("opacity", 1);
+			currSlotTxtSel = slotTxt1Sel;
+		}
+		
 	}
 	
 	/*---------------------------
