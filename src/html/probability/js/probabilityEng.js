@@ -64,7 +64,7 @@ var ProbabilityViz = function(width, height) {
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
 	const SLOT_MODULE_LEFT_PADDING    = 5;  // Between left edge of outer slot module body and the slot text window.	
 	const INTER_BUTTON_PADDING        = 3;  // vertical padding between Go buttons
-	const ABOVE_BUTTON_PADDING        = 5;  // vertical padding between slot window and first Go button.
+	const ABOVE_BUTTON_PADDING        = 20;  // vertical padding between slot window and first Go button.
 	
 	const TOOLTIP_SHOW_DURATION       = 2000; // msecs
 	
@@ -86,7 +86,7 @@ var ProbabilityViz = function(width, height) {
 	var GO_BUTTON_TOP_GAP         = 30;
 	// Padding between slot window text and the left
 	// edge of the slot window:
-	var SLOT_WINDOW_LEFT_PADDING  = 4;
+	var SLOT_WINDOW_LEFT_PADDING  = 8;
 
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -219,15 +219,20 @@ var ProbabilityViz = function(width, height) {
   	    // Add text to the slot window:
 		slotWinHeight      = slotWindowRect.node().getBBox().height;
 		slotWinWidth       = slotWindowRect.node().getBBox().width;
-		let toQuarterSlotWinY = slotWinHeight / 4.
-		slotModSvgSel
+		let winTxt = slotModSvgSel
 			.append("text")
-				.text("Foo")
+				.text("")
 				.attr("class", "slotWindowTxt")
-				.attr("transform", 
-					  `translate(${slotWinWidth / 2.}, ${toQuarterSlotWinY})`
-						);
+				
+		let fontSize = parseFloat(getComputedStyle(winTxt.node()).fontSize);
+		let toTxtBaseline  = fontSize + slotWinHeight / 4.
+
+		winTxt
+			.attr("transform", 
+				  `translate(${slotWinWidth / 2.}, ${toTxtBaseline})`
+			);
 			   
+		setSlotWindowTxt("Click a GO button");
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
 				   let deathCauses = Object.keys(DEATH_CAUSES);
