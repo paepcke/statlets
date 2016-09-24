@@ -48,10 +48,14 @@ var ProbabilityViz = function(width, height) {
 	var slotModPeripherals  = {};
 	
 	// Two text elements to switch
-	// between in the slot window:
-	var slotTxt1Sel      = null;
-	var slotTxt2Sel      = null;
-	var currSlotTxtSel   = null;
+	// between in the slot window: ******** Maybe no longer needed
+	var slotTxt1Sel      = null;  //*********
+	var slotTxt2Sel      = null;  //*********
+	
+	var slotTxtMan       = null;
+	
+	var fadeInTrans  	 = d3.transition("fadeIn");
+	var fadeOutTrans 	 = d3.transition("fadeOut");
 	
 	// Constants
 	
@@ -141,12 +145,16 @@ var ProbabilityViz = function(width, height) {
 
 		// For non-modal alerts:
 		alerter     = SoftAlert();
+		
 		// If this access to the page is just
 		// the result of user clicking the New Sample
 		// button, then don't ask for login again.
 		// The button handler will have set a cookie:
 		
 		cookieMonster  = CookieMonster();
+		
+		// Manager of text elements for slot modules:
+		slotTxtMan = TextManager();
 
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
@@ -237,7 +245,14 @@ var ProbabilityViz = function(width, height) {
 				.text("")
 				.attr("id", "slotTxt1Sel")
 				.attr("class", "slotWindowTxt");
-				
+		
+		// Give this slot window text element to the manager:
+		slotTxtMan.addTxtElement(slotTxt1Sel.node());
+		
+		// Attach an empty transition to this
+		// selection for setSlotWindowTxt() to find:
+		slotTxt1Sel.transition(fadeInTrans);
+		
 	    // Get the font size, and move the text element
 		// down into the slot window:
 		let fontSize = parseFloat(getComputedStyle(slotTxt1Sel.node()).fontSize);
@@ -246,8 +261,6 @@ var ProbabilityViz = function(width, height) {
 			.attr("transform", 
 				  `translate(${slotWinWidth / 2.}, ${toTxtBaseline})`
 			);
-		
-		currSlotTxtSel = slotTxt1Sel;
 		
 		// Build the second txt element on top of the
 		// first so the can be cross-faded:
@@ -260,30 +273,32 @@ var ProbabilityViz = function(width, height) {
 						`translate(${slotWinWidth / 2.}, ${toTxtBaseline})`
 				);
 		
-		setSlotWindowTxt("Click a GO button");
+		// Give this slot window text element to the manager:
+		slotTxtMan.addTxtElement(slotTxt2Sel.node());
 
-		let nextText = function(i) {
-							setSlotWindowTxt(eventGenerator.next(),
-											 function() {
-												if ( i++ <= 10 ) {
-													nextText(i);
-												};
-											 })
-		};
+		// Attach an empty transition to this
+		// selection for setSlotWindowTxt() to find:
+		slotTxt2Sel.transition(fadeOutTrans);
+		
+		setSlotWindowTxt("Click a GO button");
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
-				   let deathCauses = Object.keys(DEATH_CAUSES);
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
-				   //*****nextText(0);
+					let txtInfo = [];
+					for ( let i=0; i<10; i++ ) {
+						txtInfo.push(eventGenerator.next());
+					}
+					setSlotWindowTxt(txtInfo);
 					
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
-				   let deathCauses = Object.keys(DEATH_CAUSES);
-				   for ( let i=0; i<100; i++) {
-					   setSlotWindowTxt(eventGenerator.next());
-				   }
+					let txtInfo = [];
+					for ( let i=0; i<100; i++ ) {
+						txtInfo.push(eventGenerator.next());
+					}
+					setSlotWindowTxt(txtInfo);
 			   });
 		
 		// Add small death cause occurrences histogram
@@ -755,76 +770,49 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txt, numReps) {
-		
-		if ( typeof(numReps) !== 'number' ) {
-			numReps = 0;
-		} 
-		
-		// Prepare (i.e. compute wrapping for) text in 
-		// the currently invisible text element:
-		if ( parseFloat(slotTxt1Sel.style("opacity")) > 0 ) {
-			slotTxt2Sel.text(txt);
-			// Wrap text within slot window; padding left and right:
-			wrapTxt(slotTxt2Sel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
-		} else {
-			slotTxt1Sel.text(txt);
-			// Wrap text within slot window; padding left and right:
-			wrapTxt(slotTxt1Sel, slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
+	var setSlotWindowTxt = function(txtInfo) {
+
+		if ( typeof(txtInfo) === "string") {
+			txtInfo = [txtInfo];
 		}
 		
-		// Start fading out the current text:
-		let fadeOutTrans = d3.transition();
-		let fadeInTrans = d3.transition();
+		if ( txtInfo.length === 0 ) {
+			return;
+		}
+
+		let oneRun = function() {
 		
-		// And fade in the new text at the same time:
-		if ( parseFloat(slotTxt1Sel.style("opacity")) === 0 ) {
-			// We are currently showing text slot 2
-			// Start fading out that currently active txt:
-			slotTxt2Sel
-				.transition(fadeOutTrans)
-					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 0);
+			let txt = txtInfo.pop();
+			if ( typeof(txt) === 'undefined') {
+				// All done; switch the txt
+				// elements:
+				slotTxtMan.makeNxtHot();
+				return;
+			}
+			
+			// Prepare (i.e. compute wrapping for) text in 
+			// the currently invisible text element:
+			
+			slotTxtMan.coldSel().text(txt);
+			
+			// Wrap text within slot window; padding left and right:
+			wrapTxt(slotTxtMan.coldSel(), slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
 				
-			// And fade in the new text at the same time:
-			slotTxt1Sel
-				.transition(fadeInTrans)
-					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.on("start", function repeat(i) {
-						if ( typeof(i) !== 'number') {
-							i = 0;
-						};
-						if ( i > numReps ) {
-							return;
-						};
-						d3.active(this)   // current transition
-							.style("opacity", 1)
-							.on("end", repeat, i++);
-					})
-		} else { // currently showing txt slot 1
-			
-			// Fade out txt 1:
-			slotTxt1Sel
-				.transition(fadeOutTrans)
-					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.style("opacity", 0);
-			
-			slotTxt2Sel
-				.transition(fadeInTrans)
-					.duration(SLOT_TXT_TRANSITION_SPEED)
-					.on("start", function repeat(i) {
-						if ( typeof(i) !== 'number') {
-							i = 0;
-						};
-						if ( i > numReps ) {
-							return;
-						};
-						d3.active(this)   // current transition
-							.style("opacity", 1)
-							.on("end", repeat, i++);
-					})
+			// Fade out the hot (visible) text:
+			slotTxtMan.hotSel().transition()
+					.transition("fadeOut")
+						.duration(SLOT_TXT_TRANSITION_SPEED)
+						.style("opacity", 0);
+				
+			// Fade in the currently invisible text element:
+            slotTxtMan.coldSel().transition()
+					.transition("fadeIn")
+						.duration(SLOT_TXT_TRANSITION_SPEED)
+						.style("opacity", 1)
+						.on("end", oneRun);
 		}
-		return fadeInTrans;
+		
+		oneRun();
 	}
 	
 	/*---------------------------
@@ -1510,6 +1498,77 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	return constructor(width, height);
+}
+
+/* ----------------------------------  TextManager Class ---------------------*/
+
+var TextManager = function(txtElements) {
+	
+	/*
+	 * Simple management of multiple DOM text
+	 * elements. A usual scenario is text
+	 * elements in the same position on screen
+	 * that each hold different text, and of
+	 * which only one is ever visible.
+	 * 
+	 */
+	
+	var hotElementIndx = 0;
+	var txtSels = [];
+	
+	/*---------------------------
+	| constructor
+	-----------------*/
+	
+	var constructor = function(txtElements) {
+
+		if ( typeof(txtElements) !== 'undefined') {
+
+			for ( let el of txtElements ) {
+				addTxtElement(el);
+			}
+		}
+
+		return { hotSel        : hotSel,
+			coldSel       : coldSel,
+			makeNxtHot    : makeNxtHot,
+			addTxtElement : addTxtElement
+		}
+	}
+	
+	/*---------------------------
+	| hotSel 
+	-----------------*/
+	
+	var hotSel = function() {
+		return txtSels[hotElementIndx];
+	}
+	
+	/*---------------------------
+	| coldSel
+	-----------------*/
+	
+	var coldSel = function() {
+		return txtSels[(hotElementIndx + 1) % txtSels.length];
+	}
+	
+	/*---------------------------
+	| makeNxtHot 
+	-----------------*/
+	
+	var makeNxtHot = function() {
+		hotElementIndx = (hotElementIndx + 1) % txtSels.length;
+	}
+	
+	/*---------------------------
+	| addTxtElement
+	-----------------*/
+	
+	var addTxtElement = function(txtEl) {
+		txtSels.push(d3.select(txtEl));
+	}
+	
+	return constructor(txtElements);
 }
 
 var probViz = ProbabilityViz(400, 500);
