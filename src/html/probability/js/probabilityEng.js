@@ -785,6 +785,16 @@ var ProbabilityViz = function(width, height) {
 		if ( txtInfo.length === 0 ) {
 			return;
 		}
+		
+		// If there are many text elements to display in 
+		// sequence, the browser lags behind, even with
+		// short transition speed settings. In that case
+		// just display with small delay in between, rather 
+		// than fade:
+		let doFade = true;
+		if ( txtInfo.length > 5 ) {
+			doFade = false;
+		}
 
 		let oneRun = function() {
 		
@@ -803,19 +813,31 @@ var ProbabilityViz = function(width, height) {
 			
 			// Wrap text within slot window; padding left and right:
 			wrapTxt(slotTxtMan.coldSel(), slotWinWidth, SLOT_WINDOW_LEFT_PADDING);
-				
-			// Fade out the hot (visible) text:
-			slotTxtMan.hotSel().transition()
+			
+			if ( doFade ) {
+				// Fade out the hot (visible) text:
+				slotTxtMan.hotSel()
+					.transition()
 					.transition("fadeOut")
 						.duration(transitionSpeed)
 						.style("opacity", 0);
-				
-			// Fade in the currently invisible text element:
-            slotTxtMan.coldSel().transition()
+
+				// Fade in the currently invisible text element:
+				slotTxtMan.coldSel()
+					.transition()
 					.transition("fadeIn")
 						.duration(transitionSpeed)
 						.style("opacity", 1)
 						.on("end", oneRun);
+				slotTxtMan.makeNxtHot();
+			} else {
+				slotTxtMan.hotSel().style("opacity", 0);
+				slotTxtMan.coldSel().style("opacity", 1);
+				slotTxtMan.makeNxtHot();
+				d3.timeout(oneRun, transitionSpeed);
+			}
+			
+
 		}
 		
 		oneRun();
