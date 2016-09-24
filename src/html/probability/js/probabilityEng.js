@@ -100,10 +100,10 @@ var ProbabilityViz = function(width, height) {
 
 	// Speed at which text in slot window
 	// fades and appears with only one slot change:
-	var SLOT_TXT_TRANSITION_SPEED     = 1000; // msecs
+	var SLOT_TXT_TRANSITION_SPEED     = 800; // msecs
 	// Delays between runs of 10:
-	var SLOT_TXT_TRANSITION_DELAY_10  = 1500; // msecs
-	var SLOT_TXT_TRANSITION_DELAY_100 = 300; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_10  = 100; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_100 = 50; // msecs
 	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -286,19 +286,21 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(eventGenerator.next());
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
+				    // Pick 10 random death causes:
 					let txtInfo = [];
 					for ( let i=0; i<10; i++ ) {
 						txtInfo.push(eventGenerator.next());
 					}
-					setSlotWindowTxt(txtInfo);
+					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10);
 					
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
+				    // Pick 100 random death causes:			
 					let txtInfo = [];
 					for ( let i=0; i<100; i++ ) {
 						txtInfo.push(eventGenerator.next());
 					}
-					setSlotWindowTxt(txtInfo);
+					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_100);
 			   });
 		
 		// Add small death cause occurrences histogram
@@ -770,10 +772,14 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txtInfo) {
+	var setSlotWindowTxt = function(txtInfo, transitionSpeed) {
 
 		if ( typeof(txtInfo) === "string") {
 			txtInfo = [txtInfo];
+		}
+		
+		if ( typeof(transitionSpeed) === 'undefined' ) {
+			transitionSpeed = SLOT_TXT_TRANSITION_SPEED;
 		}
 		
 		if ( txtInfo.length === 0 ) {
@@ -801,13 +807,13 @@ var ProbabilityViz = function(width, height) {
 			// Fade out the hot (visible) text:
 			slotTxtMan.hotSel().transition()
 					.transition("fadeOut")
-						.duration(SLOT_TXT_TRANSITION_SPEED)
+						.duration(transitionSpeed)
 						.style("opacity", 0);
 				
 			// Fade in the currently invisible text element:
             slotTxtMan.coldSel().transition()
 					.transition("fadeIn")
-						.duration(SLOT_TXT_TRANSITION_SPEED)
+						.duration(transitionSpeed)
 						.style("opacity", 1)
 						.on("end", oneRun);
 		}
