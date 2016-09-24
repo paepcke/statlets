@@ -280,10 +280,20 @@ var ProbabilityViz = function(width, height) {
 		// selection for setSlotWindowTxt() to find:
 		slotTxt2Sel.transition(fadeOutTrans);
 		
+		let deathCauseCounts = {};
+		for ( let cause of Object.keys(DEATH_CAUSES) ) {
+			deathCauseCounts[cause] = 0;
+		}
+		slotModBodySel.attr("deathCauseCounts", JSON.stringify(deathCauseCounts));
+		
 		setSlotWindowTxt("Click a GO button");
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
-				   setSlotWindowTxt(eventGenerator.next());
+				   let deathCause = eventGenerator.next();
+				   setSlotWindowTxt(deathCause);
+				   // Update this slot module's cause counts:
+				   addDeathCauseCount(slotModBodySel, deathCause);
+				   
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				    // Pick 10 random death causes:
@@ -292,7 +302,10 @@ var ProbabilityViz = function(width, height) {
 						txtInfo.push(eventGenerator.next());
 					}
 					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10);
-					
+				    // Update this slot module's cause counts:
+					for ( let deathCause of txtInfo ) {
+						addDeathCauseCount(slotModBodySel, deathCause);
+				    } 
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 				    // Pick 100 random death causes:			
@@ -301,6 +314,10 @@ var ProbabilityViz = function(width, height) {
 						txtInfo.push(eventGenerator.next());
 					}
 					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_100);
+				    // Update this slot module's cause counts:
+					for ( let deathCause of txtInfo ) {
+						addDeathCauseCount(slotModBodySel, deathCause);
+				    } 
 			   });
 		
 		// Add small death cause occurrences histogram
@@ -364,8 +381,6 @@ var ProbabilityViz = function(width, height) {
         scalesHist  = makeCoordSys(extentDict);
         
         let histSel = scalesHist.coordSysSel;
-//        histSel
-//        	.attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP})`);
 	}	
 	
 	/*---------------------------
@@ -625,6 +640,43 @@ var ProbabilityViz = function(width, height) {
 
 	}
 	
+	/*---------------------------
+	| updateSlotModHistogram 
+	-----------------*/
+	
+	var updateSlotModHistogram = function(deathCauseCounts, scalesDistrib, slotModSvgSel) {
+
+		
+		let xScale = scalesDistrib.xScale;
+		let yScale = scalesDistrib.yScale;
+		
+				
+		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
+			// Data are the counts of causes of death:
+   		  .data(Object.keys(deathCauseCounts))
+	      		.attr('y', function(deathCause) {
+	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING;
+	      		})
+	      .enter()
+     		.append("rect")
+	      		.attr('class', 'slotModHistRect')
+	      		.attr('id', function(deathCause) { 
+	      			return 'histBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
+	      		})
+	      		.attr('deathCause', function(deathCause) { return deathCause } )
+	      		.attr('x', function(deathCause) { 
+	      			return xScale(deathCause) 
+	      		})
+	      		.attr('width', xScale.Bandwidth())
+	      		.attr('y', function(deathCause) { 
+	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING 
+	      		})
+	      		.attr('height', function(deathCause) { 
+	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseCounts[deathCause]) 
+	      		});
+		
+		
+	}
 	
 	/*---------------------------
 	| barPulled
@@ -1511,8 +1563,58 @@ var ProbabilityViz = function(width, height) {
 		}
 		return numZeroesSoFar;
 	}
-										   
+
+	/*---------------------------
+	| addDeathCauseCount
+	-----------------*/
 	
+	var addDeathCauseCount = function(slotModBodySel, deathCause) {
+		/*
+		 * Given the selection of a slot module body,
+		 * grab its JSON-encoded death cause count object,
+		 * and add 1 to the counter of key deathCause.
+		 */
+		
+		// Probably inefficient to use JSON, but I think
+		// that attrs can only be strings, and I like keeping
+		// each slot module's information with the module:
+		
+		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
+		counterObj[deathCause]++;
+		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
+	}
+	
+	/*---------------------------
+	| getDeathCauseCount
+	-----------------*/
+	
+	var getDeathCauseCount = function(slotModBodySel, deathCause) {
+		/*
+		 * Given a slot module body selection and a death
+		 * cause, return the number of times that cause has occurred
+		 * in this module.
+		 */
+		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
+		return counterObj[deathCause];
+	}
+	
+	/*---------------------------
+	| clearDeathCauseCount 
+	-----------------*/
+	
+	var clearDeathCauseCount = function(slotModBodySel) {
+		/*
+		 * Zeroes all the slot module's death cause counts:
+		 */
+		
+		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
+		
+		for ( let deathCause of Object.keys(counterObj) ) {
+			counterObj[deathCause] = 0;
+			
+		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
+		
+	}
 	/*---------------------------
 	| upLog 
 	-----------------*/

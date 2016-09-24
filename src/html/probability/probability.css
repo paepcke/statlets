@@ -90,6 +90,15 @@ h1          { text-align : center;  }
   	border-radius : 25px;
 }
 
+.distribSvg  {
+    border : 1px solid BurlyWood;
+    padding-top  : 50px;
+    padding-left : 40px;
+    padding-right : 100px;
+    padding-bottom :  70px;
+	background-color : #F6F6F6;                 /* off-white */    
+}
+
 .slotWindowRect {
 	position: relative;
 	x       : 5.5%;
@@ -100,20 +109,14 @@ h1          { text-align : center;  }
 	fill    : rgb(246,239,238); /* very light gray */
 }    
 
-         
-         
-.distribSvg  {
-    border : 1px solid BurlyWood;
-    padding-top  : 50px;
-    padding-left : 40px;
-    padding-right : 100px;
-    padding-bottom :  70px;
-	background-color : #F6F6F6;                 /* off-white */    
-}
 
 .slotWindowTxt {
 	fill		: black;
 	text-anchor : middle;
+}
+
+.slotModHistRect {
+	fill    : blue;
 }
 
 .goButton {
