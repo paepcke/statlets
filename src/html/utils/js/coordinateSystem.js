@@ -7,12 +7,15 @@ var CoordinateSystem = function(coordInfo) {
 	 * 
 	 * Required properties are:
 	 * 
-	 *      o the SVG element to draw in,
+	 *      o d3 selection of the SVG element to draw in,
 	 *      o the scale type for both axes, and 
 	 *      o the domain for both axes.
 	 * 
 	 * Optionally the parameter objects may also 
-	 * hold these properties 
+	 * hold these properties:
+	 * 
+	 * 		o height        ; height of coordinate system in pixels. Default: fill parent
+	 * 		o width         ; width of coordinate system in pixels. Default: fill parent	 * 
      * 
 	 * For each of the axes:
 	 * 
@@ -58,20 +61,27 @@ var CoordinateSystem = function(coordInfo) {
 	 * 
 	 */
 	
-	let svg 	  = coordInfo.svg;
+	let svgSel 	  = coordInfo.svgSel;
 	
-	let height    = null;
-	let width     = null;
+	let height       = null;
+	let width        = null;
+	   
+	let yAxis        = null;
+	let xScale       = null;
+	let yScale       = null;
+	let xDomain      = null;
+	let yDomain      = null;
 	
-	let yAxis     = null;
-	let xScale    = null;
-	let yScale    = null;
-	let xDomain   = null;
-	let yDomain   = null;
+	let xScaleType   = null;
+	let yScaleType   = null;
 	
-	let bandWidth = null; // width in pixels between two x-axis ticks.
+	let xSubclass    = null;
+	let ySubclass    = null;
 	
-	let coordSysSel     = null;
+	let xBandWidth   = null; // width in pixels between two x-axis ticks.
+	let yBandWidth   = null; // width in pixels between two y-axis ticks.
+	
+	let coordSysSel  = null;
 	
 	let xAxisLabelId = null;
 	let xAxisGrpName = null;
@@ -79,12 +89,15 @@ var CoordinateSystem = function(coordInfo) {
 	let yAxisLabelId = null;
 	let yAxisGrpName = null;
 	
+	let xAxisGroup   = null;
+	let yAxisGroup   = null;
+	
 	let X_AXIS_LEFT       = 0;
 	let X_AXIS_RIGHT      = 30;
 	let X_AXIS_BOTTOM     = 20;
 
 	let Y_AXIS_LEFT       = 50;
-	let Y_AXIS_TOP        = 0;
+	let Y_AXIS_TOP        = -10;
 	let Y_AXIS_BOTTOM     = 20;
 	
 	
@@ -95,7 +108,7 @@ var CoordinateSystem = function(coordInfo) {
 	| constructor 
 	-----------------*/
 	
-	var constructor = function() {
+	var constructor = function(coordInfo) {
 		
 		xAxisLabelId = "xAxisLbl_" + uniqueNum();
 		xAxisGrpName = "xAxisGrpNm" + uniqueNum();
@@ -103,125 +116,233 @@ var CoordinateSystem = function(coordInfo) {
 		yAxisLabelId = "yAxisLbl_" + uniqueNum(); 
 		yAxisGrpName = "yAxisGrpNm" + uniqueNum();
 		
+		
+		/* ------------ Required args ------------- */
+		
 		/* SVG to draw in */
-		if ( typeof(coordInfo.svg) !== "undefined" ) {
-			svg = coordInfo.svg;
+		if ( typeof(coordInfo.svgSel) !== "undefined" ) {
+			svgSel = coordInfo.svgSel;
 		} else {
-			throw("Must pass an SVG element to coordinate system")
+			throw("Must pass the d3 selection of the SVG element for the coordinate system")
 		}
 		
+		if ( typeof(coordInfo.x.scaleType) !== 'undefined') {
+			xScaleType = coordInfo.x.scaleType;
+		} else {
+			throw 'Must provide x-scale type when creating coordinate system.';
+		}
+		
+		if ( typeof(coordInfo.y.scaleType) !== 'undefined') {
+			yScaleType = coordInfo.y.scaleType;
+		} else {
+			throw 'Must provide y-scale type when creating coordinate system.';
+		}
+		
+		if ( typeof(coordInfo.x.domain) !== 'undefined') {
+			xDomain = coordInfo.x.domain;
+		} else {
+			throw 'Must provide x-axis domain when creating coordinate system.';
+		}
+
+		if ( typeof(coordInfo.y.domain) !== 'undefined') {
+			yDomain = coordInfo.y.domain;
+		} else {
+			throw 'Must provide y-axis domain when creating coordinate system.';
+		}
+		
+		/* ------------ Optional args ------------- */
 		/* Height of entire coordinate system; default: fill 
 		 * the given SVG's parent: */
-		if (typeof(extentDict.height) !== 'undefined') {
-			height = extentDict.height; 
+		if (typeof(coordInfo.height) !== 'undefined') {
+			height = coordInfo.height; 
+		} else {
+			height = svgSel.node().parentElement.clientHeight
 		}
 		
 		/* Width of entire coordinate system; default: fill 
 		 * the given SVG's parent: */
-		if (typeof(extentDict.width) !== 'undefined') {
-			width = extentDict.width; 
+		if (typeof(coordInfo.width) !== 'undefined') {
+			width = coordInfo.width; 
+		} else {
+			width = svgSel.node().parentElement.clientWidth;
 		}
 		
+		if (typeof(coordInfo.x.subclass) !== 'undefined') {
+			xSubclass = coordInfo.x.subclass;
+		}
+		
+		if (typeof(coordInfo.y.subclass) !== 'undefined') {
+			ySubclass = coordInfo.y.subclass;
+		}
 		
 		/* X-Axis placement: */
-		if (typeof(extentDict.x.leftPadding) !== 'undefined') {
-			X_AXIS_LEFT = extentDict.x.leftPadding; 
+		if (typeof(coordInfo.x.leftPadding) !== 'undefined') {
+			X_AXIS_LEFT = coordInfo.x.leftPadding; 
 		}
-		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
-			X_AXIS_RIGHT = extentDict.x.rightPadding; 
+		if (typeof(coordInfo.x.rightPadding) !== 'undefined') {
+			X_AXIS_RIGHT = coordInfo.x.rightPadding; 
 		}
-		if (typeof(extentDict.x.bottomPadding) !== 'undefined') {
-			X_AXIS_BOTTOM = extentDict.x.bottomPadding; 
+		if (typeof(coordInfo.x.bottomPadding) !== 'undefined') {
+			X_AXIS_BOTTOM = coordInfo.x.bottomPadding; 
 		}
 		
 		/* Y-Axis placement: */
-		if (typeof(extentDict.y.leftPadding) !== 'undefined') {
-			Y_AXIS_LEFT= extentDict.y.leftPadding; 
+		if (typeof(coordInfo.y.leftPadding) !== 'undefined') {
+			Y_AXIS_LEFT= coordInfo.y.leftPadding; 
 		}
-		if (typeof(extentDict.y.topPadding) !== 'undefined') {
-			Y_AXIS_TOP = extentDict.y.topPadding; 
+		if (typeof(coordInfo.y.topPadding) !== 'undefined') {
+			Y_AXIS_TOP = coordInfo.y.topPadding; 
 		}
-		if (typeof(extentDict.y.bottomPadding) !== 'undefined') {
-			Y_AXIS_BOTTOM = extentDict.y.bottomPadding; 
+		if (typeof(coordInfo.y.bottomPadding) !== 'undefined') {
+			Y_AXIS_BOTTOM = coordInfo.y.bottomPadding; 
 		}
 		
+		// Make the SVG match width/height:
+		svgSel.attr("width", width);
+		svgSel.attr("height", height);
+		
+		makeCoordSys();
 		
 		return {
 			xScale : xScale,
 			yScale : yScale,
-			xBandwidth : xBandWidth,
-			yBandwidth : yBandWidth,
-			systemSel  : systemSel,
-			xLabelsShow: xLabelsShow
+			xBandWidth : xBandWidth,
+			yBandWidth : yBandWidth,
+			coordSysSel: coordSysSel,
+			xLabelsShow: xLabelsShow,
+			yLabelsShow: yLabelsShow
+		}
+	}
+	
+	/*---------------------------
+	| xLabelsShow
+	-----------------*/
+	
+	var xLabelsShow = function(doShow) {
+		if(doShow) {
+			xAxisLabel.attr("display", "block");
+		} else {
+			xAxisLabel.attr("display", "none");
 		}
 	}
 
 	/*---------------------------
+	| yLabelsShow
+	-----------------*/
+	
+	var yLabelsShow = function(doShow) {
+		if(doShow) {
+			yAxisLabel.attr("display", "block");
+		} else {
+			yAxisLabel.attr("display", "none");
+		}
+	}
+	
+	
+	/*---------------------------
 	| makeCoordSys 
 	-----------------*/
 	
-	var makeCoordSys = function(extentDict) {
+	var makeCoordSys = function() {
 		
 		
-		/* ---------------------------- X AXIS ---------------------------- */		
+		makeScales();
+		makeAxes();
+		makeAxesCaptions();
+		
+		// Move x-tick labels down a bit:
+		xAxisGroup.selectAll("text").attr("dy", "1.71em");
+		
+		// Prevent the labels from lighting up when
+		// cursor runs over them:
+						
+		makeUnselectable(d3.selectAll('.axis text'));
+		makeUnselectable(d3.selectAll('.x.label'));
+		makeUnselectable(d3.selectAll('.y.label'));
+		
+		// Select the whole coordinate system in
+		// case client wants to translate or hide it:
+		let allNodes = xAxisGroup.nodes().concat(yAxisGroup.nodes())
+						 .concat(d3.select("#" + xAxisLabelId).nodes())
+						 .concat(d3.select("#" + yAxisLabelId).nodes())
+						
+		coordSysSel = d3.selectAll(allNodes);
+	}
+	
+	/*---------------------------
+	| makeScales 
+	-----------------*/
+	
+	var makeScales = function() {
+		
 		// X Scale:
 		
-		switch(coordInfo.x.scaleType) {
+		switch(xScaleType) {
 		case 'linear':
 			xScale = d3.scaleLinear()
-							 .domain(coordInfo.x.domain)
+							 .domain(xDomain)
 							 .range([Y_AXIS_LEFT, width - X_AXIS_RIGHT]);
 			break;
 		case 'ordinal':
 			xScale = d3.scaleBand()
-							 .domain(coordInfo.x.domain)
+							 .domain(xDomain)
 							 .rangeRound([Y_AXIS_LEFT, width - X_AXIS_RIGHT])
 							 .paddingInner(0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
 			// value:
-			bandWidth = xScale(coordInfo.x.domain[1]) - xScale(coordInfo.x.domain[0]) 
+			xBandWidth = xScale(xDomain[1]) - xScale(xDomain[0]) 
 
 		break;
 		default:
-			throw `Axis type ${coordInfo.x.scaleType} not implemented.`;
+			throw `Axis type ${xScaleType} not implemented.`;
 		}
 		
 
 		// Y Scale
-		switch(coordInfo.y.scaleType) {
+		switch(yScaleType) {
 		case 'linear':
 			yScale = d3.scaleLinear()	
-			 			 .domain(coordInfo.y.domain)
+			 			 .domain(yDomain)
 						 .range([height - Y_AXIS_BOTTOM, - Y_AXIS_TOP]);
 			break;
 		case 'ordinal':
 			yScale = d3.scaleBand()
-							 .domain(coordInfo.y.domain)
+							 .domain(yDomain)
 							 .range([Y_AXIS_TOP, height- Y_AXIS_BOTTOM])
 							 .innerPadding(0.1);
+			// Width between two ticks is (for instance) pixel-pos
+			// at first domain value minus pixel pos at zeroeth domain
+			// value:
+			yBandWidth = yScale(yDomain[1]) - yScale(yDomain[0]) 
+
 			break;
 		default:
-			throw `Axis type ${coordInfo.x.scaleType} not implemented.`;
+			throw `Axis type ${xScaleType} not implemented.`;
 		}
-		
-		// Make the visual coordinate system:
-		
+	}
+	
+	/*---------------------------
+	| makeAxes 
+	-----------------*/
+	
+	var makeAxes = function() {
+
 		// Create a group, and call the xAxis function to create the axis.
-		let xAxisGroup = svg.append("g")
+		xAxisGroup = svgSel.append("g")
 			 .attr("class", "axis")
-			 .attr("id", coordInfo.x.axisGrpName)
+			 .attr("id", xAxisGrpName)
 			 .attr("transform", `translate(${X_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
 			 .call(d3.axisBottom(xScale));
 		
-		if (typeof(coordInfo.x.subclass) !== 'undefined' ) {
-			xAxisGroup.classed(coordInfo.x.subclass, true)
+		if (xSubclass !== null ) {
+			xAxisGroup.classed(xSubclass, true)
 		}
 		
 		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
-		if (coordInfo.x.scaleType === 'ordinal') {
+		if (xScaleType === 'ordinal') {
 			
 			// Find distance between X-ticks;
 			// xScale.range() returns array with
@@ -239,48 +360,41 @@ var CoordinateSystem = function(coordInfo) {
 		/* ---------------------------- Y AXIS ---------------------------- */		
 		
 		// Create a group, and call the xAxis function to create the axis:
-		let yAxisGroup = svg.append("g")
+		yAxisGroup = svgSel.append("g")
 			 .attr("class", "axis")
-			 .attr("id", coordInfo.y.axisGrpName)
+			 .attr("id", yAxisGrpName)
 			 .attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP_MARGIN_VAL})`)	
 		     .call(d3.axisLeft(yScale));
 
-		if (typeof(coordInfo.y.subclass) !== 'undefined' ) {
-			yAxisGroup.classed(coordInfo.y.subclass, true)
+		if (ySubclass !== null ) {
+			yAxisGroup.classed(ySubclass, true)
 		}
+	}
+	
+	/*---------------------------
+	| makeAxesLabels 
+	-----------------*/
+	
+	var makeAxesCaptions = function() {
+		/*
+		 * Add axes labels for the axes. These
+		 * are not the tick labels, but the captions.
+		 */
 		
-		
-		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
-		
-		let xAxisLabel = svg.append("text")
+		let xAxisLabel = svgSel.append("text")
 						.attr("class", "x label")
-						.attr("id", coordInfo.x.axisLabelId)
+						.attr("id", xAxisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", 2*width / 3.0)
 						.attr("y", height + 55)
-						.text(coordInfo.x.axisLabel)
+						.text(xAxisLabel)
 						
-		let yAxisLabel = svg.append("text")
+		let yAxisLabel = svgSel.append("text")
 						.attr("class", "axis y label")
-						.attr("id", coordInfo.y.axisLabelId)
+						.attr("id", yAxisLabelId)
 						.attr("x", 5)
 						.attr("y", -5)
-						.text(coordInfo.y.axisLabel)
-						
-		makeUnselectable(d3.selectAll('.axis text'));
-		makeUnselectable(d3.selectAll('.x.label'));
-		makeUnselectable(d3.selectAll('.y.label'));
-		
-		coordSysSel = d3.selectAll(d3.merge([xAxisGroup.nodes(), 
-		                                     yAxisGroup.nodes(), 
-		                                     xAxisLabel.nodes(), 
-		                                     yAxisLabel.nodes()]));
-		
-		return {xScale    : xScale,
-				yScale    : yScale,
-				bandWidth : bandWidth,
-				coordSysSel : coordSysSel 
-			   }
+						.text(yAxisLabel)
 	}
 	
 	/*---------------------------
@@ -297,15 +411,15 @@ var CoordinateSystem = function(coordInfo) {
 	
 	var makeUnselectable = function(d3Sel) {
 		
-		d3Sel.attr("-webkit-touch-callout", "none"); /* iOS Safari */
-		d3Sel.attr("-webkit-user-select", "none");   /* Chrome/Safari/Opera */
-		d3Sel.attr("-khtml-user-select", "none");    /* Konqueror */
-		d3Sel.attr("-moz-user-select", "none");      /* Firefox */
-		d3Sel.attr("-ms-user-select", "none");       /* Internet Explorer/Edge */
+		d3Sel.style("-webkit-touch-callout", "none"); /* iOS Safari */
+		d3Sel.style("-webkit-user-select", "none");   /* Chrome/Safari/Opera */
+		d3Sel.style("-khtml-user-select", "none");    /* Konqueror */
+		d3Sel.style("-moz-user-select", "none");      /* Firefox */
+		d3Sel.style("-ms-user-select", "none");       /* Internet Explorer/Edge */
 	}
 	
 	
-	return constructor();
+	return constructor(coordInfo);
 }
 
 export { CoordinateSystem };

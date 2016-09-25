@@ -90,7 +90,7 @@ case "${babelEnv}" in
         node_modules/babel-cli/bin/babel.js src/html/ -d lib/html/
 
         echo "Copying HTML..."
-        cp src/html/scratch1.html lib/html/scratch1Test.html
+        cp src/html/scratch1.html lib/html/
         cp src/html/utils/*.css  lib/html/utils
         cp src/html/utils/js/*.min.* lib/html/utils/js
         
