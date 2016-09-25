@@ -1,43 +1,84 @@
-
-
-body {
-  font-family: Univers, Arial, sans-serif;
+div.overlayDiv {
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-color:#fff;
+    opacity:0;
+    z-index:-1;
 }
 
-.button rect {
-  stroke: #1f628d;
-  stroke-width: 2px;
+div.overlayDiv.visible { z-index : 1001;
+				   		 opacity : 0.8;
+				       }    
+
+
+/* Alert box features: */
+
+.softAlertDiv {    
+	position: fixed;
+    top:40%;
+    left:40%;
+    /* background-color: rgb(204, 255, 204); */ /* light green */
+    background-color: rgb(248,205,222);   /* rose */
+    opacity:0;
+    z-index:-2;
 }
 
-.button #gradient-start {
-/*  stop-color: #3498db; */
-  stop-color: #4d9fb6; /* 70% */
-  stop-opacity: 1;
+.softAlertDiv.visible {
+	z-index:1002;
+	opacity : 1;
+	border : 1px solid rgb(0, 102, 0); /* dark green */
 }
 
-.button #gradient-stop {
-/*  stop-color: #2980b9; */
-  stop-color: #1a84a2; /* 100% */
-  stop-opacity: 1;
+.softAlertHeader {
+	font-size   : 18pt;
+	font-weight : bold;
+	color       : rgb(0, 102, 0); /* dark green */
+	margin-left : 10px;
+	margin-top  : -1px;
 }
 
-.button #gradient-start.active {
-/*  stop-color: #3cb0fd; */
-  stop-color: #99c8d5; /* 40% */
+.softAlertTxt {
+	font-size   : 12pt;
+	color : black;
+	margin-left : 10px;
+	margin-top  : -15px;
+	margin-right: 10px;
 }
 
-.button #gradient-stop.active {
-/*  stop-color: #3498db; */
-  stop-color: #4d9fb6; /* 70% */
+.softAlertTxt.wrong { color : red; }
+
+.softAlertEntryFld {
+	background-color : rgb(250,259,194);
+	size          : 30;
+	margin-left   : 10px;
+	margin-bottom : 5px;
+	display	      : none;
 }
 
-.button text {
-  font-size: 30px;
-  fill: #eee;
-  pointer-events: none;
-  text-anchor: middle;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
+.softAlertEntryFld.visible {
+	display: block;
 }
+
+button.softAlert {
+	background-color : rgb(0, 102, 0); /* dark green */
+    color : white;
+ 	border-radius : 25px;
+ 	margin-right : 20px;
+ 	margin-left : 10px;
+ 	margin-top : 5px;
+ 	margin-bottom : 5px;
+ 	padding : 3px;
+ 	opacity : 1;
+}
+
+button.softAlert.disabled {
+	opacity : 0.5;
+}
+
+/* Suppress blue outline around alert box button:
+button.softAlert:focus { outline : 0 !important; }
+
 

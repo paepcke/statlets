@@ -543,6 +543,12 @@ var ProbabilityViz = function(width, height) {
         xDomainSaved = xDomain.map(function(el) { return el });
         
         // Argument for makeCoordSys:
+        //******@@ 	const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
+	//******@@ 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
+//******@@ 		const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
+//******@@ 		const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
+
+        
         let extentDict  = {svg           : distribSvg, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
@@ -644,11 +650,12 @@ var ProbabilityViz = function(width, height) {
 	| updateSlotModHistogram 
 	-----------------*/
 	
-	var updateSlotModHistogram = function(deathCauseCounts, scalesDistrib, slotModSvgSel) {
+	var updateSlotModHistogram = function(deathCauseCounts, scalesHist, slotModSvgSel) {
 
 		
-		let xScale = scalesDistrib.xScale;
-		let yScale = scalesDistrib.yScale;
+		let xScale    = scalesHist.xScale;
+		let yScale    = scalesHist.yScale;
+		let bandWidth = scalesHist.bandWidth;
 		
 				
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
@@ -667,7 +674,7 @@ var ProbabilityViz = function(width, height) {
 	      		.attr('x', function(deathCause) { 
 	      			return xScale(deathCause) 
 	      		})
-	      		.attr('width', xScale.Bandwidth())
+	      		.attr('width', bandWidth)
 	      		.attr('y', function(deathCause) { 
 	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING 
 	      		})
@@ -1007,6 +1014,78 @@ var ProbabilityViz = function(width, height) {
 			break;
 		}
 	}
+	
+	/*---------------------------
+	| normalizeDeathCauses 
+	-----------------*/
+
+	var normalizeDeathCauses = function(barSel, pixelDelta) {
+		/*
+		 * Without the two parameters, normalizes all probabilities
+		 * in DEATH_CAUSES so they add to 1. Modifies DEATH_CAUSES values
+		 * in place.
+		 * 
+		 * If barSel and pixelDelta are provided, the DEATH_CAUSES 
+		 * probability values are assumed to have been normalized 
+		 * already, but that one value was raised or lowered. 
+		 * This method re-normalizes all DEATH_CAUSES probability 
+		 * values, keeping constant the one that is provided. This 
+		 * functionality is needed when users change the height of 
+		 * a bar, changing the corresponding cause of death's probability.
+		 * 
+		 * All probabilities other than the user-adjusted one are adjusted
+		 * to compensate for the given bar's changed height. The compensatory
+		 * action is distributing across all bars other than the
+		 * one given in the parameter.
+		 * 
+		 * :param barSel: optional: a D3 selection of a bar whose value changed
+		 * :type barSel: { undefined | D3-sel }
+		 * :param pixelDelta: optional: the number of pixel by which the bar moved.
+		 * 		If positive, the bar moved down by pixelDelta pixels 
+		 * 		(.i.e. the bar's y increased by pixelDelta).
+		 * :type pixelDelta: { undefined | float }
+		 * 
+		 */
+		
+		if ( typeof(barSel) === 'undefined') {
+			// Turn death cause percentages to probabilities:
+			let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
+			let causes = Object.keys(DEATH_CAUSES);
+			for ( let i=0; i<normalizedProbs.length; i++ ) {
+				DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+			}
+		} else {
+			
+			// Update the just-dragged bar with its new probability:
+			let thisBarCause 		   = barSel.attr("deathCause");
+			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
+			let newProb                = DEATH_CAUSES[thisBarCause];
+			barSel.attr("deathProb", newProb);
+				
+			let currentProbs = Object.values(DEATH_CAUSES);
+			// Blank out the user-adjusted probability:
+			let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
+			currentProbs[currCauseIndx] = 0;
+			currentProbs = normalizeProbs(currentProbs, 1-newProb);
+			// Put the true current prob back in:
+			currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
+			for ( let i=0; i<currentProbs.length; i++ ) {
+				DEATH_CAUSES[Object.keys(DEATH_CAUSES)[i]] = currentProbs[i];
+			}
+				
+			//************
+			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
+			1+1; // just a statement to attach a breakpoint to
+			console.log(`Sum = ${sum}`);
+			//************
+
+		}
+		
+		// Get a new event generator that is biased
+		// according to the new distribution:
+		eventGenerator = EventGenerator(DEATH_CAUSES);
+
+	}
 
 	/*---------------------------
 	| colBtnsVisible 
@@ -1228,8 +1307,9 @@ var ProbabilityViz = function(width, height) {
 		 *            Example: <additionalClass> == 'noTicks' will 
 		 *                     cause the axis to be of CSS class axis.noTicks.
 		 *                     
-		 * Returns an object with three properties: xScale, yScale,
-		 * and bandWidth, the width in pixels between two x-axis ticks.
+		 * Returns an object with four properties: xScale, yScale,
+		 * bandWidth (width in pixels between two x-axis ticks), and a 
+		 * d3 selection of the coordinate system as a whole. 
 		 * 
 		 */
 		
@@ -1336,7 +1416,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// For ordinal X-axes: rotate tick labels by 45%
 		// and move them to center between x-axis ticks:
-		if (extentDict.x.scaleType == 'ordinal') {
+		if (extentDict.x.scaleType === 'ordinal') {
 			
 			// Find distance between X-ticks;
 			// xScale.range() returns array with
@@ -1582,6 +1662,8 @@ var ProbabilityViz = function(width, height) {
 		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
 		counterObj[deathCause]++;
 		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
+		
+		updateSlotModHistogram(counterObj, scalesHist, slotModBodySel.select("svg"));		
 	}
 	
 	/*---------------------------
@@ -1611,9 +1693,9 @@ var ProbabilityViz = function(width, height) {
 		
 		for ( let deathCause of Object.keys(counterObj) ) {
 			counterObj[deathCause] = 0;
+		};
 			
 		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
-		
 	}
 	/*---------------------------
 	| upLog 

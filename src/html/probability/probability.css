@@ -24,6 +24,11 @@ h1          { text-align : center;  }
 		                                  not supported by any browser */
 }
 
+*.invisibleNoSpace {
+	/* Makes element invisible and makes it not take space: */
+	display : none;
+}
+
 
 .flexWrapper    { 
 				  display : flex;

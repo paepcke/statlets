@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USAGE="./babel { confidence | correlation }. Run Babel on everything below src/html, depositing the new files in ./lib."
+USAGE="./babel { confidence | correlation | probability }. Run Babel on everything below src/html, depositing the new files in ./lib."
 
 # Now go through all the options
 while getopts ":h" opt
@@ -82,6 +82,21 @@ case "${babelEnv}" in
         echo "Running Browserify to make package..."
         node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
                                      -o lib/html/probability/js/probability.js
+        ;;
+
+    scratch1)
+
+        echo "Babelizing statlet ${babelEnv}..."
+        node_modules/babel-cli/bin/babel.js src/html/ -d lib/html/
+
+        echo "Copying HTML..."
+        cp src/html/scratch1.html lib/html/scratch1Test.html
+        cp src/html/utils/*.css  lib/html/utils
+        cp src/html/utils/js/*.min.* lib/html/utils/js
+        
+        echo "Running Browserify to make package..."
+        node_modules/.bin/browserify lib/html/js/scratch1Test.js \
+                                     -o lib/html/js/scratch1.js
         ;;
 
     *)

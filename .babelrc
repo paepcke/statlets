@@ -37,6 +37,15 @@
                       "src/html/utils/js/logging.js"
                      ],
             plugins: ["transform-runtime"]
+        },
+
+        scratch1: {
+            presets: ["es2015", "react"],
+            only:    ["src/html/utils/js/coordinateSystem.js",
+                      "src/html/js/scratch1Test.js"
+                     ],
+            plugins: ["transform-runtime"]
+
         }
     }
 }
