@@ -4,6 +4,7 @@ import { DragHandler } from "./../../utils/js/generalDragHandler";
 import { SoftAlert } from "./../../utils/js/softAlerts";
 import { CookieMonster } from "./../../utils/js/cookieMonster";
 import { Logger } from "./../../utils/js/logging";
+import { CoordinateSystem } from "./../../utils/js/coordinateSystem";
 import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
 
@@ -18,6 +19,8 @@ var ProbabilityViz = function(width, height) {
 	var dragClickHandler = null;
 	var currBtn		 	 = null; // Currently active exercise-step button.
 	
+	var distribCoordSys  = null;
+	
 	var xDomain 	     = null;
 	var yDomain 	     = null;
 	var xDomainAllStates = null;
@@ -27,7 +30,7 @@ var ProbabilityViz = function(width, height) {
 	var tooltipTxtSel	 = null;
 	
 	var scalesDistrib    = null;
-	var scalesHist       = null;
+	var coordSysHist     = null;
 	var distribCauses    = null;
 	
 	var browserType      = null;
@@ -356,12 +359,10 @@ var ProbabilityViz = function(width, height) {
 		let histTop           = lowestBtnDims.y + lowestBtnDims.height;
 		let histHeight        = bodyHeight - histTop;
 		
-        let extentDict  = {svg           : slotModSvgSel, 
+        let coordInfo  = {svgSel         : slotModSvgSel, 
         				   x: {scaleType : 'ordinal',
         					   domain    : [],
         					   axisLabel : 'Cause of Death Count',
-        					 axisLabelId : 'histXLabel',
-        					 axisGrpName : 'histXAxisGrp',
         					rightPadding : 3,
         				   bottomPadding : 3,
         					leftPadding  : 0
@@ -369,8 +370,6 @@ var ProbabilityViz = function(width, height) {
             			   y: {scaleType : 'linear',
             				      domain : histYDomain,
             				   axisLabel : '',
-            			     axisLabelId : 'histYLabel',
-            			     axisGrpName : 'histYAxisGrp',
             			     leftPadding : 25,
             			     topPadding  : -(histTop + 2*INTER_BUTTON_PADDING),
             			   bottomPadding : 3,
@@ -378,9 +377,7 @@ var ProbabilityViz = function(width, height) {
             			   },
             			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
         };
-        scalesHist  = makeCoordSys(extentDict);
-        
-        let histSel = scalesHist.coordSysSel;
+        coordSysHist  = CoordinateSystem(coordInfo);
 	}	
 	
 	/*---------------------------
@@ -650,12 +647,12 @@ var ProbabilityViz = function(width, height) {
 	| updateSlotModHistogram 
 	-----------------*/
 	
-	var updateSlotModHistogram = function(deathCauseCounts, scalesHist, slotModSvgSel) {
+	var updateSlotModHistogram = function(deathCauseCounts, coordSys, slotModSvgSel) {
 
 		
-		let xScale    = scalesHist.xScale;
-		let yScale    = scalesHist.yScale;
-		let bandWidth = scalesHist.bandWidth;
+		let xScale    = coordSys.xScale;
+		let yScale    = coordSys.yScale;
+		let bandWidth = coordSys.xBandWidth;
 		
 				
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
@@ -1663,7 +1660,7 @@ var ProbabilityViz = function(width, height) {
 		counterObj[deathCause]++;
 		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
 		
-		updateSlotModHistogram(counterObj, scalesHist, slotModBodySel.select("svg"));		
+		updateSlotModHistogram(counterObj, coordSysHist, slotModBodySel.select("svg"));		
 	}
 	
 	/*---------------------------

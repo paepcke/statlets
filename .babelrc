@@ -34,7 +34,8 @@
                       "src/html/utils/js/generalDragHandler.js",
                       "src/html/utils/js/softAlerts.js",
                       "src/html/utils/js/cookieMonster.js",
-                      "src/html/utils/js/logging.js"
+                      "src/html/utils/js/logging.js",
+                      "src/html/utils/js/coordinateSystem.js"
                      ],
             plugins: ["transform-runtime"]
         },
