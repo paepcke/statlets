@@ -97,9 +97,7 @@ var CoordinateSystem = function(coordInfo) {
 	let X_AXIS_BOTTOM     = 20;
 
 	let Y_AXIS_LEFT       = 50;
-	let Y_AXIS_TOP        = -10;
-	let Y_AXIS_BOTTOM     = 20;
-	
+	let Y_AXIS_TOP        = 10;
 	
 	// For a kludge:
 	let Y_AXIS_TOP_MARGIN_VAL = 0;
@@ -192,9 +190,6 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		if (typeof(coordInfo.y.topPadding) !== 'undefined') {
 			Y_AXIS_TOP = coordInfo.y.topPadding; 
-		}
-		if (typeof(coordInfo.y.bottomPadding) !== 'undefined') {
-			Y_AXIS_BOTTOM = coordInfo.y.bottomPadding; 
 		}
 		
 		// Make the SVG match width/height:
@@ -307,12 +302,12 @@ var CoordinateSystem = function(coordInfo) {
 		case 'linear':
 			yScale = d3.scaleLinear()	
 			 			 .domain(yDomain)
-						 .range([height - Y_AXIS_BOTTOM, - Y_AXIS_TOP]);
+						 .range([height - X_AXIS_BOTTOM, Y_AXIS_TOP]);
 			break;
 		case 'ordinal':
 			yScale = d3.scaleBand()
 							 .domain(yDomain)
-							 .range([Y_AXIS_TOP, height- Y_AXIS_BOTTOM])
+							 .range([height - X_AXIS_BOTTOM, Y_AXIS_TOP])
 							 .innerPadding(0.1);
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain

@@ -67,15 +67,14 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	//*******const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
 	//*******const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
-	const X_AXIS_BOTTOM_PADDING       = 20; // X axis distance bottom SVG edge
+	const X_AXIS_BOTTOM_PADDING       = 65; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
 	const Y_AXIS_TOP_PADDING          = 40;
-	//****const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
-	const Y_AXIS_TOP_MARGIN           = 0;
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
-	const Y_AXIS_TOP_PADDING_HIST     = -30; // Slot mdoule histogram: Y axis distance from SVG top
+	// Histogram coordinate systems:
+	const Y_AXIS_TOP_PADDING_HIST     = 250; // Slot mdoule histogram: Y axis distance from SVG top
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
 	const SLOT_MODULE_LEFT_PADDING    = 5;  // Between left edge of outer slot module body and the slot text window.	
@@ -351,7 +350,6 @@ var ProbabilityViz = function(width, height) {
 		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING;
 		let Y_AXIS_TOP        = Y_AXIS_TOP_PADDING;
 		let Y_AXIS_BOTTOM     = Y_AXIS_BOTTOM_PADDING;
-		let Y_AXIS_TOP_MARGIN_VAL = Y_AXIS_TOP_MARGIN;
 		
 		let body              = slotModSvgSel.node().parentNode;
 		let bodyHeight        = body.clientHeight;
@@ -374,9 +372,9 @@ var ProbabilityViz = function(width, height) {
             				      domain : histYDomain,
             				   axisLabel : '',
             			     leftPadding : 25,
-            			     topPadding  : -(histTop + 2*INTER_BUTTON_PADDING),
+            			     topPadding  : (histTop + 2*INTER_BUTTON_PADDING),
             			   bottomPadding : 3,
-            			   topMargin     : 0,
+            			   //****topPadding    : Y_AXIS_TOP_PADDING_HIST,
             			   },
             			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
         };
@@ -553,7 +551,7 @@ var ProbabilityViz = function(width, height) {
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'Cause of Death Probabilities',
-        				   bottomPadding : 65, //*****
+        				   bottomPadding : X_AXIS_BOTTOM_PADDING,
         				   },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
@@ -1398,7 +1396,7 @@ var ProbabilityViz = function(width, height) {
 		if ( typeof(pixelYVal) !== "number" ) {
 			pixelYVal = parseFloat(pixelYVal);
 		}
-		let trueY = pixelYVal + Y_AXIS_TOP_MARGIN;
+		let trueY = pixelYVal
 		// Don't return a negative probability
 		let prob  = Math.max(coordSysDistrib.yScale.invert(trueY), 0);
 		return prob;
@@ -1420,7 +1418,7 @@ var ProbabilityViz = function(width, height) {
 		 * :returns: pixel value, or y-value of x-axis if
 		 *     value would be larger than y-value of the x-axis. 
 		 */
-		let y = coordSysDistrib.yScale(prob) - Y_AXIS_TOP_MARGIN;
+		let y = coordSysDistrib.yScale(prob);
 		return Math.min(y, height - X_AXIS_BOTTOM_PADDING );
 	}
 	
