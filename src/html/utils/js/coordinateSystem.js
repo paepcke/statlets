@@ -99,9 +99,6 @@ var CoordinateSystem = function(coordInfo) {
 	let Y_AXIS_LEFT       = 50;
 	let Y_AXIS_TOP        = 10;
 	
-	// For a kludge:
-	let Y_AXIS_TOP_MARGIN_VAL = 0;
-	
 	/*---------------------------
 	| constructor 
 	-----------------*/
@@ -199,15 +196,18 @@ var CoordinateSystem = function(coordInfo) {
 		makeCoordSys();
 		
 		return {
-			xScale : xScale,
-			yScale : yScale,
-			xDomain: xDomain,
-			yDomain: yDomain,
+			xScale     : xScale,
+			yScale     : yScale,
+			xDomain    : xDomain,
+			yDomain    : yDomain,
 			xBandWidth : xBandWidth,
 			yBandWidth : yBandWidth,
 			coordSysSel: coordSysSel,
 			xLabelsShow: xLabelsShow,
-			yLabelsShow: yLabelsShow
+			yLabelsShow: yLabelsShow,
+			height     : height,
+			width      : width,
+			
 		}
 	}
 	
@@ -330,7 +330,8 @@ var CoordinateSystem = function(coordInfo) {
 		xAxisGroup = svgSel.append("g")
 			 .attr("class", "axis")
 			 .attr("id", xAxisGrpName)
-			 .attr("transform", `translate(${X_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
+			 //*********.attr("transform", `translate(${Y_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
+			 .attr("transform", `translate(0, ${height - X_AXIS_BOTTOM})`)
 			 .call(d3.axisBottom(xScale));
 		
 		if (xSubclass !== null ) {
@@ -356,11 +357,11 @@ var CoordinateSystem = function(coordInfo) {
 		
 		/* ---------------------------- Y AXIS ---------------------------- */		
 		
-		// Create a group, and call the xAxis function to create the axis:
+		// Create a group, and call the yAxis function to create the axis:
 		yAxisGroup = svgSel.append("g")
 			 .attr("class", "axis")
 			 .attr("id", yAxisGrpName)
-			 .attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP_MARGIN_VAL})`)	
+			 .attr("transform", `translate(${Y_AXIS_LEFT}, 0)`)	
 		     .call(d3.axisLeft(yScale));
 
 		if (ySubclass !== null ) {

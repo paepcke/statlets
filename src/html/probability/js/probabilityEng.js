@@ -64,17 +64,21 @@ var ProbabilityViz = function(width, height) {
 	
 	const BARS_ARE_LINES              = true;
 	
-	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
-	//*******const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
-	//*******const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
+	// Probability distribution coordinate system:
+	
 	const X_AXIS_BOTTOM_PADDING       = 65; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
-	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	const Y_AXIS_TOP_PADDING          = 40;
+	
+	const Y_AXIS_TOP_PADDING          = 0;
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
 	
 	// Histogram coordinate systems:
+	
+	const X_AXIS_BOTTOM_PADDING_HIST  = 5;
+	const X_AXIS_RIGHT_PADDING_HIST   = 3;
+	
 	const Y_AXIS_TOP_PADDING_HIST     = 250; // Slot mdoule histogram: Y axis distance from SVG top
+	const Y_AXIS_LEFT_PADDING_HIST    = 25;
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
 	const SLOT_MODULE_LEFT_PADDING    = 5;  // Between left edge of outer slot module body and the slot text window.	
@@ -343,14 +347,11 @@ var ProbabilityViz = function(width, height) {
 		let histYDomain = [0, 50];
         // Argument for makeCoordSys:
 		
-		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING;
-		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING;
-		let X_AXIS_LEFT       = X_AXIS_LEFT_PADDING;
-		    
-		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING;
-		let Y_AXIS_TOP        = Y_AXIS_TOP_PADDING;
-		let Y_AXIS_BOTTOM     = Y_AXIS_BOTTOM_PADDING;
+		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING_HIST;
+		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING_HIST;
 		
+		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING_HIST;
+		    
 		let body              = slotModSvgSel.node().parentNode;
 		let bodyHeight        = body.clientHeight;
 		let bodyWidth         = body.clientWidth;
@@ -364,17 +365,16 @@ var ProbabilityViz = function(width, height) {
         				   x: {scaleType : 'ordinal',
         					   domain    : [],
         					   axisLabel : 'Cause of Death Count',
-        					rightPadding : 3,
-        				   bottomPadding : 3,
+        					rightPadding : X_AXIS_RIGHT,
+        				   bottomPadding : X_AXIS_BOTTOM,
         					leftPadding  : 0
         				   },
             			   y: {scaleType : 'linear',
             				      domain : histYDomain,
             				   axisLabel : '',
-            			     leftPadding : 25,
+            			     leftPadding : Y_AXIS_LEFT,
             			     topPadding  : (histTop + 2*INTER_BUTTON_PADDING),
-            			   bottomPadding : 3,
-            			   //****topPadding    : Y_AXIS_TOP_PADDING_HIST,
+            			   bottomPadding : X_AXIS_BOTTOM,
             			   },
             			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
         };
@@ -541,12 +541,7 @@ var ProbabilityViz = function(width, height) {
         xDomainSaved = xDomain.map(function(el) { return el });
         
         // Argument for makeCoordSys:
-        //******@@ 	const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
-	//******@@ 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
-//******@@ 		const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-//******@@ 		const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 
-        
         let coordInfo  = {svgSel         : distribSvg, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
@@ -557,6 +552,7 @@ var ProbabilityViz = function(width, height) {
             				      domain : yDomain,
             				   axisLabel : 'Probability US 2013',
             				   topPadding: Y_AXIS_TOP_PADDING,
+            				  leftPadding: Y_AXIS_LEFT_PADDING,
             			   },
             			          height : height 
                           };
@@ -616,7 +612,6 @@ var ProbabilityViz = function(width, height) {
 
 	      		})
 	      		.attr("y2", function(deathCause) { 
-	      			//return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause])
 	      			return (height - X_AXIS_BOTTOM_PADDING);
 	      		})
 	      		.attr("stroke-width", xScale.bandwidth())
@@ -652,6 +647,7 @@ var ProbabilityViz = function(width, height) {
 		let xScale    = coordSys.xScale;
 		let yScale    = coordSys.yScale;
 		let bandWidth = coordSys.xBandWidth;
+		let height    = coordSys.height;
 		
 				
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
@@ -675,7 +671,7 @@ var ProbabilityViz = function(width, height) {
 	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING_HIST 
 	      		})
 	      		.attr('height', function(deathCause) { 
-	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseCounts[deathCause]) 
+	      			return (height - X_AXIS_BOTTOM_PADDING_) - yScale(deathCauseCounts[deathCause]) 
 	      		});
 		
 		
