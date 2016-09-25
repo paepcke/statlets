@@ -70,10 +70,12 @@ var ProbabilityViz = function(width, height) {
 	const X_AXIS_BOTTOM_PADDING       = 20; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
-	const Y_AXIS_TOP_PADDING          = -30; // Y axis distance from SVG top
+	const Y_AXIS_TOP_PADDING          = 40;
 	//****const Y_AXIS_TOP_PADDING          = 0; // Y axis distance from SVG top
 	const Y_AXIS_TOP_MARGIN           = 0;
 	const Y_AXIS_LEFT_PADDING   	  = 50; // Y axis distance from left SVG edge
+	
+	const Y_AXIS_TOP_PADDING_HIST     = -30; // Slot mdoule histogram: Y axis distance from SVG top
 	
 	const SLOT_MODULE_TOP_PADDING     = 5;  // Between top of outer slot module body and the slot text window.
 	const SLOT_MODULE_LEFT_PADDING    = 5;  // Between left edge of outer slot module body and the slot text window.	
@@ -551,10 +553,12 @@ var ProbabilityViz = function(width, height) {
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'Cause of Death Probabilities',
+        				   bottomPadding : 65, //*****
         				   },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
             				   axisLabel : 'Probability US 2013',
+            				   topPadding: Y_AXIS_TOP_PADDING,
             			   },
             			          height : height 
                           };
@@ -656,7 +660,7 @@ var ProbabilityViz = function(width, height) {
 			// Data are the counts of causes of death:
    		  .data(Object.keys(deathCauseCounts))
 	      		.attr('y', function(deathCause) {
-	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING;
+	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING_HIST;
 	      		})
 	      .enter()
      		.append("rect")
@@ -670,7 +674,7 @@ var ProbabilityViz = function(width, height) {
 	      		})
 	      		.attr('width', bandWidth)
 	      		.attr('y', function(deathCause) { 
-	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING 
+	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING_HIST 
 	      		})
 	      		.attr('height', function(deathCause) { 
 	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseCounts[deathCause]) 
