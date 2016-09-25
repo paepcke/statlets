@@ -29,7 +29,7 @@ var ProbabilityViz = function(width, height) {
 	var tooltipDivSel    = null;
 	var tooltipTxtSel	 = null;
 	
-	var scalesDistrib    = null;
+	var coordSysDistrib  = null;
 	var coordSysHist     = null;
 	var distribCauses    = null;
 	
@@ -66,7 +66,8 @@ var ProbabilityViz = function(width, height) {
 	
 	const X_AXIS_LEFT_PADDING         = 0;  // X axis distance left SVG edge
 	//*******const X_AXIS_BOTTOM_PADDING       = 70; // X axis distance bottom SVG edge
-	const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
+	//*******const X_AXIS_BOTTOM_PADDING       = 80; // X axis distance bottom SVG edge
+	const X_AXIS_BOTTOM_PADDING       = 20; // X axis distance bottom SVG edge
 	const X_AXIS_RIGHT_PADDING        = 50; // X axis distance right SVG edge
 	const Y_AXIS_BOTTOM_PADDING       = 80; // Y axis distance from SVG bottom
 	const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
@@ -546,23 +547,19 @@ var ProbabilityViz = function(width, height) {
 //******@@ 		const Y_AXIS_TOP_PADDING          = -5; // Y axis distance from SVG top
 
         
-        let extentDict  = {svg           : distribSvg, 
+        let coordInfo  = {svgSel         : distribSvg, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
         					   axisLabel : 'Cause of Death Probabilities',
-        					 axisLabelId : 'distribXLabel',
-        					 axisGrpName : 'distribXAxisGrp'
         				   },
             			   y: {scaleType : 'linear',
             				      domain : yDomain,
             				   axisLabel : 'Probability US 2013',
-            			     axisLabelId : 'distribYLabel',
-            			     axisGrpName : 'distribYAxisGrp'            			    	 
             			   },
             			          height : height 
                           };
 
-		scalesDistrib = makeCoordSys(extentDict);
+		coordSysDistrib = CoordinateSystem(coordInfo);
 
 		// Get function barPulled() 
 		// a chance to see which bar moved, and to 
@@ -573,23 +570,23 @@ var ProbabilityViz = function(width, height) {
 		dispatch.on("drag.deathCauseBar", barPulled);
 
 		// Generate bar chart for cause of death probabilities:
-        updateDistribChart(DEATH_CAUSES, scalesDistrib);
+        updateDistribChart(DEATH_CAUSES, coordSysDistrib);
         attachBarBehaviors();
 
         // Redraw the axes so that the rounded butts of
         // the bars are behind the X-axis:
-		scalesDistrib = makeCoordSys(extentDict);
+		//*****coordSysDistrib = CoordinateSystem(coordInfo);
 	}
 	
 	/*---------------------------
 	| updateDistribChart
 	-----------------*/
 	
-	var updateDistribChart = function(deathCauseObj, scalesDistrib) {
+	var updateDistribChart = function(deathCauseObj, coordSysDistrib) {
 		
-		let xScale = scalesDistrib.xScale;
-		let yScale = scalesDistrib.yScale;
-		let causesToInclude = xDomain;
+		let xScale = coordSysDistrib.xScale;
+		let yScale = coordSysDistrib.yScale;
+		let causesToInclude = coordSysDistrib.xDomain;
 		
 				
 		let barsSel = d3.select('#distribSvg').selectAll('.deathCauseBar')
@@ -802,6 +799,14 @@ var ProbabilityViz = function(width, height) {
 					}
 					
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
+					// If bar is now zero, turn its top into a rounded butt
+					// so that it can be grabbed:
+					if ( barSel.node().getBoundingClientRect().height > 0 ) {
+						barSel.style("stroke-linecap", "butt");
+					} else {
+						barSel.style("stroke-linecap", "round");
+					}
+					
 					// Let interested parties know that a bar was resized.
 					//*****dispatch.call("drag", this, barSel);
 				})
@@ -817,7 +822,7 @@ var ProbabilityViz = function(width, height) {
 					// If bar was dragged down, y increased. So the
 					// following will be positive:
 					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
-					updateDistribChart(DEATH_CAUSES, scalesDistrib);
+					updateDistribChart(DEATH_CAUSES, coordSysDistrib);
 					d3.drag.currBar = undefined;
 					upLog("dragDeathCause")
 				})
@@ -1007,7 +1012,7 @@ var ProbabilityViz = function(width, height) {
 			// Restore true cause-of-death probabilities:
 			Object.assign(DEATH_CAUSES, savedDeathCauses);
 			normalizeDeathCauses();
-			updateDistribChart(DEATH_CAUSES, scalesDistrib);
+			updateDistribChart(DEATH_CAUSES, coordSysDistrib);
 			break;
 		}
 	}
@@ -1273,206 +1278,6 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| makeCoordSys 
-	-----------------*/
-	
-	var makeCoordSys = function(extentDict) {
-		
-		/*
-		 * :param extentDict:
-		 *  	extentDict: {
-		 *  	               x : {scaleType    : <linear | ordinal | time> },
-		 *  	                       domain    : <[min,max]>                   // if linear scale
-		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
-		 *  	                     axisLabelId : <axis description>
-		 *  	                       subclass  : <additionalClass>             // optional
-		 *  						 rightPadding: <padding-right px>            // optional
-		 *  						 axisGrpName : <ID for axis group>           // optional
-		 *  	                   },
-		 *  	               y : {scaleType    : <linear | ordinal | time> },
-		 *  	                       domain    : <[min,max]>                   // if linear scale
-		 *  	                       domain    : <[ord1,ord2,...]>             // if ordinal scale
-		 *  	                     axisLabelId : <axis description>
-		 *  	                       subclass  : <additionalClass>             // optional
-		 *  						 axisGrpName : <ID for axis group>           // optional
-		 *  	            }
-		 *      Notes:
-		 *          o <axis description> is the label for an axis is a
-		 *            whole, i.e. not the tick labels.
-		 *          o <additionalClass>, if present, will be used to
-		 *            class the axis *in addition to* class "axis".
-		 *            Example: <additionalClass> == 'noTicks' will 
-		 *                     cause the axis to be of CSS class axis.noTicks.
-		 *                     
-		 * Returns an object with four properties: xScale, yScale,
-		 * bandWidth (width in pixels between two x-axis ticks), and a 
-		 * d3 selection of the coordinate system as a whole. 
-		 * 
-		 */
-		
-		/* ---------------------------- X AXIS ---------------------------- */		
-
-		let svg = extentDict.svg;
-		let yAxis     = null;
-		let xScale    = null;
-		let yScale    = null;
-		let bandWidth = null; // width in pixels between two x-axis ticks.
-
-		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING;
-		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING;
-		let X_AXIS_LEFT       = X_AXIS_LEFT_PADDING;
-		    
-		let Y_AXIS_LEFT       = Y_AXIS_LEFT_PADDING;
-		let Y_AXIS_TOP        = Y_AXIS_TOP_PADDING;
-		let Y_AXIS_BOTTOM     = Y_AXIS_BOTTOM_PADDING;
-		let Y_AXIS_TOP_MARGIN_VAL = Y_AXIS_TOP_MARGIN;
-		
-		let height            = height;
-
-		
-		if (typeof(extentDict.x.rightPadding) !== 'undefined') {
-			X_AXIS_RIGHT = extentDict.x.rightPadding; 
-		}
-		if (typeof(extentDict.x.bottomPadding) !== 'undefined') {
-			X_AXIS_BOTTOM = extentDict.x.bottomPadding; 
-		}
-		if (typeof(extentDict.x.leftPadding) !== 'undefined') {
-			X_AXIS_LEFT = extentDict.x.leftPadding; 
-		}
-		if (typeof(extentDict.y.leftPadding) !== 'undefined') {
-			Y_AXIS_LEFT= extentDict.y.leftPadding; 
-		}
-		if (typeof(extentDict.y.topPadding) !== 'undefined') {
-			Y_AXIS_TOP = extentDict.y.topPadding; 
-		}
-		if (typeof(extentDict.y.bottomPadding) !== 'undefined') {
-			Y_AXIS_BOTTOM = extentDict.y.bottomPadding; 
-		}
-		if (typeof(extentDict.x.topMargin) !== 'undefined') {
-			Y_AXIS_TOP_MARGIN_VAL = extentDict.y.topMargin; 
-		}
-		
-		if (typeof(extentDict.height) !== 'undefined') {
-			height = extentDict.height; 
-		}
-		
-		// X Scale:
-		
-		switch(extentDict.x.scaleType) {
-		case 'linear':
-			xScale = d3.scaleLinear()
-							 .domain(extentDict.x.domain)
-							 .range([Y_AXIS_LEFT, width - X_AXIS_RIGHT]);
-			break;
-		case 'ordinal':
-			xScale = d3.scaleBand()
-							 .domain(extentDict.x.domain)
-							 .rangeRound([Y_AXIS_LEFT, width - X_AXIS_RIGHT])
-							 .paddingInner(0.1);
-							 
-			// Width between two ticks is (for instance) pixel-pos
-			// at first domain value minus pixel pos at zeroeth domain
-			// value:
-			bandWidth = xScale(extentDict.x.domain[1]) - xScale(extentDict.x.domain[0]) 
-
-		break;
-		default:
-			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
-		}
-		
-
-		// Y Scale
-		switch(extentDict.y.scaleType) {
-		case 'linear':
-			yScale = d3.scaleLinear()	
-			 			 .domain(extentDict.y.domain)
-						 .range([height - Y_AXIS_BOTTOM, - Y_AXIS_TOP]);
-			break;
-		case 'ordinal':
-			yScale = d3.scaleBand()
-							 .domain(extentDict.y.domain)
-							 .range([Y_AXIS_TOP, height- Y_AXIS_BOTTOM])
-							 .innerPadding(0.1);
-			break;
-		default:
-			throw `Axis type ${extentDict.x.scaleType} not implemented.}`;
-		}
-		
-		// Make the visual coordinate system:
-		
-		// Create a group, and call the xAxis function to create the axis.
-		let xAxisGroup = svg.append("g")
-			 .attr("class", "axis")
-			 .attr("id", extentDict.x.axisGrpName)
-			 .attr("transform", `translate(${X_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
-			 .call(d3.axisBottom(xScale));
-		
-		if (typeof(extentDict.x.subclass) !== 'undefined' ) {
-			xAxisGroup.classed(extentDict.x.subclass, true)
-		}
-		
-		// For ordinal X-axes: rotate tick labels by 45%
-		// and move them to center between x-axis ticks:
-		if (extentDict.x.scaleType === 'ordinal') {
-			
-			// Find distance between X-ticks;
-			// xScale.range() returns array with
-			// pixel coords of each tick:
-			let tickArr    = xScale.range();
-			let tickWidth  = tickArr[1] - tickArr[0];
-			let txtSel     = xAxisGroup.selectAll("text");
-			
-	    	txtSel
-		    	.attr("y", 0)
-		    	.attr("x", 0)
-		    	.attr("class", "axis x label");
-		}
-		
-		/* ---------------------------- Y AXIS ---------------------------- */		
-		
-		// Create a group, and call the xAxis function to create the axis:
-		let yAxisGroup = svg.append("g")
-			 .attr("class", "axis")
-			 .attr("id", extentDict.y.axisGrpName)
-			 .attr("transform", `translate(${Y_AXIS_LEFT}, ${Y_AXIS_TOP_MARGIN_VAL})`)	
-		     .call(d3.axisLeft(yScale));
-
-		if (typeof(extentDict.y.subclass) !== 'undefined' ) {
-			yAxisGroup.classed(extentDict.y.subclass, true)
-		}
-		
-		
-		/* -------------------------- Axis Labels (for Axes themselves, not ticks) ----------- */
-		
-		let xAxisLabel = svg.append("text")
-						.attr("class", "x label")
-						.attr("id", extentDict.x.axisLabelId)
-						.attr("text-anchor", "middle")
-						.attr("x", 2*width / 3.0)
-						.attr("y", height + 55)
-						.text(extentDict.x.axisLabel)
-						
-		let yAxisLabel = svg.append("text")
-						.attr("class", "axis y label")
-						.attr("id", extentDict.y.axisLabelId)
-						.attr("x", 5)
-						.attr("y", -5)
-						.text(extentDict.y.axisLabel)
-						
-		d3.selectAll('.axis text').classed('unselectable', true);			
-		d3.selectAll('.x.label').classed('unselectable', true);
-		d3.selectAll('.y.label').classed('unselectable', true);
-		
-		let coordSysSel = d3.selectAll(d3.merge([xAxisGroup.nodes(), yAxisGroup.nodes(), xAxisLabel.nodes(), yAxisLabel.nodes()]));
-		
-		return {xScale    : xScale,
-				yScale    : yScale,
-				bandWidth : bandWidth,
-				coordSysSel : coordSysSel 
-			   }
-	}
-	
-	/*---------------------------
 	| normalizeDeathCauses 
 	-----------------*/
 
@@ -1591,7 +1396,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		let trueY = pixelYVal + Y_AXIS_TOP_MARGIN;
 		// Don't return a negative probability
-		let prob  = Math.max(scalesDistrib.yScale.invert(trueY), 0);
+		let prob  = Math.max(coordSysDistrib.yScale.invert(trueY), 0);
 		return prob;
 	}
 	
@@ -1611,7 +1416,7 @@ var ProbabilityViz = function(width, height) {
 		 * :returns: pixel value, or y-value of x-axis if
 		 *     value would be larger than y-value of the x-axis. 
 		 */
-		let y = scalesDistrib.yScale(prob) - Y_AXIS_TOP_MARGIN;
+		let y = coordSysDistrib.yScale(prob) - Y_AXIS_TOP_MARGIN;
 		return Math.min(y, height - X_AXIS_BOTTOM_PADDING );
 	}
 	

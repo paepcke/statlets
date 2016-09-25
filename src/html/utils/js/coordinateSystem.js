@@ -206,6 +206,8 @@ var CoordinateSystem = function(coordInfo) {
 		return {
 			xScale : xScale,
 			yScale : yScale,
+			xDomain: xDomain,
+			yDomain: yDomain,
 			xBandWidth : xBandWidth,
 			yBandWidth : yBandWidth,
 			coordSysSel: coordSysSel,

@@ -146,7 +146,9 @@ h1          { text-align : center;  }
 
 .deathCauseBar {
 	stroke : gray;
-	stroke-linecap : round;
+	/* stroke-linecap : round; ***** */
+	/* stroke-linecap : square; **** */
+	stroke-linecap : butt;
 
 }
 

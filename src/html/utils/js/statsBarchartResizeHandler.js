@@ -106,7 +106,7 @@ var StatsBarchartResizeHandler = function (svg) {
 			let xAxisY  = parseFloat(d3DomElSel.attr('y2'))
 
 			if ( newY > xAxisY ) {
-				newY = xAxisY;
+				 newY = xAxisY;
 			}
 
 			d3DomElSel.attr('y1', newY);
