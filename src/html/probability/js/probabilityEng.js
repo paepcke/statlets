@@ -601,9 +601,28 @@ var ProbabilityViz = function(width, height) {
 	      		.attr('y1', function(deathCause) {
 	      			return prob2Px(deathCauseObj[deathCause]);
 	      		})
+	      		.attr("class", "deathCauseBar")
+	      		.style("stroke-linecap", function(deathCause) {
+	      			// Bars long enough to grab with mouse get straight edge top,
+	      			// others get round head:
+	      			if ( deathCauseObj[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
+	      				return "butt";
+	      			} else {
+	      				return "round";
+	      			}
+	      		})
 	      .enter()
       		.append("line")
-	      		.attr("class", "deathCauseBar")
+	      		.attr("class", "deathCauseBar") 
+	      		.style("stroke-linecap", function( deathCause ) {
+	      			// Bars long enough to grab with mouse get straight edge top,
+	      			// others get round head:
+	      			if ( deathCauseObj[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
+	      				return "butt";
+	      			} else {
+	      				return "round";
+	      			}
+	      		})
 	      		.attr("id", function(deathCause) { 
 	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
@@ -794,13 +813,6 @@ var ProbabilityViz = function(width, height) {
 					}
 					
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
-					// If bar is now zero, turn its top into a rounded butt
-					// so that it can be grabbed:
-					if ( barSel.node().getBoundingClientRect().height > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
-						barSel.style("stroke-linecap", "butt");
-					} else {
-						barSel.style("stroke-linecap", "round");
-					}
 					
 					// Let interested parties know that a bar was resized.
 					//*****dispatch.call("drag", this, barSel);
@@ -1083,8 +1095,8 @@ var ProbabilityViz = function(width, height) {
 				
 			//************
 			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
-			1+1; // just a statement to attach a breakpoint to
-			console.log(`Sum = ${sum}`);
+			//1+1; // just a statement to attach a breakpoint to
+			//console.log(`Sum = ${sum}`);
 			//************
 
 		}
