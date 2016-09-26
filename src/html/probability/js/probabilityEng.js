@@ -302,7 +302,7 @@ var ProbabilityViz = function(width, height) {
 				   setSlotWindowTxt(deathCause);
 				   // Update this slot module's cause counts:
 				   addDeathCauseCount(slotModBodySel, deathCause);
-				   
+				   updateSlotModHistogram(deathCauseCounts, coordSysHist);		
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				    // Pick 10 random death causes:
@@ -312,6 +312,7 @@ var ProbabilityViz = function(width, height) {
 					}
 					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10);
 				    // Update this slot module's cause counts:
+					***** Schedule dispatch on end of new slot text finishing fade-in; then call updateSlotModHistogram(deathCauseCounts, coordSysHist);
 					for ( let deathCause of txtInfo ) {
 						addDeathCauseCount(slotModBodySel, deathCause);
 				    } 
@@ -622,18 +623,18 @@ var ProbabilityViz = function(width, height) {
 	| updateSlotModHistogram 
 	-----------------*/
 	
-	var updateSlotModHistogram = function(deathCauseCounts, coordSys, slotModSvgSel) {
+	var updateSlotModHistogram = function(deathCauseCounts, coordSys) {
 		/*
-		 * Go on from here*****
-		 * updateSlotModHistogram(counterObj, coordSysHist, slotModBodySel.select("svg"));
+		 * Given an object containing the number of times each 
+		 * cause of death has appeared, the coordinate system
+		 * instance of a slot module, and 
 		 */
   
-		
-		let xScale     = coordSys.xScale;
-		let yScale     = coordSys.yScale;
-		let xBandWidth = coordSys.xBandWidth;
-		let height     = coordSys.height;
-		
+		let slotModSvgSel = coordSys.svgSel;
+		let xScale        = coordSys.xScale;
+		let yScale        = coordSys.yScale;
+		let xBandWidth    = coordSys.xBandWidth;
+		let height        = coordSys.height;
 				
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
 			// Data are the counts of causes of death:
@@ -881,10 +882,7 @@ var ProbabilityViz = function(width, height) {
 				slotTxtMan.makeNxtHot();
 				d3.timeout(oneRun, transitionSpeed);
 			}
-			
-
 		}
-		
 		oneRun();
 	}
 	
@@ -1448,8 +1446,6 @@ var ProbabilityViz = function(width, height) {
 		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
 		counterObj[deathCause]++;
 		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
-		
-		updateSlotModHistogram(counterObj, coordSysHist, slotModBodySel.select("svg"));		
 	}
 	
 	/*---------------------------

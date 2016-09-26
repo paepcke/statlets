@@ -193,6 +193,7 @@ var CoordinateSystem = function(coordInfo) {
 		makeCoordSys();
 		
 		return {
+			svgSel          : svgSel,
 			xScale          : xScale,
 			yScale          : yScale,
 			xDomain         : xDomain,
