@@ -297,6 +297,9 @@ var ProbabilityViz = function(width, height) {
 		
 		setSlotWindowTxt("Click a GO button");
 		
+		// A function that updates a slot module's histogram:
+		let updateHistogram = partial(updateSlotModHistogram, slotModBodySel);
+		
 		addButton(slotModSvgSel, "Go", function(evt) {
 				   let deathCause = eventGenerator.next();
 				   setSlotWindowTxt(deathCause);
@@ -310,11 +313,10 @@ var ProbabilityViz = function(width, height) {
 					for ( let i=0; i<10; i++ ) {
 						txtInfo.push(eventGenerator.next());
 					}
-					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10);
 				    // Update this slot module's cause counts:
-					***** Schedule dispatch on end of new slot text finishing fade-in; then call updateSlotModHistogram(deathCauseCounts, coordSysHist);
 					for ( let deathCause of txtInfo ) {
 						addDeathCauseCount(slotModBodySel, deathCause);
+						setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
 				    } 
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
@@ -323,10 +325,10 @@ var ProbabilityViz = function(width, height) {
 					for ( let i=0; i<100; i++ ) {
 						txtInfo.push(eventGenerator.next());
 					}
-					setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_100);
 				    // Update this slot module's cause counts:
 					for ( let deathCause of txtInfo ) {
 						addDeathCauseCount(slotModBodySel, deathCause);
+						setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_100, updateHistogram);
 				    } 
 			   });
 		
@@ -623,13 +625,17 @@ var ProbabilityViz = function(width, height) {
 	| updateSlotModHistogram 
 	-----------------*/
 	
-	var updateSlotModHistogram = function(deathCauseCounts, coordSys) {
+	var updateSlotModHistogram = function(slotModBodySel) {
+			//deathCauseCounts, coordSys) {
 		/*
 		 * Given an object containing the number of times each 
-		 * cause of death has appeared, the coordinate system
-		 * instance of a slot module, and 
+		 * cause of death has appeared, and the coordinate system
+		 * instance of a slot module, update the module's histogram.
 		 */
-  
+		
+		let coordSys = coordSysHist;
+		let deathCauseCounts = JSON.parse(slotModBodySel.attr("deathCauseCounts"));		
+		
 		let slotModSvgSel = coordSys.svgSel;
 		let xScale        = coordSys.xScale;
 		let yScale        = coordSys.yScale;
@@ -818,7 +824,7 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txtInfo, transitionSpeed) {
+	var setSlotWindowTxt = function(txtInfo, transitionSpeed, callback) {
 
 		if ( typeof(txtInfo) === "string") {
 			txtInfo = [txtInfo];
@@ -880,7 +886,10 @@ var ProbabilityViz = function(width, height) {
 				slotTxtMan.hotSel().style("opacity", 0);
 				slotTxtMan.coldSel().style("opacity", 1);
 				slotTxtMan.makeNxtHot();
-				d3.timeout(oneRun, transitionSpeed);
+				d3.timeout(function() {
+					callback();
+					oneRun();
+				}, transitionSpeed);
 			}
 		}
 		oneRun();
@@ -1479,6 +1488,30 @@ var ProbabilityViz = function(width, height) {
 			
 		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
 	}
+	
+	/*---------------------------
+	| partial 
+	-----------------*/
+
+	var partial = function(func /*, 0..n args */) {
+		/*
+		 * Create a new function 'g()' that calls a given
+		 * function 'f(a,b,...)' with reset arguments:
+		 * 
+		 *   To use:
+		 *        f = function(a,b,c) { return a+b+c }
+		 *        f(1,2,3) --> 6
+		 *   
+		 *        g = partial(f, 10,20,30)
+		 *        g() --> 60
+		 */
+		var args = Array.prototype.slice.call(arguments, 1);
+		return function() {
+			var allArguments = args.concat(Array.prototype.slice.call(arguments));
+			return func.apply(this, allArguments);
+		};
+	}
+	
 	/*---------------------------
 	| upLog 
 	-----------------*/
