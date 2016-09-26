@@ -171,9 +171,6 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		
 		/* X-Axis placement: */
-		if (typeof(coordInfo.x.leftPadding) !== 'undefined') {
-			X_AXIS_LEFT = coordInfo.x.leftPadding; 
-		}
 		if (typeof(coordInfo.x.rightPadding) !== 'undefined') {
 			X_AXIS_RIGHT = coordInfo.x.rightPadding; 
 		}
@@ -196,18 +193,21 @@ var CoordinateSystem = function(coordInfo) {
 		makeCoordSys();
 		
 		return {
-			xScale     : xScale,
-			yScale     : yScale,
-			xDomain    : xDomain,
-			yDomain    : yDomain,
-			xBandWidth : xBandWidth,
-			yBandWidth : yBandWidth,
-			coordSysSel: coordSysSel,
-			xLabelsShow: xLabelsShow,
-			yLabelsShow: yLabelsShow,
-			height     : height,
-			width      : width,
-			
+			xScale          : xScale,
+			yScale          : yScale,
+			xDomain         : xDomain,
+			yDomain         : yDomain,
+			xBandWidth      : xBandWidth,
+			yBandWidth      : yBandWidth,
+			coordSysSel     : coordSysSel,
+			xLabelsShow     : xLabelsShow,
+			yLabelsShow     : yLabelsShow,
+			height          : height,
+			width           : width,
+			xAxisRightPad   : X_AXIS_RIGHT,
+			xAxisBottomPad  : X_AXIS_BOTTOM, 
+			yAxisLeftPad    : Y_AXIS_LEFT,
+			yAxisTopPad     : Y_AXIS_TOP,
 		}
 	}
 	
@@ -217,9 +217,9 @@ var CoordinateSystem = function(coordInfo) {
 	
 	var xLabelsShow = function(doShow) {
 		if(doShow) {
-			xAxisLabel.attr("display", "block");
+			xAxisLabel.style("display", "block");
 		} else {
-			xAxisLabel.attr("display", "none");
+			xAxisLabel.style("display", "none");
 		}
 	}
 
@@ -229,9 +229,9 @@ var CoordinateSystem = function(coordInfo) {
 	
 	var yLabelsShow = function(doShow) {
 		if(doShow) {
-			yAxisLabel.attr("display", "block");
+			yAxisLabel.style("display", "block");
 		} else {
-			yAxisLabel.attr("display", "none");
+			yAxisLabel.style("display", "none");
 		}
 	}
 	

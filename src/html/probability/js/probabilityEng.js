@@ -344,8 +344,8 @@ var ProbabilityViz = function(width, height) {
 	
 	var addSlotModFrequencyChart = function(slotModSvgSel) {
 		
+		let histXDomain = Object.keys(DEATH_CAUSES);
 		let histYDomain = [0, 50];
-        // Argument for makeCoordSys:
 		
 		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING_HIST;
 		let X_AXIS_BOTTOM     = X_AXIS_BOTTOM_PADDING_HIST;
@@ -361,9 +361,10 @@ var ProbabilityViz = function(width, height) {
 		let histTop           = lowestBtnDims.y + lowestBtnDims.height;
 		let histHeight        = bodyHeight - histTop;
 		
+        // Argument for CoordinateSystem():
         let coordInfo  = {svgSel         : slotModSvgSel, 
         				   x: {scaleType : 'ordinal',
-        					   domain    : [],
+        					   domain    : histXDomain,
         					   axisLabel : 'Cause of Death Count',
         					rightPadding : X_AXIS_RIGHT,
         				   bottomPadding : X_AXIS_BOTTOM,
@@ -615,26 +616,6 @@ var ProbabilityViz = function(width, height) {
 	      			return (height - X_AXIS_BOTTOM_PADDING);
 	      		})
 	      		.attr("stroke-width", xScale.bandwidth())
-		
-//	      	// This commented-out part creates rects for bars instead
-//			// of the above lines with rounded butts:
-//     		.append("rect")
-//	      		.attr('class', 'deathCauseBar')
-//	      		.attr('id', function(deathCause) { 
-//	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
-//	      		})
-//	      		.attr('deathCause', function(deathCause) { return deathCause } )
-//	      		.attr('x', function(deathCause) { 
-//	      			return xScale(deathCause) 
-//	      		})
-//	      		.attr('width', Xscale.Bandwidth())
-//	      		.attr('y', function(deathCause) { 
-//	      			return yScale(deathCauseObj[deathCause]) + Y_AXIS_TOP_PADDING 
-//	      		})
-//	      		.attr('height', function(deathCause) { 
-//	      			return (height - Y_AXIS_BOTTOM_PADDING) - yScale(deathCauseObj[deathCause]) 
-//	      		});
-
 	}
 	
 	/*---------------------------
@@ -642,19 +623,26 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var updateSlotModHistogram = function(deathCauseCounts, coordSys, slotModSvgSel) {
-
+		/*
+		 * Go on from here*****
+		 * updateSlotModHistogram(counterObj, coordSysHist, slotModBodySel.select("svg"));
+		 */
+  
 		
-		let xScale    = coordSys.xScale;
-		let yScale    = coordSys.yScale;
-		let bandWidth = coordSys.xBandWidth;
-		let height    = coordSys.height;
+		let xScale     = coordSys.xScale;
+		let yScale     = coordSys.yScale;
+		let xBandWidth = coordSys.xBandWidth;
+		let height     = coordSys.height;
 		
 				
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
 			// Data are the counts of causes of death:
    		  .data(Object.keys(deathCauseCounts))
 	      		.attr('y', function(deathCause) {
-	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING_HIST;
+	      			return coordSys.yAxisTopPad + 
+	      					coordSys.height -
+	      					coordSys.xAxisBottomPad - 
+	      					yScale(deathCauseCounts[deathCause]);
 	      		})
 	      .enter()
      		.append("rect")
@@ -664,17 +652,18 @@ var ProbabilityViz = function(width, height) {
 	      		})
 	      		.attr('deathCause', function(deathCause) { return deathCause } )
 	      		.attr('x', function(deathCause) { 
-	      			return xScale(deathCause) 
+	      			return xScale(deathCause);
 	      		})
-	      		.attr('width', bandWidth)
+	      		.attr('width', xBandWidth)
 	      		.attr('y', function(deathCause) { 
-	      			return yScale(deathCauseCounts[deathCause]) + Y_AXIS_TOP_PADDING_HIST 
+	      			return coordSys.yAxisTopPad + 
+	      					coordSys.height -
+	      					coordSys.xAxisBottomPad - 
+	      					yScale(deathCauseCounts[deathCause]);
 	      		})
 	      		.attr('height', function(deathCause) { 
-	      			return (height - X_AXIS_BOTTOM_PADDING_) - yScale(deathCauseCounts[deathCause]) 
+	      			return (coordSys.yAxisTopPad + height - coordSys.xAxisBottomPad) - yScale(deathCauseCounts[deathCause]); 
 	      		});
-		
-		
 	}
 	
 	/*---------------------------
