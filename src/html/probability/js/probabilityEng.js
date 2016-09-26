@@ -109,10 +109,15 @@ var ProbabilityViz = function(width, height) {
 
 	// Speed at which text in slot window
 	// fades and appears with only one slot change:
-	var SLOT_TXT_TRANSITION_SPEED     = 800; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_1   = 500; // msecs
 	// Delays between runs of 10:
-	var SLOT_TXT_TRANSITION_SPEED_10  = 100; // msecs
-	var SLOT_TXT_TRANSITION_SPEED_100 = 50; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_10  = 300; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_100 = 100; // msecs
+	
+	// Probability below which bars in the distribution
+	// chart need a handle for dragging:
+	var ADD_DISTRIB_BAR_HANDLE_THRESHOLED = 0.005; // probability
+	
 	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -302,10 +307,9 @@ var ProbabilityViz = function(width, height) {
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
 				   let deathCause = eventGenerator.next();
-				   setSlotWindowTxt(deathCause);
 				   // Update this slot module's cause counts:
 				   addDeathCauseCount(slotModBodySel, deathCause);
-				   updateSlotModHistogram(deathCauseCounts, coordSysHist);		
+				   setSlotWindowTxt(deathCause, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				    // Pick 10 random death causes:
@@ -792,7 +796,7 @@ var ProbabilityViz = function(width, height) {
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					// If bar is now zero, turn its top into a rounded butt
 					// so that it can be grabbed:
-					if ( barSel.node().getBoundingClientRect().height > 0 ) {
+					if ( barSel.node().getBoundingClientRect().height > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
 						barSel.style("stroke-linecap", "butt");
 					} else {
 						barSel.style("stroke-linecap", "round");
@@ -831,7 +835,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		
 		if ( typeof(transitionSpeed) === 'undefined' ) {
-			transitionSpeed = SLOT_TXT_TRANSITION_SPEED;
+			transitionSpeed = SLOT_TXT_TRANSITION_SPEED_1;
 		}
 		
 		if ( txtInfo.length === 0 ) {
@@ -844,7 +848,7 @@ var ProbabilityViz = function(width, height) {
 		// just display with small delay in between, rather 
 		// than fade:
 		let doFade = true;
-		if ( txtInfo.length > 5 ) {
+		if ( txtInfo.length > 1 ) {
 			doFade = false;
 		}
 
@@ -880,7 +884,12 @@ var ProbabilityViz = function(width, height) {
 					.transition("fadeIn")
 						.duration(transitionSpeed)
 						.style("opacity", 1)
-						.on("end", oneRun);
+						.on("end", function() {
+							if ( typeof(callback) === 'function') {
+								callback();
+							}
+							oneRun();
+						});
 				slotTxtMan.makeNxtHot();
 			} else {
 				slotTxtMan.hotSel().style("opacity", 0);
@@ -1004,6 +1013,12 @@ var ProbabilityViz = function(width, height) {
 			Object.assign(DEATH_CAUSES, savedDeathCauses);
 			normalizeDeathCauses();
 			updateDistribChart(DEATH_CAUSES, coordSysDistrib);
+			// Set all slot module's histograms to empty:
+			d3.selectAll(".machinesBody")
+				.each(function() {
+					// Select the outer-body rectangle:
+					clearDeathCauseCount(d3.select(this));
+				});
 			break;
 		}
 	}
