@@ -638,31 +638,28 @@ var ProbabilityViz = function(width, height) {
 		let barsSel = slotModSvgSel.selectAll('.slotModHistRect')
 			// Data are the counts of causes of death:
    		  .data(Object.keys(deathCauseCounts))
-	      		.attr('y', function(deathCause) {
-	      			return coordSys.yAxisTopPad + 
-	      					coordSys.height -
-	      					coordSys.xAxisBottomPad - 
-	      					yScale(deathCauseCounts[deathCause]);
+   		  		.attr("y", function(deathCause){
+   		  			return yScale(deathCauseCounts[deathCause]);
+   		  		})
+	      		.attr("height", function(deathCause) {
+	      			return (height - coordSys.xAxisBottomPad) - yScale(deathCauseCounts[deathCause]);
 	      		})
 	      .enter()
      		.append("rect")
-	      		.attr('class', 'slotModHistRect')
-	      		.attr('id', function(deathCause) { 
+	      		.attr("class", "slotModHistRect")
+	      		.attr("id", function(deathCause) { 
 	      			return 'histBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
-	      		.attr('deathCause', function(deathCause) { return deathCause } )
-	      		.attr('x', function(deathCause) { 
+	      		.attr("deathCause", function(deathCause) { return deathCause } )
+	      		.attr("x", function(deathCause) { 
 	      			return xScale(deathCause);
 	      		})
-	      		.attr('width', xBandWidth)
-	      		.attr('y', function(deathCause) { 
-	      			return coordSys.yAxisTopPad + 
-	      					coordSys.height -
-	      					coordSys.xAxisBottomPad - 
-	      					yScale(deathCauseCounts[deathCause]);
+	      		.attr("width", xBandWidth)
+	      		.attr("y", function(deathCause) { 
+	      			return  yScale(deathCauseCounts[deathCause]);
 	      		})
-	      		.attr('height', function(deathCause) { 
-	      			return (coordSys.yAxisTopPad + height - coordSys.xAxisBottomPad) - yScale(deathCauseCounts[deathCause]); 
+	      		.attr("height", function(deathCause) { 
+	      			return (height - coordSys.xAxisBottomPad) - yScale(deathCauseCounts[deathCause]);
 	      		});
 	}
 	
