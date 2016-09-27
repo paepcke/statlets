@@ -78,7 +78,7 @@ button.softAlert.disabled {
 	opacity : 0.5;
 }
 
-/* Suppress blue outline around alert box button:
+/* Suppress blue outline around alert box button: */
 button.softAlert:focus { outline : 0 !important; }
 
 

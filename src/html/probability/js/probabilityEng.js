@@ -253,6 +253,8 @@ var ProbabilityViz = function(width, height) {
 		// The slot window for the death causes text:
 		let slotWindowRect = slotModSvgSel
 			.append("rect")
+				.attr("x", "5.5%")
+				.attr("y", "4%")
 				.attr("class", "slotWindowRect");
 
   	    // Add text to the slot window:
@@ -421,6 +423,7 @@ var ProbabilityViz = function(width, height) {
 			.append("rect")
 			   .attr("class", "goButton")
 			   .attr("id", `goButton_${text.replace(' ', '_')}`)
+			   .attr("x", "5.5%")
 			   .attr("y", distanceBelowSlotWin)
 			   .on("click", clickFunc);
 		
