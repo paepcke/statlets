@@ -30,9 +30,10 @@ var ProbabilityViz = function(width, height) {
 	var tooltipTxtSel	 = null;
 	
 	var coordSysDistrib  = null;
-	var coordSysHist     = null;
 	var distribCauses    = null;
 	
+	var slotBodies       = {};   // The coordinate systems and hit counts for each slot module.
+
 	var browserType      = null;
 	var alerter          = null;
 	var logger           = null;
@@ -241,6 +242,9 @@ var ProbabilityViz = function(width, height) {
 				.attr("id", moduleId)
 				.attr("class", "machinesBody")
 				
+		// Remember this slot module chassis:
+		slotBodies[slotModBodySel] = {};
+				
 		// SVG that will hold all machine parts within the outer body:
 		let slotModSvgSel = slotModBodySel
 			.append("svg")
@@ -294,11 +298,12 @@ var ProbabilityViz = function(width, height) {
 		// selection for setSlotWindowTxt() to find:
 		slotTxt2Sel.transition(fadeOutTrans);
 		
-		let deathCauseCounts = {};
+		slotBodies[slotModBodySel].deathCauseCounts = {};
+		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		
 		for ( let cause of Object.keys(DEATH_CAUSES) ) {
 			deathCauseCounts[cause] = 0;
 		}
-		slotModBodySel.attr("deathCauseCounts", JSON.stringify(deathCauseCounts));
 		
 		setSlotWindowTxt("Click a GO button");
 		
@@ -386,7 +391,10 @@ var ProbabilityViz = function(width, height) {
             			   },
             			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
         };
-        coordSysHist  = CoordinateSystem(coordInfo);
+        // Get selection of slot body chassis:
+        let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
+        // And save this slot module's coordinate system there:
+        slotBodies[slotModBodySel].coordSys = CoordinateSystem(coordInfo); 
 	}	
 	
 	/*---------------------------
@@ -578,10 +586,6 @@ var ProbabilityViz = function(width, height) {
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
         attachBarBehaviors();
-
-        // Redraw the axes so that the rounded butts of
-        // the bars are behind the X-axis:
-		//*****coordSysDistrib = CoordinateSystem(coordInfo);
 	}
 	
 	/*---------------------------
@@ -656,8 +660,8 @@ var ProbabilityViz = function(width, height) {
 		 * instance of a slot module, update the module's histogram.
 		 */
 		
-		let coordSys = coordSysHist;
-		let deathCauseCounts = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
+		let coordSys = getCoordSys(slotModBodySel);
+		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
 		let counts = Object.values(deathCauseCounts)
 		
 		// If the largest of the latest counts exceeds the
@@ -1037,10 +1041,12 @@ var ProbabilityViz = function(width, height) {
 			// Set all slot module's histograms to empty:
 			d3.selectAll(".machinesBody")
 				.each(function() {
+					let slotModBodySel = d3.select(this);
+					let coordSys = getCoordSys(slotModBodySel);
 					// Select the outer-body rectangle:
-					//*****let slotBodySel
-					clearDeathCauseCount(d3.select(this));
-					
+					clearDeathCauseCount(slotModBodySel);
+					coordSys.resetY();
+					updateSlotModHistogram(slotModBodySel);
 				});
 			break;
 		}
@@ -1490,9 +1496,8 @@ var ProbabilityViz = function(width, height) {
 		// that attrs can only be strings, and I like keeping
 		// each slot module's information with the module:
 		
-		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
-		counterObj[deathCause]++;
-		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
+		let deathCauseCount = slotBodies[slotModBodySel].deathCauseCounts
+		deathCauseCount[deathCause]++;
 	}
 	
 	/*---------------------------
@@ -1505,8 +1510,8 @@ var ProbabilityViz = function(width, height) {
 		 * cause, return the number of times that cause has occurred
 		 * in this module.
 		 */
-		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
-		return counterObj[deathCause];
+		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		return deathCauseCounts[deathCause];
 	}
 	
 	/*---------------------------
@@ -1518,13 +1523,18 @@ var ProbabilityViz = function(width, height) {
 		 * Zeroes all the slot module's death cause counts:
 		 */
 		
-		let counterObj = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
-		
-		for ( let deathCause of Object.keys(counterObj) ) {
-			counterObj[deathCause] = 0;
+		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		for ( let deathCause of Object.keys(deathCauseCounts) ) {
+			deathCauseCounts[deathCause] = 0;
 		};
-			
-		slotModBodySel.attr("deathCauseCounts", JSON.stringify(counterObj));
+	}
+	
+	/*---------------------------
+	| getCoordSys 
+	-----------------*/
+	
+	var getCoordSys = function(slotModBodySel) {
+		return slotBodies[slotModBodySel].coordSys
 	}
 	
 	/*---------------------------

@@ -81,6 +81,9 @@ var CoordinateSystem = function(coordInfo) {
 	let xBandWidth   = null; // width in pixels between two x-axis ticks.
 	let yBandWidth   = null; // width in pixels between two y-axis ticks.
 	
+	let origMaxY     = null;
+	let origMaxX     = null;
+	
 	let coordSysSel  = null;
 	
 	let xAxisLabelId = null;
@@ -134,13 +137,15 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		
 		if ( typeof(coordInfo.x.domain) !== 'undefined') {
-			xDomain = coordInfo.x.domain;
+			xDomain  = coordInfo.x.domain;
+			origMaxX = xDomain[1]; 
 		} else {
 			throw 'Must provide x-axis domain when creating coordinate system.';
 		}
 
 		if ( typeof(coordInfo.y.domain) !== 'undefined') {
-			yDomain = coordInfo.y.domain;
+			yDomain  = coordInfo.y.domain;
+			origMaxY = yDomain[1]; 
 		} else {
 			throw 'Must provide y-axis domain when creating coordinate system.';
 		}
@@ -194,6 +199,7 @@ var CoordinateSystem = function(coordInfo) {
 		
 		return {
 			rescaleY		: rescaleY,
+			resetY          : resetY,
 			xLabelsShow     : xLabelsShow,
 			yLabelsShow     : yLabelsShow,
 			svgSel          : svgSel,
@@ -248,6 +254,17 @@ var CoordinateSystem = function(coordInfo) {
 			.transition().duration(1500).ease(d3.easePolyInOut)  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
 		    .call(d3.axisLeft(yScale)
 		    		.tickFormat(d3.format("d")));
+	}
+	
+	/*---------------------------
+	| resetY 
+	-----------------*/
+	
+	var resetY = function() {
+		/*
+		 * Re-scales y axis to its original highest value.
+		 */
+		rescaleY([origMaxY]);
 	}
 	
 	/*---------------------------
