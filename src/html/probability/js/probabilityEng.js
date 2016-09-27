@@ -408,15 +408,44 @@ var ProbabilityViz = function(width, height) {
 	var addBettingSelection = function(slotModBodySel) {
 		
 		let bettingSel = slotModBodySel
-			.append("select");
-//****bettingSel.append("option").text("Kiwi")		
-		bettingSel.selectAll("option")
-			.data(Object.keys(DEATH_CAUSES))
+			.append("select")
+			.on("focus", function() {
+				setBettingEntries(slotModBodySel, Object.keys(DEATH_CAUSES));
+				let savedIndx = d3.select(this).attr("savedIndx"); 
+				if ( typeof(savedIndx) !== 'undefined') {
+					this.selectedIndex = savedIndx;
+				}
+			})
+			.on("blur", function() {
+				let deathCause = this.value;
+				let abbrev = deathCause.slice(0,13) + '...';
+				let oldSelIndx = this.selectedIndex;
+				setBettingEntries(slotModBodySel, [abbrev])
+					.attr("selectedIndex", 0)
+					.attr("savedIndx", oldSelIndx);
+			})
+			
+
+		setBettingEntries(slotModBodySel, ["Place your bet"]);
+	}
+	
+	/*---------------------------
+	| setBettingEntries 
+	-----------------*/
+	
+	var setBettingEntries = function(slotModBodySel, txtArr) {
+		
+		slotModBodySel.select("select").selectAll("option").remove();
+		let selectElSel = slotModBodySel.select("select");
+		
+		selectElSel.selectAll("option")
+			.data(txtArr)
 			.enter()
 			.append("option")
-				.each(function(deathCause) {
-					this.text = deathCause;
+				.each(function(txt) {
+					this.text = txt;
 				});
+		return selectElSel;
 	}
 	
 	/*---------------------------
