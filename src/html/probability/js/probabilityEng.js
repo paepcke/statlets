@@ -1022,6 +1022,13 @@ var ProbabilityViz = function(width, height) {
 			  .attr("id", "reset")
 			  .attr("value", "Reset")
 			  .attr("class", "button cntBtn reset");
+		
+		d3.select(".controlButtonBar")
+			.append('input')
+			  .attr("type", "button")
+			  .attr("id", "newSlotModule")
+			  .attr("value", "Add Slot Module")
+			  .attr("class", "button newSlotModule");
 
 		d3.selectAll(".button.cntBtn")
 			.on("click", function() {
