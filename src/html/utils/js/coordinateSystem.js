@@ -21,7 +21,8 @@ var CoordinateSystem = function(coordInfo) {
 	 * 
 	 * 		o axisLabel
 	 * 		o subclass      ; any css class to add to the axis' group.
-	 * 		o roundUnits    ; whether to round ticks to integers
+	 * 		o roundTicks    ; whether to round ticks to integers
+	 *                      ; NOTE: roundTicks not implemented for X axis yet.
 	 *
      * For the X axis:
 	 * 
@@ -171,6 +172,14 @@ var CoordinateSystem = function(coordInfo) {
 			width = svgSel.node().parentElement.clientWidth;
 		}
 		
+		if (typeof(coordInfo.x.roundTicks) !== 'undefined') {
+			xRoundTicks = coordInfo.x.roundTicks;
+		}
+
+		if (typeof(coordInfo.y.roundTicks) !== 'undefined') {
+			yRoundTicks = coordInfo.y.roundTicks;
+		}
+		
 		if (typeof(coordInfo.x.subclass) !== 'undefined') {
 			xSubclass = coordInfo.x.subclass;
 		}
@@ -254,12 +263,16 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		// Change the vertical scale up or down:
 		yScale.domain([0, scaleHighVal]);
-		let axisSel = yAxisGroup
-			.transition().duration(1500).ease(d3.easePolyInOut)  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
-		    .call(d3.axisLeft(yScale));
-		
+
 		if ( yRoundTicks ) {
-			axisSel.tickFormat(d3.format("d"));
+			yAxisGroup
+				.transition().duration(1500).ease(d3.easePolyInOut)  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
+				.call(d3.axisLeft(yScale)
+					.tickFormat(d3.format("d")));
+		} else {
+			yAxisGroup
+				.transition().duration(1500).ease(d3.easePolyInOut)
+				.call(d3.axisLeft(yScale));
 		}
 	}
 	
@@ -420,15 +433,22 @@ var CoordinateSystem = function(coordInfo) {
 		/* ---------------------------- Y AXIS ---------------------------- */		
 		
 		// Create a group, and call the yAxis function to create the axis:
-		yAxisGroup = svgSel.append("g")
-			 .attr("class", "axis")
-			 .attr("id", yAxisGrpName)
-			 .attr("transform", `translate(${Y_AXIS_LEFT}, 0)`)	
-		     .call(d3.axisLeft(yScale)
-		    		 .tickFormat(d3.format("d")))
-		    		 //****.tickFormat(d3.format(".0d")))
-		    		 //****.tickFormat(d3.precisionRound(1,100)));
-
+		
+		if ( yRoundTicks ) {
+			yAxisGroup = svgSel.append("g")
+			    .attr("class", "axis")
+			    .attr("id", yAxisGrpName)
+			    .attr("transform", `translate(${Y_AXIS_LEFT}, 0)`)	
+			    .call(d3.axisLeft(yScale)
+					.tickFormat(d3.format("d")));
+		} else {
+			yAxisGroup = svgSel.append("g")
+			    .attr("class", "axis")
+			    .attr("id", yAxisGrpName)
+			    .attr("transform", `translate(${Y_AXIS_LEFT}, 0)`)	
+			    .call(d3.axisLeft(yScale));
+		}
+		
 		if (ySubclass !== null ) {
 			yAxisGroup.classed(ySubclass, true)
 		}

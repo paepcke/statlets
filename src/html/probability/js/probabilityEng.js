@@ -385,6 +385,7 @@ var ProbabilityViz = function(width, height) {
             			   y: {scaleType : 'linear',
             				      domain : histYDomain,
             				   axisLabel : '',
+            				 roundTicks  : true,
             			     leftPadding : Y_AXIS_LEFT,
             			     topPadding  : (histTop + 2*INTER_BUTTON_PADDING),
             			   bottomPadding : X_AXIS_BOTTOM,
