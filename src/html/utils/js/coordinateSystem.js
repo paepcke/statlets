@@ -15,25 +15,26 @@ var CoordinateSystem = function(coordInfo) {
 	 * hold these properties:
 	 * 
 	 * 		o height        ; height of coordinate system in pixels. Default: fill parent
-	 * 		o width         ; width of coordinate system in pixels. Default: fill parent	 * 
+	 * 		o width         ; width of coordinate system in pixels. Default: fill parent
      * 
 	 * For each of the axes:
 	 * 
 	 * 		o axisLabel
 	 * 		o subclass      ; any css class to add to the axis' group.
-	 * 		o leftPadding
+	 * 		o roundUnits    ; whether to round ticks to integers
 	 *
      * For the X axis:
 	 * 
 	 * 		o rightPadding
 	 * 		o bottomPadding
 	 *
-	 * For the X axis:
+	 * For the Y axis:
 	 * 
 	 * 		o topPadding
+	 * 		o leftPadding
 	 *  
 	 * 
-	 * :param coordInfo:
+	 * :param coordInfo: For example:
 	 *  	           {
 	 *  	               x : {scaleType    : <"linear" | "ordinal" | "time"> },
 	 *  	                       domain    : [0, 50],                     // if linear scale
@@ -77,6 +78,9 @@ var CoordinateSystem = function(coordInfo) {
 	
 	let xSubclass    = null;
 	let ySubclass    = null;
+	
+	let xRoundTicks  = false;
+	let yRoundTicks  = false;
 	
 	let xBandWidth   = null; // width in pixels between two x-axis ticks.
 	let yBandWidth   = null; // width in pixels between two y-axis ticks.
@@ -250,10 +254,13 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		// Change the vertical scale up or down:
 		yScale.domain([0, scaleHighVal]);
-		yAxisGroup
+		let axisSel = yAxisGroup
 			.transition().duration(1500).ease(d3.easePolyInOut)  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
-		    .call(d3.axisLeft(yScale)
-		    		.tickFormat(d3.format("d")));
+		    .call(d3.axisLeft(yScale));
+		
+		if ( yRoundTicks ) {
+			axisSel.tickFormat(d3.format("d"));
+		}
 	}
 	
 	/*---------------------------

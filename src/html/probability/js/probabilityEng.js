@@ -1258,7 +1258,10 @@ var ProbabilityViz = function(width, height) {
 		/*
 		 * Given a text object selection and a width in
 		 * pixels, make lines fit into horizontal space by
-		 * checking for line length after each word.
+		 * checking for line length after each word. Create
+		 * a tspan for each line, and add it to the txtSel
+		 * being worked on.
+		 * 
 		 * Overflow can still happen vertically.
 		 * 
 		 * :param txtSel: d3 selection of a text element
@@ -1274,9 +1277,14 @@ var ProbabilityViz = function(width, height) {
 		} else {
 			sidePadding = 0;
 		}
-		sidePadding = sidePadding.toString();
+		
+		let fontSize = parseFloat(getComputedStyle(txtSel.node()).fontSize);
+		let toTxtBaseline  = fontSize + slotWinHeight / 4.
+		
 		txtSel.each(function() {
 			var text = d3.select(this),
+			// Chop text into words, and put them into
+			// an array in reverse order:
 			words = text.text().split(/\s+/).reverse(),
 			word,
 			line = [],
@@ -1292,20 +1300,38 @@ var ProbabilityViz = function(width, height) {
 			}
 			if ( y === null ) { y = "0"};
 
-			var tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+			var tspan = text.text(null)
+							.append("tspan")
+								.attr("x", 0)
+								.attr("y", y)
+								.attr("dy", dy + "em");
+								
+			// Construct a line by adding a word at
+			// a time, and checking whether it would
+			// overflow the line:
 			while (word = words.pop()) {
+				// Add one word to a word-array:
 				line.push(word);
-				tspan.text(line.join(" "));
+				// Turn it into text:
+				tspan.text(line.join(" ").trim());
 				if (tspan.node().getComputedTextLength() > width) {
+					// Yep, this word is one too many for this line;
+					// omit the word from the line being built,...
 					line.pop();
-					tspan.text(line.join(" "));
+					// ... and create txt from the array
+					// that do fit:
+					tspan.text(line.join(" ").trim());
+					// The word we couldn't fit is the first on the nxt line:
 					line = [word];
 					tspan = text
 							 .append("tspan")
-								.attr("x", sidePadding)
+								.attr("text-anchor", "middle")
+							 	.attr("x", 0)
 								.attr("y", y)
 								.attr("dy", ++lineNumber * lineHeight + dy + "em")
-								.attr("text-anchor", "middle")
+								.attr("transform", // Center horizontally:
+										`translate(${sidePadding + width / 2.}, ${toTxtBaseline})`
+								)
 								.text(word);
 				}
 			}
