@@ -409,6 +409,7 @@ var ProbabilityViz = function(width, height) {
 		
 		let bettingSel = slotModBodySel
 			.append("select")
+			.attr("class", "bettingSelector")
 			.on("focus", function() {
 				setBettingEntries(slotModBodySel, Object.keys(DEATH_CAUSES));
 				let savedIndx = d3.select(this).attr("savedIndx"); 
