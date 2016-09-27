@@ -346,6 +346,7 @@ var ProbabilityViz = function(width, height) {
 		// Add small death cause occurrences histogram
 		// at bottom of chassis:
 		addSlotModFrequencyChart(slotModSvgSel);
+		addBettingSelection(slotModBodySel);
 		
 		addSlotModuleDragging(slotModBodySel);
 		
@@ -399,6 +400,24 @@ var ProbabilityViz = function(width, height) {
         // And save this slot module's coordinate system there:
         slotBodies[slotModBodySel].coordSys = CoordinateSystem(coordInfo); 
 	}	
+
+	/*---------------------------
+	| addBettingSelection 
+	-----------------*/
+	
+	var addBettingSelection = function(slotModBodySel) {
+		
+		let bettingSel = slotModBodySel
+			.append("select");
+//****bettingSel.append("option").text("Kiwi")		
+		bettingSel.selectAll("option")
+			.data(Object.keys(DEATH_CAUSES))
+			.enter()
+			.append("option")
+				.each(function(deathCause) {
+					this.text = deathCause;
+				});
+	}
 	
 	/*---------------------------
 	| addButton 
