@@ -657,7 +657,16 @@ var ProbabilityViz = function(width, height) {
 		 */
 		
 		let coordSys = coordSysHist;
-		let deathCauseCounts = JSON.parse(slotModBodySel.attr("deathCauseCounts"));		
+		let deathCauseCounts = JSON.parse(slotModBodySel.attr("deathCauseCounts"));
+		let counts = Object.values(deathCauseCounts)
+		
+		// If the largest of the latest counts exceeds the
+		// histogram's y-axis, then rescale the axis:
+		let largestCount  = Math.max.apply(null, counts);
+		let yScaleHighest = coordSys.yScale.domain()[1]; 
+		if ( largestCount > yScaleHighest)  {
+			coordSys.rescaleY(counts);
+		}
 		
 		let slotModSvgSel = coordSys.svgSel;
 		let xScale        = coordSys.xScale;
@@ -1029,7 +1038,9 @@ var ProbabilityViz = function(width, height) {
 			d3.selectAll(".machinesBody")
 				.each(function() {
 					// Select the outer-body rectangle:
+					//*****let slotBodySel
 					clearDeathCauseCount(d3.select(this));
+					
 				});
 			break;
 		}

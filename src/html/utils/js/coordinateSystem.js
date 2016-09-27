@@ -193,6 +193,9 @@ var CoordinateSystem = function(coordInfo) {
 		makeCoordSys();
 		
 		return {
+			rescaleY		: rescaleY,
+			xLabelsShow     : xLabelsShow,
+			yLabelsShow     : yLabelsShow,
 			svgSel          : svgSel,
 			xScale          : xScale,
 			yScale          : yScale,
@@ -201,8 +204,6 @@ var CoordinateSystem = function(coordInfo) {
 			xBandWidth      : xBandWidth,
 			yBandWidth      : yBandWidth,
 			coordSysSel     : coordSysSel,
-			xLabelsShow     : xLabelsShow,
-			yLabelsShow     : yLabelsShow,
 			height          : height,
 			width           : width,
 			xAxisRightPad   : X_AXIS_RIGHT,
@@ -210,6 +211,43 @@ var CoordinateSystem = function(coordInfo) {
 			yAxisLeftPad    : Y_AXIS_LEFT,
 			yAxisTopPad     : Y_AXIS_TOP,
 		}
+	}
+	
+	
+	/*---------------------------
+	| rescaleY 
+	-----------------*/
+	
+	var rescaleY = function(valsToInclude) {
+		/*
+		 * Given an array of y-values, find the largest,
+		 * and ensure that the y-axis includes that largest
+		 * number. If the largest number is larger than the
+		 * current top of the vertical scale, than that scale's
+		 * top will be increased. If the max in valsToInclude
+		 * is less than the current top of the y-axis, then
+		 * the scale will be shortened.
+		 */
+
+		let scaleHighVal = yDomain[1]; // the high number
+		let maxValToInclude = Math.max.apply(null, valsToInclude);
+
+		// Find a scale that includes maxValToAdjustTo:
+		if ( maxValToInclude > scaleHighVal ) {
+			while ( maxValToInclude > scaleHighVal ) {
+				scaleHighVal = 2*scaleHighVal;
+			}
+		} else {
+			while ( maxValToInclude < scaleHighVal ) {
+				scaleHighVal = Math.round(scaleHighVal / 2);
+			}
+		}
+		// Change the vertical scale up or down:
+		yScale.domain([0, scaleHighVal]);
+		yAxisGroup
+			.transition().duration(1500).ease(d3.easePolyInOut)  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
+		    .call(d3.axisLeft(yScale)
+		    		.tickFormat(d3.format("d")));
 	}
 	
 	/*---------------------------
@@ -331,7 +369,6 @@ var CoordinateSystem = function(coordInfo) {
 		xAxisGroup = svgSel.append("g")
 			 .attr("class", "axis")
 			 .attr("id", xAxisGrpName)
-			 //*********.attr("transform", `translate(${Y_AXIS_LEFT}, ${height - X_AXIS_BOTTOM})`)
 			 .attr("transform", `translate(0, ${height - X_AXIS_BOTTOM})`)
 			 .call(d3.axisBottom(xScale));
 		
@@ -363,7 +400,10 @@ var CoordinateSystem = function(coordInfo) {
 			 .attr("class", "axis")
 			 .attr("id", yAxisGrpName)
 			 .attr("transform", `translate(${Y_AXIS_LEFT}, 0)`)	
-		     .call(d3.axisLeft(yScale));
+		     .call(d3.axisLeft(yScale)
+		    		 .tickFormat(d3.format("d")))
+		    		 //****.tickFormat(d3.format(".0d")))
+		    		 //****.tickFormat(d3.precisionRound(1,100)));
 
 		if (ySubclass !== null ) {
 			yAxisGroup.classed(ySubclass, true)
@@ -371,7 +411,7 @@ var CoordinateSystem = function(coordInfo) {
 	}
 	
 	/*---------------------------
-	| makeAxesLabels 
+	| makeAxesCaptions 
 	-----------------*/
 	
 	var makeAxesCaptions = function() {
