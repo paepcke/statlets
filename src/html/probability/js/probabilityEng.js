@@ -1028,8 +1028,12 @@ var ProbabilityViz = function(width, height) {
 			  .attr("type", "button")
 			  .attr("id", "newSlotModule")
 			  .attr("value", "Add Slot Module")
-			  .attr("class", "button newSlotModule");
+			  .attr("class", "button newSlotModule")
+			  .on("click", function() {
+				  createSlotModuleWell("slotMod_" + uniqueNum());
+			  });
 
+	    // Have the navigation buttons all call goToStep()
 		d3.selectAll(".button.cntBtn")
 			.on("click", function() {
 				goToStep(this);
@@ -1111,6 +1115,15 @@ var ProbabilityViz = function(width, height) {
 			break;
 		}
 	}
+
+	/*---------------------------
+	| uniqueNum 
+	-----------------*/
+	
+	var uniqueNum = function() {
+		return (new Date).getTime() + Math.random().toString().substring(2) ;
+	}
+	
 	
 	/*---------------------------
 	| normalizeDeathCauses 
