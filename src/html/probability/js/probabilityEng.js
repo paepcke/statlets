@@ -31,7 +31,7 @@ var ProbabilityViz = function(width, height) {
 	
 	var coordSysDistrib  = null;
 	var distribCauses    = null;
-	
+
 	var slotBodies       = {};   // The coordinate systems and hit counts for each slot module.
 
 	var browserType      = null;
@@ -228,15 +228,14 @@ var ProbabilityViz = function(width, height) {
 		// Outer body of this slot module (not an SVG rect!)
 		
 		// Get dimensions of the div that holds all slot modules:
-		let machineDivSel = d3.select("#machinesDiv");
-		let machineDiv    = machineDivSel.node();
-		let dimRect       = machineDiv.getBoundingClientRect();
+		let machinesDivSel = d3.select("#machinesDiv");
+		let machinesDivDimRect = machinesDivSel.node().getBoundingClientRect();
 		
-		let slotModBodySel = machineDivSel
+		let slotModBodySel = machinesDivSel
 			.append("rect")
 				.style("position", "absolute")
-				.style("left", `${dimRect.left + SLOT_MODULE_TOP_PADDING}px`)
-				.style("top", `${dimRect.top   + SLOT_MODULE_LEFT_PADDING}px`)
+				.style("left", `${machinesDivDimRect.left + SLOT_MODULE_TOP_PADDING}px`)
+				.style("top", `${machinesDivDimRect.top   + SLOT_MODULE_LEFT_PADDING}px`)
 				.attr("id", moduleId)
 				.attr("class", "machinesBody")
 				
@@ -557,27 +556,33 @@ var ProbabilityViz = function(width, height) {
 						return;
 					} 
 					
-					let mouseY  = d3.event.y;
-					let slotModX = modSel.x;
-					let slotModY = modSel.y;
-					
-//					if (mouseY < slotModY 
-//						// Mouse got ahead of the bar being resized.
-//						// Select the bar we are dragging instead:
-//						barSel = d3.select(d3.drag.currBar);
-//						if (barSel.empty()) {
-//							// Not over a bar:
-//							return;
-//						} 
-//					}
-					
 					if (! modSel.classed("dragging")) {
 						// Not over something being dragged:
 						return;
 					}
 					
+					let mouseDx = d3.event.dx;
+					let mouseDy = d3.event.dy;
+					
+					let slotModBodySel     = slotModPeripherals[slotModId]["slotModBodySel"];
+					let slotModDimRect     = slotModBodySel.node().getBoundingClientRect();
+  
+					let newSlotModLeft     = slotModDimRect.left + mouseDx;
+					let newSlotModRight    = slotModDimRect.right + mouseDx;
+					let newSlotModTop      = slotModDimRect.top + mouseDy;
+					let newSlotModBottom   = slotModDimRect.bottom + mouseDy;
+					let machinesDivDimRect = d3.select("#machinesDiv").node().getBoundingClientRect();
+					
+					// Ensure machines stay within the machines div:
+					if ( newSlotModLeft   < machinesDivDimRect.left ||
+						 newSlotModRight  > machinesDivDimRect.right ||
+						 newSlotModTop    < machinesDivDimRect.top ||
+						 newSlotModBottom > machinesDivDimRect.bottom ) {
+						
+						return;
+					}
+					
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
-					let slotModBodySel  = slotModPeripherals[slotModId]["slotModBodySel"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
 					// Let interested parties know that a slot module was moved:
 					dispatch.call("drag", this, modSel);
