@@ -105,7 +105,7 @@ var ProbabilityViz = function(width, height) {
 	// fades and appears with only one slot change:
 	var SLOT_TXT_TRANSITION_SPEED_1   = 500; // msecs
 	// Delays between runs of 10:
-	var SLOT_TXT_TRANSITION_SPEED_10  = 300; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_10  = 1000; // msecs
 	var SLOT_TXT_TRANSITION_SPEED_100 = 100; // msecs
 	
 	// Probability below which bars in the distribution
@@ -182,13 +182,14 @@ var ProbabilityViz = function(width, height) {
 		   .attr("class", "distribSvg")
 
 		eventGenerator = EventGenerator(DEATH_CAUSES);
+
+		addControlButtons();
+
 		// Create one slot module that will serve as
 		// the source of others; it will be semi-transparent:
 		let urSlotSel = createSlotModuleWell('urSlotModule');
-		// urSlotSel.attr("opacity", 0.5);
 		createCauseDistrib();
 		createTooltip() 
-        addControlButtons();
 		
 		return {}
 	}
@@ -225,10 +226,17 @@ var ProbabilityViz = function(width, height) {
 		 */
 
 		// Outer body of this slot module (not an SVG rect!)
-		let slotModBodySel = d3.select("#machinesDiv")
+		
+		// Get dimensions of the div that holds all slot modules:
+		let machineDivSel = d3.select("#machinesDiv");
+		let machineDiv    = machineDivSel.node();
+		let dimRect       = machineDiv.getBoundingClientRect();
+		
+		let slotModBodySel = machineDivSel
 			.append("rect")
-				.style("left", `${SLOT_MODULE_TOP_PADDING}px`)
-				.style("top", `${SLOT_MODULE_LEFT_PADDING}px`)
+				.style("position", "absolute")
+				.style("left", `${dimRect.left + SLOT_MODULE_TOP_PADDING}px`)
+				.style("top", `${dimRect.top   + SLOT_MODULE_LEFT_PADDING}px`)
 				.attr("id", moduleId)
 				.attr("class", "machinesBody")
 				

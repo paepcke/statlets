@@ -87,6 +87,7 @@ h1          { text-align : center;  }
     height : 35%;
     min-width : 100px;
     min-height : 350px;
+    max-width : 100px;
     border: 2px solid black;
     opacity: 0.6;
     display: block;
