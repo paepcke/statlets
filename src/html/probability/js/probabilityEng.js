@@ -51,13 +51,6 @@ var ProbabilityViz = function(width, height) {
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
 	
-	// Two text elements to switch
-	// between in the slot window: ******** Maybe no longer needed
-	var slotTxt1Sel      = null;  //*********
-	var slotTxt2Sel      = null;  //*********
-	
-	var slotTxtMan       = null;
-	
 	var fadeInTrans  	 = d3.transition("fadeIn");
 	var fadeOutTrans 	 = d3.transition("fadeOut");
 	
@@ -168,9 +161,6 @@ var ProbabilityViz = function(width, height) {
 		
 		cookieMonster  = CookieMonster();
 		
-		// Manager of text elements for slot modules:
-		slotTxtMan = TextManager();
-
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
 			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
@@ -243,7 +233,7 @@ var ProbabilityViz = function(width, height) {
 				.attr("class", "machinesBody")
 				
 		// Remember this slot module chassis:
-		slotBodies[slotModBodySel] = {};
+		slotBodies[slotModBodySel.attr("id")] = {};
 				
 		// SVG that will hold all machine parts within the outer body:
 		let slotModSvgSel = slotModBodySel
@@ -260,13 +250,19 @@ var ProbabilityViz = function(width, height) {
   	    // Add text to the slot window:
 		slotWinHeight      = slotWindowRect.node().getBBox().height;
 		slotWinWidth       = slotWindowRect.node().getBBox().width;
-		slotTxt1Sel = slotModSvgSel
+		let slotTxt1Sel = slotModSvgSel
 			.append("text")
 				.text("")
 				.attr("id", "slotTxt1Sel")
 				.attr("class", "slotWindowTxt");
 		
-		// Give this slot window text element to the manager:
+		// Give this slot window text element to a manager
+		// that is associated with this slot module:
+		
+		// Manager of text elements for slot modules:
+		let slotTxtMan = TextManager();
+		slotBodies[slotModBodySel.attr("id")].textManager = slotTxtMan;
+		
 		slotTxtMan.addTxtElement(slotTxt1Sel.node());
 		
 		// Attach an empty transition to this
@@ -284,7 +280,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Build the second txt element on top of the
 		// first so the can be cross-faded:
-		slotTxt2Sel = slotModSvgSel
+		let slotTxt2Sel = slotModSvgSel
 			.append("text")
 				.text("")
 				.attr("id", "slotTxt2Sel")				
@@ -300,14 +296,14 @@ var ProbabilityViz = function(width, height) {
 		// selection for setSlotWindowTxt() to find:
 		slotTxt2Sel.transition(fadeOutTrans);
 		
-		slotBodies[slotModBodySel].deathCauseCounts = {};
-		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		slotBodies[slotModBodySel.attr("id")].deathCauseCounts = {};
+		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		
 		for ( let cause of Object.keys(DEATH_CAUSES) ) {
 			deathCauseCounts[cause] = 0;
 		}
 		
-		setSlotWindowTxt("Click a GO button");
+		setSlotWindowTxt(slotModBodySel, "Click a GO button");
 		
 		// A function that updates a slot module's histogram:
 		let updateHistogram = partial(updateSlotModHistogram, slotModBodySel);
@@ -316,7 +312,10 @@ var ProbabilityViz = function(width, height) {
 				   let deathCause = eventGenerator.next();
 				   // Update this slot module's cause counts:
 				   addDeathCauseCount(slotModBodySel, deathCause);
-				   setSlotWindowTxt(deathCause, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
+				   setSlotWindowTxt(slotModBodySel, 
+						   			deathCause, 
+						   			SLOT_TXT_TRANSITION_SPEED_1, 
+						   			updateHistogram);
 			   });
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				    // Pick 10 random death causes:
@@ -327,7 +326,10 @@ var ProbabilityViz = function(width, height) {
 				    // Update this slot module's cause counts:
 					for ( let deathCause of txtInfo ) {
 						addDeathCauseCount(slotModBodySel, deathCause);
-						setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
+						setSlotWindowTxt(slotModBodySel,
+										 txtInfo, 
+										 SLOT_TXT_TRANSITION_SPEED_10, 
+										 updateHistogram);
 				    } 
 			   });
 		addButton(slotModSvgSel, "Go x100", function(evt) {
@@ -339,7 +341,10 @@ var ProbabilityViz = function(width, height) {
 				    // Update this slot module's cause counts:
 					for ( let deathCause of txtInfo ) {
 						addDeathCauseCount(slotModBodySel, deathCause);
-						setSlotWindowTxt(txtInfo, SLOT_TXT_TRANSITION_SPEED_100, updateHistogram);
+						setSlotWindowTxt(slotModBodySel,
+										 txtInfo, 
+										 SLOT_TXT_TRANSITION_SPEED_100, 
+										 updateHistogram);
 				    } 
 			   });
 		
@@ -398,7 +403,7 @@ var ProbabilityViz = function(width, height) {
         // Get selection of slot body chassis:
         let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
         // And save this slot module's coordinate system there:
-        slotBodies[slotModBodySel].coordSys = CoordinateSystem(coordInfo); 
+        slotBodies[slotModBodySel.attr("id")].coordSys = CoordinateSystem(coordInfo); 
 	}	
 
 	/*---------------------------
@@ -714,7 +719,7 @@ var ProbabilityViz = function(width, height) {
 		 */
 		
 		let coordSys = getCoordSys(slotModBodySel);
-		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		let counts = Object.values(deathCauseCounts)
 		
 		// If the largest of the latest counts exceeds the
@@ -906,7 +911,30 @@ var ProbabilityViz = function(width, height) {
 	| setSlotWindowTxt 
 	-----------------*/
 	
-	var setSlotWindowTxt = function(txtInfo, transitionSpeed, callback) {
+	var setSlotWindowTxt = function(slotModBodySel, txtInfo, transitionSpeed, callback) {
+		/*
+		 * Set the slot window text of one slot module.
+		 * Parameter txtInfo may be a string, in which case 
+		 * that string is displayed. If txtInfo is instead an 
+		 * array of strings, then each string is displayed in 
+		 * turn. The original thought was to to use transitions
+		 * to fade in one text after the other. This proved too
+		 * unpredictable and irregular. So the transition speed
+		 * is a delay between showing successive texts.
+		 *
+		 * :param slotModBodySel: d3 selection of the slot
+		 * 		module body whose slot window is to receive
+		 * 		the text.
+		 * :param txtInfo: text to display.
+		 * :type txtInfo: { string | [string] }
+		 * :param transitionSpeed: relevant if multiple strings are
+		 * 		be displayed in sequence. The transitionSpeed is
+		 * 		the time between showing successive texts. The
+		 * 		units are milliseconds.
+		 * :type transitionSpeed: { number | undefined }
+		 * :param callback: function to call when done.
+		 * :type callback: { function | undefined }
+		 */
 
 		if ( typeof(txtInfo) === "string") {
 			txtInfo = [txtInfo];
@@ -919,6 +947,12 @@ var ProbabilityViz = function(width, height) {
 		if ( txtInfo.length === 0 ) {
 			return;
 		}
+		
+		if ( typeof(callback) === 'undefined') {
+			callback = function() {};
+		}
+		
+		let slotTxtMan = slotBodies[slotModBodySel.attr("id")].textManager;
 		
 		// If there are many text elements to display in 
 		// sequence, the browser lags behind, even with
@@ -1595,7 +1629,7 @@ var ProbabilityViz = function(width, height) {
 		// that attrs can only be strings, and I like keeping
 		// each slot module's information with the module:
 		
-		let deathCauseCount = slotBodies[slotModBodySel].deathCauseCounts
+		let deathCauseCount = slotBodies[slotModBodySel.attr("id")].deathCauseCounts
 		deathCauseCount[deathCause]++;
 	}
 	
@@ -1609,7 +1643,7 @@ var ProbabilityViz = function(width, height) {
 		 * cause, return the number of times that cause has occurred
 		 * in this module.
 		 */
-		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		return deathCauseCounts[deathCause];
 	}
 	
@@ -1622,7 +1656,7 @@ var ProbabilityViz = function(width, height) {
 		 * Zeroes all the slot module's death cause counts:
 		 */
 		
-		let deathCauseCounts = slotBodies[slotModBodySel].deathCauseCounts;
+		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		for ( let deathCause of Object.keys(deathCauseCounts) ) {
 			deathCauseCounts[deathCause] = 0;
 		};
@@ -1633,7 +1667,7 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var getCoordSys = function(slotModBodySel) {
-		return slotBodies[slotModBodySel].coordSys
+		return slotBodies[slotModBodySel.attr("id")].coordSys
 	}
 	
 	/*---------------------------
