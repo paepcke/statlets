@@ -481,7 +481,7 @@ var CoordinateSystem = function(coordInfo) {
 		
 		// X axis caption
 		svgSel.append("text")
-						.attr("class", "x label")
+						.attr("class", "axis x caption")
 						.attr("id", xAxisLabelId)
 						.attr("text-anchor", "middle")
 						.attr("x", 2*width / 3.0)
@@ -490,7 +490,7 @@ var CoordinateSystem = function(coordInfo) {
 						
 		// Y axis caption						
 		svgSel.append("text")
-						.attr("class", "axis y label")
+						.attr("class", "axis y caption")
 						.attr("id", yAxisLabelId)
 						.attr("x", 5)
 						.attr("y", -5)
