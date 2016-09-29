@@ -32,7 +32,11 @@ var ProbabilityViz = function(width, height) {
 	var coordSysDistrib  = null;
 	var distribCauses    = null;
 
-	var slotBodies       = {};   // The coordinate systems and hit counts for each slot module.
+	// The coordinate systems and hit counts for each slot module.
+	// Maps a slot module body's id to an object that 
+	// holds the module's text manager, hit count, and 
+	// coordinate system instance:
+	var slotBodies       = {};   
 
 	var browserType      = null;
 	var alerter          = null;
@@ -46,7 +50,10 @@ var ProbabilityViz = function(width, height) {
 	
 	// Bar-sliding dispatch for interested
 	// listeners:
-	var dispatch         = null;
+	var dispatchBarHeightChange = null;
+
+	// Same for slot module having moved:
+	var dispatchSlotModMoved = null;
 	
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
@@ -93,8 +100,6 @@ var ProbabilityViz = function(width, height) {
 	var SLOT_WINDOW_HEIGHT_PERC   = 40/100;
 	// Percentage of button height of module body height:
 	var BUTTON_HEIGHT_PERC        = 10/100;
-	// Percentage of top veneer height of module body height:
-	var VENEER_HEIGHT_PERC        = 5/100;
 	// Between slot window and go button:
 	var GO_BUTTON_TOP_GAP         = 30;
 	// Padding between slot window text and the left
@@ -111,7 +116,13 @@ var ProbabilityViz = function(width, height) {
 	// Probability below which bars in the distribution
 	// chart need a handle for dragging:
 	var ADD_DISTRIB_BAR_HANDLE_THRESHOLED = 0.005; // probability
+
+	// Minimum distance that slot modules must be to 
+	// get pulled into docking:
+	var DOCKING_RANGE    = 60;
 	
+	// Final distance between docked slot modules:
+	var DOCKING_DISTANCE = 50;
 	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -241,6 +252,10 @@ var ProbabilityViz = function(width, height) {
 				
 		// Remember this slot module chassis:
 		slotBodies[slotModBodySel.attr("id")] = {};
+		
+		// This slot module is not currently docked
+		// with anyone:
+		slotModBodySel.attr("dockedWith", "none");
 				
 		// SVG that will hold all machine parts within the outer body:
 		let slotModSvgSel = slotModBodySel
@@ -359,6 +374,7 @@ var ProbabilityViz = function(width, height) {
 		// at bottom of chassis:
 		addSlotModFrequencyChart(slotModSvgSel);
 		addBettingSelection(slotModBodySel);
+		addAndOrSelection(slotModBodySel);
 		
 		addSlotModuleDragging(slotModBodySel);
 		
@@ -418,12 +434,15 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var addBettingSelection = function(slotModBodySel) {
+		/*
+		 * Add betting selection box at bottom of slot module:
+		 */
 		
 		let bettingSel = slotModBodySel
 			.append("select")
 			.attr("class", "bettingSelector")
 			.on("focus", function() {
-				setBettingEntries(slotModBodySel, Object.keys(DEATH_CAUSES));
+				setBettingEntries(d3.select(this), Object.keys(DEATH_CAUSES));
 				let savedIndx = d3.select(this).attr("savedIndx"); 
 				if ( typeof(savedIndx) !== 'undefined') {
 					this.selectedIndex = savedIndx;
@@ -433,32 +452,133 @@ var ProbabilityViz = function(width, height) {
 				let deathCause = this.value;
 				let abbrev = deathCause.slice(0,13) + '...';
 				let oldSelIndx = this.selectedIndex;
-				setBettingEntries(slotModBodySel, [abbrev])
+				setBettingEntries(d3.select(this), [abbrev])
 					.attr("selectedIndex", 0)
 					.attr("savedIndx", oldSelIndx);
 			})
 			
-
-		setBettingEntries(slotModBodySel, ["Place your bet"]);
+		setBettingEntries(bettingSel, ["Place your bet"]);
 	}
+	
+
+	/*---------------------------
+	| addAndOrSelection 
+	-----------------*/
+	
+	var addAndOrSelection = function(slotModBodySel) {
+		/*
+		 * Add AND/OR slide-out selection pulldown at side of slot module.
+		 */
+		
+		let andOrSel = slotModBodySel
+			.append("select")
+			.attr("class", "andOrSelector")
+		
+		andOrSel.selectAll("option")
+				.data(["and", "or"])
+				.enter()
+				.append("option")
+					.each(function(txt) {
+						this.text = txt;
+				});
+		// Display first choice:
+		andOrSel.attr("selectedIndex", 0);
+		
+		// Position the selector halfway down the slot
+		// module's slot window:
+		
+		let slotWinDimRect    = slotModBodySel.select(".slotWindowRect").node().getBoundingClientRect();
+		let slotModBodDimRect = slotModBodySel.node().getBoundingClientRect();
+		let topSelEdge        = (slotWinDimRect.bottom - slotWinDimRect.top) / 2.
+		
+		andOrSel.style("left", slotModBodDimRect.width); // right edge of slot mod body		
+		andOrSel.style("top", topSelEdge);
+		
+		// Initially hide the selector:
+		showAndOrSel(slotModBodySel, false);
+
+		return andOrSel;
+	}
+	
+	/*---------------------------
+	| showAndOrSel 
+	-----------------*/
+	
+	var showAndOrSel = function(slotModBodySel, doShow) {
+
+		let andOrSel           = slotModBodySel.select(".andOrSelector");
+		let andOrDimRect       = andOrSel.node().getBoundingClientRect();
+		let slotModDimRect     = slotModBodySel.node().getBoundingClientRect();
+		
+		let andOrTargetLeft    = null;
+		let andOrTargetOpacity = null;
+
+		if ( doShow ) {
+
+			if ( isAndOrSelShowing(slotModBodySel) ) {
+				return; // already visible
+			}
+			
+			// Distances are relative to left edge of slot module:
+			andOrTargetLeft    = slotModDimRect.right - slotModDimRect.left;
+			andOrTargetOpacity = 1;
+
+		} else {
+
+			if ( ! isAndOrSelShowing(slotModBodySel) ) {
+				return; // Already hidden
+			}
+
+			andOrTargetLeft = 0; // relative to left edge of the slot module.
+			andOrTargetOpacity = 0;
+
+		}
+		
+		andOrSel
+		.transition()
+		.duration(800)
+		.style("left", `${andOrTargetLeft}px`)
+		.style("opacity", `${andOrTargetOpacity}`);
+		
+	}
+	
+	/*---------------------------
+	| isAndOrSelShowing 
+	-----------------*/
+	
+	var isAndOrSelShowing = function(slotModBodySel) {
+		/*
+		 * Given a slot module body, return true if its
+		 * AND/OR selector is showing. Else return false.
+		 */
+
+		let andOrSel = slotModBodySel.select(".andOrSelector");
+		let andOrDimRect = andOrSel.node().getBoundingClientRect();
+		let slotModDimRect = slotModBodySel.node().getBoundingClientRect();
+		
+		// Does the andOr selector stick out beyond the 
+		// border of its slot module?
+		return andOrDimRect.right > slotModDimRect.right + 
+									parseFloat(slotModBodySel.style("border"));
+	}
+	
 	
 	/*---------------------------
 	| setBettingEntries 
 	-----------------*/
 	
-	var setBettingEntries = function(slotModBodySel, txtArr) {
+	var setBettingEntries = function(selectBoxSel, txtArr) {
 		
-		slotModBodySel.select("select").selectAll("option").remove();
-		let selectElSel = slotModBodySel.select("select");
-		
-		selectElSel.selectAll("option")
+		selectBoxSel.selectAll("option").remove();
+
+		selectBoxSel.selectAll("option")
 			.data(txtArr)
 			.enter()
 			.append("option")
 				.each(function(txt) {
 					this.text = txt;
 				});
-		return selectElSel;
+		return selectBoxSel;
 	}
 	
 	/*---------------------------
@@ -585,7 +705,7 @@ var ProbabilityViz = function(width, height) {
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
 					// Let interested parties know that a slot module was moved:
-					dispatch.call("drag", this, modSel);
+					dispatchSlotModMoved.call("moved", this, slotModBodySel);
 				})
 				.on('end', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -651,8 +771,11 @@ var ProbabilityViz = function(width, height) {
 		// adjust other bars to keep the sum of bar
 		// heights equalling 1.
 
-		dispatch = d3.dispatch('drag', barPulled);
-		dispatch.on("drag.deathCauseBar", barPulled);
+		dispatchBarHeightChange = d3.dispatch('drag', barPulled);
+		dispatchBarHeightChange.on("drag.deathCauseBar", barPulled);
+		
+		dispatchSlotModMoved    = d3.dispatch("moved");
+		dispatchSlotModMoved.on("moved", dockIfShould);
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
@@ -899,7 +1022,7 @@ var ProbabilityViz = function(width, height) {
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
 					
 					// Let interested parties know that a bar was resized.
-					//*****dispatch.call("drag", this, barSel);
+					//*****dispatchBarHeightChange.call("drag", this, barSel);
 				})
 				.on('end', function(d) {
 					d3.select(this).classed("dragging", false);
@@ -1684,6 +1807,144 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| dockIfShould 
+	-----------------*/
+	
+	var dockIfShould = function(slotModBodySel) {
+		
+		// Go through each slot module, and see
+		// whether any other slot module is to its
+		// right within docking distance:
+		
+		for ( let candidateSlotModId of Object.keys(slotBodies) ) {
+			
+			// Get selection of candidate whose neighbors
+			// will be examined:
+			let candidateSlotModBodySel = d3.select("#" + candidateSlotModId);
+			
+			
+			let currPartner = dockedWith(candidateSlotModBodySel);
+			if ( typeof(currPartner) !== "undefined" ) {
+				// Check whether partner still in docking distance:
+				if (distanceBetween(candidateSlotModBodySel, currPartner) > DOCKING_DISTANCE ) {
+					// User is dragging module away to undock:
+					undock(candidateSlotModBodySel);
+				}
+				// Stay docked and consider next module as
+				// left docking candidate:
+				continue;
+			} 
+			
+			let candidateRightEdge = candidateSlotModBodySel.node().getBoundingClientRect().right;
+			
+			// See how close the candidate's right edge is to 
+			// every other slot module's left edge:
+			
+			for ( let maybePartnerSlotModId of Object.keys(slotBodies) ) {
+				
+				let maybePartnerSlotModBodySel = d3.select("#" + maybePartnerSlotModId);
+				if ( candidateSlotModBodySel.attr("id") ===  maybePartnerSlotModBodySel.attr("id") ) {
+					// Partner is same as candidate; skip:
+					continue;
+				}
+				let distance = distanceBetween(candidateSlotModBodySel, maybePartnerSlotModBodySel);
+				if ( distance > 0 && distance <= DOCKING_DISTANCE ) {
+					dock(candidateSlotModBodySel, maybePartnerSlotModBodySel);
+					break; // out of inner loop: module now docked.
+				} 
+			}
+		}
+	}
+	
+	/*---------------------------
+	| dock 
+	-----------------*/
+	
+	var dock = function(leftModBodySel, rightModBodySel) {
+		/*
+		 * Given d3 selections of two slot modules, dock them.
+		 */
+		
+		let leftDimRect = leftModBodySel.node().getBoundingClientRect();
+		
+		// Pull out the and/or selector:
+		leftModBodySel.call( showAndOrSel, leftModBodySel, true );
+		
+		// Move the partner into docking position
+		// next to the left module:
+		rightModBodySel
+			.transition()
+			.duration(1000)
+				.style("top", function() {
+					return `${leftDimRect.top}px`;
+				})
+				.style("left", function() {
+					return `${leftDimRect.right + DOCKING_DISTANCE}px`;
+				});
+		
+		// Remember to whom everyone is docked:
+		leftModBodySel.attr("dockedWith", rightModBodySel.attr("id"));
+		rightModBodySel.attr("dockedWith", leftModBodySel.attr("id"));
+		
+	}
+	
+	/*---------------------------
+	| undock 
+	-----------------*/
+	
+	var undock = function(leftModBodySel) {
+		/*
+		 * Undock slot module whose d3 selection is given.
+		 * OK if not currently docked.
+		 * 
+		 *  :param leftModBodySel: d3 selection of slot module
+		 *      that is to be undocked from its neighbor.
+		 *  :type leftModBodySel: d3 selection.
+		 *  :return the d3 selection of the undocked partner,
+		 *  	or undefined if given module was not docked.
+		 *  :rtype: {d3-sel | undefined}
+		 */
+		
+		showAndOrSel(leftModBodySel, false);
+		
+		let partnerId = leftModBodySel.attr("dockedWith");
+		
+		if ( partnerId === "none" ) {
+			// Given module not currently docked:
+			return undefined;
+		}
+		
+		leftModBodySel.attr("dockedWith", "none");
+		
+		let partnerSel = d3.select("#" + partnerId); 
+		partnerSel.attr("dockedWith", "none");
+		
+		return partnerSel;
+	}
+	
+	/*---------------------------
+	| dockedWith
+	-----------------*/
+	
+	var dockedWith = function(slotModBodySel) {
+		/*
+		 * Returns either undefined if given slot
+		 * module body is not currently docked with
+		 * anyone. Or returns the d3 selection of the
+		 * partner module.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module to check.
+		 * :type slotModBodySel: d3-selection.
+		 */
+		
+		let dockedPartnerId = slotModBodySel.attr("dockedWith");
+		if ( typeof(dockedPartnerId) === 'undefined' || dockedPartnerId === "none" ) {
+			return undefined;
+		}
+		return d3.select("#" + dockedPartnerId);
+	}
+	
+	/*---------------------------
 	| partial 
 	-----------------*/
 
@@ -1704,6 +1965,29 @@ var ProbabilityViz = function(width, height) {
 			var allArguments = args.concat(Array.prototype.slice.call(arguments));
 			return func.apply(this, allArguments);
 		};
+	}
+	
+	/*---------------------------
+	| distanceBetween 
+	-----------------*/
+	
+	var distanceBetween = function(leftSlotModSel, rightSlotModSel) {
+		/*
+		 * Returns horizontal distance between
+		 * the right edge of the d3-selected leftSlotModSel
+		 * and the left edge of the d3-selected rightSlotModSel.
+		 * 
+		 * :param leftSlotModSel: d3-selection of slot module that is
+		 * 		assumed by the caller to be to the left of the other module.
+		 * :type leftSlotModSel: d3-selection
+		 * :param rightSlotModSel: d3-selection of slot module that is
+		 * 		assumed by the caller to be to the right of the other module.
+		 * :type rightSlotModSel: d3-selection 
+		 */
+		
+		let leftDimRect  = leftSlotModSel.node().getBoundingClientRect();
+		let rightDimRect = rightSlotModSel.node().getBoundingClientRect();
+		return rightDimRect.left - leftDimRect.right; 
 	}
 	
 	/*---------------------------

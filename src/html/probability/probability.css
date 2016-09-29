@@ -69,7 +69,7 @@ h1          { text-align : center;  }
          
 .distribDiv { 
            background-color : #F6F6F6;          /* off-white */
-		   width  : 35%;
+		   width  : 25%;
 		   height: 100%;
            /* ******* */
            border   : 1px solid red;
@@ -109,7 +109,7 @@ h1          { text-align : center;  }
     border : 1px solid BurlyWood;
     padding-top  : 50px;
     padding-left : 40px;
-    padding-right : 100px;
+    padding-right : 50px;
     padding-bottom :  70px;
 	background-color : #F6F6F6;                 /* off-white */    
 }
@@ -216,11 +216,17 @@ div.tooltip.state.visible    {
 							 }
 
 .bettingSelector {
-	/* background  : rgb(93,109,126); */ /* gray */
 	margin-top  : 3px;
 	background	: LightSlateGray;
 	color       : black;
 	font-weight : normal;
+}
+
+.andOrSelector {
+	position    : absolute;
+	background  : white;
+	color       : black;
+	width		: 50px;
 }
 
 .controlBarWrapper  { margin-left : 100px;

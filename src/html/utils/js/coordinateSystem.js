@@ -91,9 +91,11 @@ var CoordinateSystem = function(coordInfo) {
 	
 	let coordSysSel  = null;
 	
+	let xAxisLabel   = null;
 	let xAxisLabelId = null;
 	let xAxisGrpName = null;
 	
+	let yAxisLabel   = null;	
 	let yAxisLabelId = null;
 	let yAxisGrpName = null;
 	
@@ -156,6 +158,19 @@ var CoordinateSystem = function(coordInfo) {
 		}
 		
 		/* ------------ Optional args ------------- */
+		
+		if ( typeof(coordInfo.x.axisLabel) === 'undefined' ) {
+			xAxisLabel = "";
+		} else {
+			xAxisLabel = coordInfo.x.axisLabel;
+		}
+		
+		if ( typeof(coordInfo.y.axisLabel) === 'undefined' ) {
+			yAxisLabel = "";
+		} else {
+			yAxisLabel = coordInfo.y.axisLabel;
+		}
+		
 		/* Height of entire coordinate system; default: fill 
 		 * the given SVG's parent: */
 		if (typeof(coordInfo.height) !== 'undefined') {
@@ -464,7 +479,8 @@ var CoordinateSystem = function(coordInfo) {
 		 * are not the tick labels, but the captions.
 		 */
 		
-		let xAxisLabel = svgSel.append("text")
+		// X axis caption
+		svgSel.append("text")
 						.attr("class", "x label")
 						.attr("id", xAxisLabelId)
 						.attr("text-anchor", "middle")
@@ -472,7 +488,8 @@ var CoordinateSystem = function(coordInfo) {
 						.attr("y", height + 55)
 						.text(xAxisLabel)
 						
-		let yAxisLabel = svgSel.append("text")
+		// Y axis caption						
+		svgSel.append("text")
 						.attr("class", "axis y label")
 						.attr("id", yAxisLabelId)
 						.attr("x", 5)
