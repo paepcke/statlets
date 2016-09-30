@@ -53,8 +53,8 @@ var ProbabilityViz = function(width, height) {
 	var dispatchBarHeightChange = null;
 
 	// Same for slot module having moved:
-	var dispatchSlotModMoved  = null;
-	var dispatchMoveChainGang = null;
+	var dispatchSlotModMoveEnd  = null;
+	var dispatchMoveChainGang   = null;
 	
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
@@ -746,12 +746,16 @@ var ProbabilityViz = function(width, height) {
 					// Let interested parties know that a slot module was moved.
 					// The 'modSel' parameter will be bound to 'this' in the called
 					// methods:
-					dispatchSlotModMoved.call("moved", modSel);
 					dispatchMoveChainGang.call("moved", modSel, mouseDx, mouseDy, dragHandler);
 				})
 				.on("end", function(d) {
-					d3.select(this).classed("dragging", false);
+					let modSel = d3.select(this);
+					modSel.classed("dragging", false);
 					d3.drag.currSlotMod = undefined;
+					
+					// Let interested parties know that user
+					// is done moving a module:
+					dispatchSlotModMoveEnd.call("moveEnd", modSel);
 					// Ensure that the modules are still/again 
 					// in the proper z-order so that and/or connectors
 					// are fully visible:
@@ -820,12 +824,12 @@ var ProbabilityViz = function(width, height) {
 		dispatchBarHeightChange = d3.dispatch('drag', barPulled);
 		dispatchBarHeightChange.on("drag.deathCauseBar", barPulled);
 		
-		dispatchSlotModMoved    = d3.dispatch("moved");
+		dispatchSlotModMoveEnd  = d3.dispatch("moveEnd");
 		dispatchMoveChainGang   = d3.dispatch("moved");
 		
 		// Sense whether module should be docked with
-		// neighbor after moving:
-		dispatchSlotModMoved.on("moved", dockIfShould);
+		// neighbor after moving is done (mouse button released):
+		dispatchSlotModMoveEnd.on("moveEnd", dockIfShould);
 		
 		// Enable docked modules to be moved as a unit:
 		dispatchMoveChainGang.on("moved", moveDockedMods);
