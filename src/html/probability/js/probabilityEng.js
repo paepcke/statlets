@@ -129,7 +129,7 @@ var ProbabilityViz = function(width, height) {
 	// excerpt of all death causes. The numbers are converted
 	// to normalized probabilities in the constructor:
 	let DEATH_CAUSES = {
-			"Athero sclerotic heart disease" : 0.0778452,
+			"Heart attack" : 0.0778452,
 			"Bronchus or lung" : 0.0633627,
 			"Obstructive pulmonary disease" : 0.0407527,
 			"Stroke" : 0.0305610,
