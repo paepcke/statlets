@@ -119,10 +119,10 @@ var ProbabilityViz = function(width, height) {
 
 	// Minimum distance that slot modules must be to 
 	// get pulled into docking:
-	var DOCKING_RANGE    = 60;
+	var DOCKING_RANGE    = 50;
 	
 	// Final distance between docked slot modules:
-	var DOCKING_DISTANCE = 50;
+	var DOCKING_DISTANCE = 20;
 	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
@@ -255,7 +255,8 @@ var ProbabilityViz = function(width, height) {
 		
 		// This slot module is not currently docked
 		// with anyone:
-		slotModBodySel.attr("dockedWith", "none");
+		slotModBodySel.attr("dockedWithOnRight", "none");
+		slotModBodySel.attr("dockedWithOnLeft", "none");
 				
 		// SVG that will hold all machine parts within the outer body:
 		let slotModSvgSel = slotModBodySel
@@ -487,9 +488,15 @@ var ProbabilityViz = function(width, height) {
 		// Position the selector halfway down the slot
 		// module's slot window:
 		
-		let slotWinDimRect    = slotModBodySel.select(".slotWindowRect").node().getBoundingClientRect();
+//		let slotWinDimRect    = slotModBodySel.select(".slotWindowRect").node().getBoundingClientRect();
+//		let slotModBodDimRect = slotModBodySel.node().getBoundingClientRect();
+//		let topSelEdge        = (slotWinDimRect.bottom - slotWinDimRect.top) / 2.
+		
+		
+		// Position the selector at height of GO button:
+		let goTxtDimRect      = slotModBodySel.select(".goText").node().getBoundingClientRect();
 		let slotModBodDimRect = slotModBodySel.node().getBoundingClientRect();
-		let topSelEdge        = (slotWinDimRect.bottom - slotWinDimRect.top) / 2.
+		let topSelEdge        = goTxtDimRect.top - slotModBodDimRect.top - goTxtDimRect.height/2;
 		
 		andOrSel.style("left", slotModBodDimRect.width); // right edge of slot mod body		
 		andOrSel.style("top", topSelEdge);
@@ -520,7 +527,7 @@ var ProbabilityViz = function(width, height) {
 			}
 			
 			// Distances are relative to left edge of slot module:
-			andOrTargetLeft    = slotModDimRect.right - slotModDimRect.left;
+			andOrTargetLeft    = slotModDimRect.right - slotModDimRect.left - andOrDimRect.width/3.;
 			andOrTargetOpacity = 1;
 
 		} else {
@@ -541,6 +548,36 @@ var ProbabilityViz = function(width, height) {
 		.style("opacity", `${andOrTargetOpacity}`);
 		
 	}
+	
+	/*---------------------------
+	| shovelZOrder 
+	-----------------*/
+	
+	var shovelZOrder = function() {
+		/*
+		 * Modifies all currently visible slot modules' z-index
+		 * so that the left-most module is highest, and the others
+		 * are successively lower. This is needed so that the 
+		 * and/or connectors are never below a slot module.
+		 */
+
+		// Find the left-most slot module:
+		let leftEdgeSlotMods = {};
+		
+		d3.selectAll(".machinesBody")
+			.each(function() {
+				leftEdgeSlotMods[this.getBoundingClientRect().left] = d3.select(this); 
+			});
+		// Sort the left edge values...
+		let sortedKeys  = Object.keys(leftEdgeSlotMods).sort(function (a, b) {  return a - b;  });
+		sortedKeys.reverse();
+		// ... by decreasing value:
+		for ( let i=0; i<sortedKeys.length; i++) {
+			// Assign the z-index:
+			leftEdgeSlotMods[sortedKeys[i]].style("z-index", i);
+		}
+		
+	} 	
 	
 	/*---------------------------
 	| isAndOrSelShowing 
@@ -646,7 +683,7 @@ var ProbabilityViz = function(width, height) {
 	      	// be in a function that returns the behavior.
 	      	// Didn't work.
 	      	.call(d3.drag()
-				.on('start', function(d) {
+				.on("start", function(d) {
 					
 					// D3-select the DOM element that's trying
 					// to be dragged:
@@ -669,7 +706,7 @@ var ProbabilityViz = function(width, height) {
 					d3.drag.origSlotModPos = { x : this.x, y : this.y };
 					
 				})
-				.on('drag', function(d) {
+				.on("drag", function(d) {
 					let modSel = d3.select(this);
 					if (modSel.empty()) {
 						// Not over a slot module:
@@ -707,9 +744,13 @@ var ProbabilityViz = function(width, height) {
 					// Let interested parties know that a slot module was moved:
 					dispatchSlotModMoved.call("moved", this, slotModBodySel);
 				})
-				.on('end', function(d) {
+				.on("end", function(d) {
 					d3.select(this).classed("dragging", false);
 					d3.drag.currSlotMod = undefined;
+					// Ensure that the modules are still/again 
+					// in the proper z-order so that and/or connectors
+					// are fully visible:
+					shovelZOrder();
 					upLog("dragSlotMod");
 				})
 	      	)
@@ -965,7 +1006,7 @@ var ProbabilityViz = function(width, height) {
 	      	// be in a function that returns the behavior.
 	      	// Didn't work.
 	      	.call(d3.drag()
-				.on('start', function(d) {
+				.on("start", function(d) {
 					
 					// D3-select the DOM element that's trying
 					// to be dragged:
@@ -988,7 +1029,7 @@ var ProbabilityViz = function(width, height) {
 					d3.drag.origY    = this.y1.baseVal.value; // For rect-bars: change to "y"
 					
 				})
-				.on('drag', function(d) {
+				.on("drag", function(d) {
 					let barSel = d3.select(this);
 					if (barSel.empty()) {
 						// Not over a bar:
@@ -1024,7 +1065,7 @@ var ProbabilityViz = function(width, height) {
 					// Let interested parties know that a bar was resized.
 					//*****dispatchBarHeightChange.call("drag", this, barSel);
 				})
-				.on('end', function(d) {
+				.on("end", function(d) {
 					d3.select(this).classed("dragging", false);
 					// Re-normalize the death cause probabilities,
 					// and update all other bars. We pass the selection
@@ -1883,8 +1924,8 @@ var ProbabilityViz = function(width, height) {
 				});
 		
 		// Remember to whom everyone is docked:
-		leftModBodySel.attr("dockedWith", rightModBodySel.attr("id"));
-		rightModBodySel.attr("dockedWith", leftModBodySel.attr("id"));
+		leftModBodySel.attr("dockedWithRight", rightModBodySel.attr("id"));
+		rightModBodySel.attr("dockedWithLeft", leftModBodySel.attr("id"));
 		
 	}
 	
@@ -1905,19 +1946,21 @@ var ProbabilityViz = function(width, height) {
 		 *  :rtype: {d3-sel | undefined}
 		 */
 		
+		// Retract the and/or selector DOM element:
 		showAndOrSel(leftModBodySel, false);
 		
-		let partnerId = leftModBodySel.attr("dockedWith");
+		let partnerId = leftModBodySel.attr("dockedWithRight");
 		
 		if ( partnerId === "none" ) {
-			// Given module not currently docked:
+			// Given module not currently docked with someone 
+			// to its right:
 			return undefined;
 		}
 		
-		leftModBodySel.attr("dockedWith", "none");
+		leftModBodySel.attr("dockedWithRight", "none");
 		
 		let partnerSel = d3.select("#" + partnerId); 
-		partnerSel.attr("dockedWith", "none");
+		partnerSel.attr("dockedWithLeft", "none");
 		
 		return partnerSel;
 	}
@@ -1926,21 +1969,44 @@ var ProbabilityViz = function(width, height) {
 	| dockedWith
 	-----------------*/
 	
-	var dockedWith = function(slotModBodySel) {
+	var dockedWith = function(slotModBodySel, toWhichSide) {
 		/*
 		 * Returns either undefined if given slot
 		 * module body is not currently docked with
-		 * anyone. Or returns the d3 selection of the
-		 * partner module.
+		 * anyone to its right/left. Or returns the d3 
+		 * selection of the partner module.
+		 * 
+		 * Caller gets to specify whether query is about
+		 * a docked-with slot module to the right, or the left. 
 		 * 
 		 * :param slotModBodySel: d3 selection of slot module to check.
 		 * :type slotModBodySel: d3-selection.
+		 * :param toWhichSide: optional. If set to "right" the method checks
+		 * 		whether a slot module is docked to another module on 
+		 * 		its right. If set to "left", checks whether slot module
+		 * 		is docked to another module on its left. Default: "right".
+		 * :type toWhichSide: { "right" | "left" | undefined }
+		 * :returns Either undefined if no slot module is docked on the specified
+		 * 		side. Else returns the d3 selection of that slot module body.
+		 * :rtype { undefined | d3-sel }
 		 */
+	
+		if ( typeof(toWhichSide) === 'undefined' ) {
+			toWhichSide = "right";
+		}
+		let dockedPartnerId = null;
 		
-		let dockedPartnerId = slotModBodySel.attr("dockedWith");
-		if ( typeof(dockedPartnerId) === 'undefined' || dockedPartnerId === "none" ) {
+		if ( toWhichSide === "right" ) {
+			dockedPartnerId = slotModBodySel.attr("dockedWithRight");
+		} else {
+			dockedPartnerId = slotModBodySel.attr("dockedWithLeft");
+		}
+		if ( typeof(dockedPartnerId) === 'undefined' || 
+					dockedPartnerId  === "none" ||
+					dockedPartnerId  === null) {
 			return undefined;
 		}
+		
 		return d3.select("#" + dockedPartnerId);
 	}
 	

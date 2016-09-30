@@ -43,6 +43,7 @@ h1          { text-align : center;  }
 				  width : 85%;
 				  height: 100%;
 				  justify-content : space-around;
+				  id : flexWrapper;
                 }
 
 .instructionsDiv {
@@ -91,7 +92,8 @@ h1          { text-align : center;  }
     min-height : 350px;
     max-width : 100px;
     border: 2px solid black;
-    opacity: 0.6;
+    /* opacity: 0.6; */
+    opacity: 0.9;
     display: block;
    	border-radius : 10px;
     box-shadow: 10px 10px 5px #888888;
@@ -222,15 +224,16 @@ div.tooltip.state.visible    {
 .bettingSelector {
 	margin-top  : 3px;
 	background	: LightSlateGray;
-	color       : black;
+	color       : white;
 	font-weight : normal;
 }
 
 .andOrSelector {
 	position    : absolute;
-	background  : white;
-	color       : black;
+	background  : rgb(161,110,130); /* rose */
+	color       : white;
 	width		: 50px;
+	height		: 20px;
 }
 
 .controlBarWrapper  { margin-left : 100px;
