@@ -53,7 +53,8 @@ var ProbabilityViz = function(width, height) {
 	var dispatchBarHeightChange = null;
 
 	// Same for slot module having moved:
-	var dispatchSlotModMoved = null;
+	var dispatchSlotModMoved  = null;
+	var dispatchMoveChainGang = null;
 	
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
@@ -741,8 +742,12 @@ var ProbabilityViz = function(width, height) {
 					
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
-					// Let interested parties know that a slot module was moved:
-					dispatchSlotModMoved.call("moved", this, slotModBodySel);
+					
+					// Let interested parties know that a slot module was moved.
+					// The 'modSel' parameter will be bound to 'this' in the called
+					// methods:
+					dispatchSlotModMoved.call("moved", modSel);
+					dispatchMoveChainGang.call("moved", modSel, mouseDx, mouseDy, dragHandler);
 				})
 				.on("end", function(d) {
 					d3.select(this).classed("dragging", false);
@@ -816,7 +821,14 @@ var ProbabilityViz = function(width, height) {
 		dispatchBarHeightChange.on("drag.deathCauseBar", barPulled);
 		
 		dispatchSlotModMoved    = d3.dispatch("moved");
+		dispatchMoveChainGang   = d3.dispatch("moved");
+		
+		// Sense whether module should be docked with
+		// neighbor after moving:
 		dispatchSlotModMoved.on("moved", dockIfShould);
+		
+		// Enable docked modules to be moved as a unit:
+		dispatchMoveChainGang.on("moved", moveDockedMods);
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
@@ -1853,9 +1865,21 @@ var ProbabilityViz = function(width, height) {
 	
 	var dockIfShould = function(slotModBodySel) {
 		
-		// Go through each slot module, and see
-		// whether any other slot module is to its
-		// right within docking distance:
+		/*
+		 * Go through each slot module, and see
+		 * whether any other slot module is to its
+		 * right within docking distance.
+		 * 
+		 * If slotModBodySel is not provided, it is
+		 * assumed to be bound to 'this'. That happens
+		 * when this method is called via the d3.dispatch
+		 * method.
+		 * 
+		 */
+		
+		if ( typeof(slotModBodySel) === 'undefined') {
+			slotModBodySel = this;
+		}
 		
 		for ( let candidateSlotModId of Object.keys(slotBodies) ) {
 			
@@ -1894,6 +1918,50 @@ var ProbabilityViz = function(width, height) {
 					break; // out of inner loop: module now docked.
 				} 
 			}
+		}
+	}
+	
+	/*---------------------------
+	| moveDockedMods 
+	-----------------*/
+	
+	var moveDockedMods = function(dx, dy, dragHandler) {
+		/*
+		 * Called whenever a slot module is dragged
+		 * with the mouse. The 'this' variable will be
+		 * bound to the selection of the module that was
+		 * dragged. 
+		 * 
+		 * Finds the left-most of a docking chain that the
+		 * module might be part of, and ensures that the
+		 * whole chain follows the just-moved module.
+		 * 
+		 */
+		
+		let chainGang = [];
+		
+		let movedSlotModSel  = this;
+		let connectedSlotMod = this;
+		let nextGangMember   = null;
+		
+		// First, find all the modules to the left of the
+		// just-moved module:
+		while (( nextGangMember = dockedWith(connectedSlotMod, "left")) !== undefined ) {
+			chainGang.push(nextGangMember);
+			connectedSlotMod = nextGangMember;
+		}
+		
+		// Now everyone on the right:
+		connectedSlotMod     = this;
+		while (( nextGangMember = dockedWith(connectedSlotMod, "right")) !== undefined ) {
+			chainGang.push(nextGangMember);
+			connectedSlotMod = nextGangMember;
+		}
+		
+		// Now drag all the chain gang members as
+		// the given module was just dragged:
+		for ( let slotMod of chainGang ) {
+			dragHandler.dragmove(slotMod);
 		}
 	}
 	
