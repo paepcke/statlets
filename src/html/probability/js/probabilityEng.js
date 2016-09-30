@@ -732,13 +732,13 @@ var ProbabilityViz = function(width, height) {
 					let machinesDivDimRect = d3.select("#machinesDiv").node().getBoundingClientRect();
 					
 					// Ensure machines stay within the machines div:
-					if ( newSlotModLeft   < machinesDivDimRect.left ||
-						 newSlotModRight  > machinesDivDimRect.right ||
-						 newSlotModTop    < machinesDivDimRect.top ||
-						 newSlotModBottom > machinesDivDimRect.bottom ) {
-						
-						return;
-					}
+//					if ( newSlotModLeft   < machinesDivDimRect.left ||
+//						 newSlotModRight  > machinesDivDimRect.right ||
+//						 newSlotModTop    < machinesDivDimRect.top ||
+//						 newSlotModBottom > machinesDivDimRect.bottom ) {
+//						
+//						return;
+//					}
 					
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
@@ -1881,22 +1881,23 @@ var ProbabilityViz = function(width, height) {
 			slotModBodySel = this;
 		}
 		
+		// Go through every slot module:
 		for ( let candidateSlotModId of Object.keys(slotBodies) ) {
 			
-			// Get selection of candidate whose neighbors
+			// Get selection of the candidate module whose neighbors
 			// will be examined:
 			let candidateSlotModBodySel = d3.select("#" + candidateSlotModId);
 			
-			
-			let currPartner = dockedWith(candidateSlotModBodySel);
+			// With whom is the candidate module currently docked,
+			// either to its right or to its left?
+			let currPartner = dockedWith(candidateSlotModBodySel, "right");
 			if ( typeof(currPartner) !== "undefined" ) {
 				// Check whether partner still in docking distance:
 				if (distanceBetween(candidateSlotModBodySel, currPartner) > DOCKING_DISTANCE ) {
 					// User is dragging module away to undock:
 					undock(candidateSlotModBodySel);
 				}
-				// Stay docked and consider next module as
-				// left docking candidate:
+				// Consider next module as left docking candidate:
 				continue;
 			} 
 			
@@ -1974,10 +1975,7 @@ var ProbabilityViz = function(width, height) {
 		 * Given d3 selections of two slot modules, dock them.
 		 */
 		
-		let leftDimRect = leftModBodySel.node().getBoundingClientRect();
-		
-		// Pull out the and/or selector:
-		leftModBodySel.call( showAndOrSel, leftModBodySel, true );
+		let leftDimRect  = leftModBodySel.node().getBoundingClientRect();
 		
 		// Move the partner into docking position
 		// next to the left module:
@@ -1989,11 +1987,23 @@ var ProbabilityViz = function(width, height) {
 				})
 				.style("left", function() {
 					return `${leftDimRect.right + DOCKING_DISTANCE}px`;
-				});
+				})
+			.on("end", function() {
+				// Check whether user moved a participating
+				// slot module so quickly that they should no
+				// longer be docked by the time the transition is done:
+				if ( distanceBetween(leftModBodySel, rightModBodySel) > DOCKING_DISTANCE ) {
+					// Abort the docking:
+					return;
+				} 
+			})
 		
 		// Remember to whom everyone is docked:
 		leftModBodySel.attr("dockedWithRight", rightModBodySel.attr("id"));
 		rightModBodySel.attr("dockedWithLeft", leftModBodySel.attr("id"));
+		
+		// Pull out the and/or selector:
+		leftModBodySel.call( showAndOrSel, leftModBodySel, true );
 		
 	}
 	
