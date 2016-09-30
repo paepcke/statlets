@@ -475,9 +475,12 @@ var ProbabilityViz = function(width, height) {
 		let andOrSel = slotModBodySel
 			.append("select")
 			.attr("class", "andOrSelector")
+			.attr("id", function() {
+				return slotModBodySel.attr("id") + "_andOrSel";
+			})
 		
 		andOrSel.selectAll("option")
-				.data(["and", "or"])
+				.data(["and", "or", "Undock"])
 				.enter()
 				.append("option")
 					.each(function(txt) {
@@ -485,14 +488,9 @@ var ProbabilityViz = function(width, height) {
 				});
 		// Display first choice:
 		andOrSel.attr("selectedIndex", 0);
-		
-		// Position the selector halfway down the slot
-		// module's slot window:
-		
-//		let slotWinDimRect    = slotModBodySel.select(".slotWindowRect").node().getBoundingClientRect();
-//		let slotModBodDimRect = slotModBodySel.node().getBoundingClientRect();
-//		let topSelEdge        = (slotWinDimRect.bottom - slotWinDimRect.top) / 2.
-		
+		andOrSel.on("change", function() {
+			andOrSelChanged(this);
+		})
 		
 		// Position the selector at height of GO button:
 		let goTxtDimRect      = slotModBodySel.select(".goText").node().getBoundingClientRect();
@@ -501,6 +499,17 @@ var ProbabilityViz = function(width, height) {
 		
 		andOrSel.style("left", slotModBodDimRect.width); // right edge of slot mod body		
 		andOrSel.style("top", topSelEdge);
+		
+		// Let the slot module and the selector
+		// know about each other:
+		
+		andOrSel.attr("mySlotMod", function() {
+			return slotModBodySel.attr("id");
+		});
+		
+		slotModBodySel.attr("myAndOrSel", function() {
+			return andOrSel.attr("id");
+		});
 		
 		// Initially hide the selector:
 		showAndOrSel(slotModBodySel, false);
@@ -549,6 +558,21 @@ var ProbabilityViz = function(width, height) {
 		.style("opacity", `${andOrTargetOpacity}`);
 		
 	}
+	
+	/*---------------------------
+	| andOrSelChanged 
+	-----------------*/
+
+	var andOrSelChanged = function(selectorDomEl) {
+		
+		let optionStr = selectorDomEl.selectedOptions[0].value;
+		if ( optionStr === "Undock" ) {
+			let slotModId = d3.select(selectorDomEl).attr("mySlotMod");
+			let slotModBodySel = d3.select("#" + slotModId);
+			undock(slotModBodySel);
+			selectorDomEl.selectedIndex = 0;
+		}
+	}	
 	
 	/*---------------------------
 	| shovelZOrder 
