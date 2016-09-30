@@ -1161,10 +1161,6 @@ var ProbabilityViz = function(width, height) {
 			transitionSpeed = SLOT_TXT_TRANSITION_SPEED_1;
 		}
 		
-		if ( txtInfo.length === 0 ) {
-			return;
-		}
-		
 		if ( typeof(callback) === 'undefined') {
 			callback = function() {};
 		}
@@ -1180,10 +1176,17 @@ var ProbabilityViz = function(width, height) {
 		if ( txtInfo.length > 1 ) {
 			doFade = false;
 		}
-
-		let oneRun = function() {
+		setSlotWindowTxtWorker(txtInfo, transitionSpeed, callback, slotTxtMan, doFade);
+	}
+	
+	/*---------------------------
+	| 
+	-----------------*/
+	
+	var setSlotWindowTxtWorker = function (txtInfo, transitionSpeed, callback, slotTxtMan, doFade) {
 		
 			let txt = txtInfo.pop();
+				
 			if ( typeof(txt) === 'undefined') {
 				// All done; switch the txt
 				// elements:
@@ -1217,21 +1220,21 @@ var ProbabilityViz = function(width, height) {
 							if ( typeof(callback) === 'function') {
 								callback();
 							}
-							oneRun();
 						});
 				slotTxtMan.makeNxtHot();
 			} else {
 				slotTxtMan.hotSel().style("opacity", 0);
 				slotTxtMan.coldSel().style("opacity", 1);
 				slotTxtMan.makeNxtHot();
-				d3.timeout(function() {
+				let timer = d3.timer(function() {
+					timer.stop();
+					// The callback for after each change of window text:
 					callback();
-					oneRun();
+					// Recursive call:
+					setSlotWindowTxtWorker(txtInfo, transitionSpeed, callback, slotTxtMan);
 				}, transitionSpeed);
 			}
 		}
-		oneRun();
-	}
 	
 	/*---------------------------
 	| addControlButtons 
