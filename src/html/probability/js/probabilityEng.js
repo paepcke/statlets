@@ -1165,7 +1165,7 @@ var ProbabilityViz = function(width, height) {
 					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
 					updateDistribChart(DEATH_CAUSES, coordSysDistrib);
 					d3.drag.currBar = undefined;
-					upLog("dragDeathCause")
+					upLog(`drag_${deathCause}`);
 				})
 	      	)
 	}
@@ -1330,6 +1330,7 @@ var ProbabilityViz = function(width, height) {
 			  .attr("class", "button newSlotModule")
 			  .on("click", function() {
 				  createSlotModuleWell("slotMod_" + uniqueNum());
+				  upLog("createNewSlotMod");
 			  });
 
 	    // Have the navigation buttons all call goToStep()
@@ -2092,7 +2093,8 @@ var ProbabilityViz = function(width, height) {
 				// slot module so quickly that they should no
 				// longer be docked by the time the transition is done:
 				if ( distanceBetween(leftModBodySel, rightModBodySel) > DOCKING_DISTANCE ) {
-					// Abort the docking:
+					// Abort the docking (likely no longer needed
+					// since docking only occurs after drag is ended:
 					return;
 				} 
 			})
@@ -2103,6 +2105,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Pull out the and/or selector:
 		leftModBodySel.call( showAndOrSel, leftModBodySel, true );
+		upLog("dock");
 		
 	}
 	
@@ -2138,6 +2141,8 @@ var ProbabilityViz = function(width, height) {
 		
 		let partnerSel = d3.select("#" + partnerId); 
 		partnerSel.attr("dockedWithLeft", "none");
+		
+		upLog("undock");
 		
 		return partnerSel;
 	}
