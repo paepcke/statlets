@@ -81,6 +81,15 @@ var SoftAlert = function() {
 	}
 	
 	/*---------------------------
+	| inputFldVisible 
+	-----------------*/
+	
+	var inputFldVisible = function() {
+		let inputFldClass = document.getElementById("softAlertEntryFld").className;
+		return inputFldClass.indexOf("visible") > -1;
+	}
+	
+	/*---------------------------
 	| softAlertNote 
 	-----------------*/
 	
@@ -238,14 +247,19 @@ var SoftAlert = function() {
 		 * Remove a softAlert from the screen.
 		 */
 		
-		// Get what's in the txt entry field:
-		let entryFld = document.getElementById("softAlertEntryFld")
-		let enteredTxt = entryFld.value;
-		if ( enteredTxt.length === 0 && ! savedAllowEmptyFld ) {
-			changeInfoTxt("Please enter a value...");
-			userWrong(true);
-			return;
-		}
+		let enteredTxt;
+		if ( inputFldVisible() ) {
+			// Get what's in the txt entry field:
+			let entryFld = document.getElementById("softAlertEntryFld")
+			enteredTxt = entryFld.value;
+			if ( enteredTxt.length === 0 && ! savedAllowEmptyFld ) {
+				changeInfoTxt("Please enter a value...");
+				userWrong(true);
+				return;
+			}
+		} else {
+			enteredTxt = "";
+		};
 		
 		// If requested, call client's passed-in button-pushed-fn,
 		// expecting a promise:

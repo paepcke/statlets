@@ -121,8 +121,6 @@ h1          { text-align : center;  }
 .corrTooltipRect { 
 			       fill   : orange;
 			       height : 1em;
-			       rx	  : 5;
-			       ry	  : 20;
 			       transition : opacity 1s;
 			       opacity: 0;
 	               transform: translate(-1.5em, -2.5em);

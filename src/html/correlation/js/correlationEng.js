@@ -17,6 +17,7 @@ import { StatsDragClickHandler } from "./../../utils/js/statsDragClickHandler.js
 import { SoftAlert } from "./../../utils/js/softAlerts";
 import { CookieMonster } from "./../../utils/js/cookieMonster";
 import { Logger } from "./../../utils/js/logging";
+import { BrowserIdentifier } from "./../../utils/js/browserType";
 import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
 
@@ -79,6 +80,12 @@ var CorrelationViz = function(width, height) {
 		
 		// For non-modal alerts:
 		alerter     = SoftAlert();
+		
+		if ( BrowserIdentifier().isFirefox ) {
+			alerter.note("Sorry: Firefox isn't working right now. Please use Chrome or Safari.");
+			return;
+		}
+		
 		cookieMonster = CookieMonster();
 		
 		// If this script runs in a public_html
@@ -742,10 +749,10 @@ var CorrelationViz = function(width, height) {
 					let circleSel = d3.select(this); 
 					circleSel.classed("dragging", false);
 					d3.drag.currCircle = undefined;
-					let state  = circleSel.attr("state");
+					let stateYear  = circleSel.attr("id");
 					let value  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING).toFixed(2);
 					
-					upLog(`drag${state}_to_${value}`);
+					upLog(`drag${stateYear}_to_${value}`);
 				})
 	}
 	

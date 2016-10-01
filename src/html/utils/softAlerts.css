@@ -37,7 +37,8 @@ div.overlayDiv.visible { z-index : 1001;
 	font-weight : bold;
 	color       : rgb(0, 102, 0); /* dark green */
 	margin-left : 10px;
-	margin-top  : -1px;
+	/* margin-top  : -1px; */
+	margin-top  : 5px;
 }
 
 .softAlertTxt {
@@ -50,9 +51,9 @@ div.overlayDiv.visible { z-index : 1001;
 
 .softAlertTxt.wrong { color : red; }
 
+/* .input[type=text].softAlertEntryFld { */
 .softAlertEntryFld {
 	background-color : rgb(250,259,194);
-	size          : 30;
 	margin-left   : 10px;
 	margin-bottom : 5px;
 	display	      : none;

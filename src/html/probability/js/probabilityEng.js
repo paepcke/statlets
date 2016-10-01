@@ -1165,7 +1165,7 @@ var ProbabilityViz = function(width, height) {
 					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
 					updateDistribChart(DEATH_CAUSES, coordSysDistrib);
 					d3.drag.currBar = undefined;
-					upLog(`drag_${deathCause}`);
+					upLog(`drag_${deathCause.replace(' ', '_')}`);
 				})
 	      	)
 	}

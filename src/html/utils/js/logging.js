@@ -146,7 +146,7 @@ var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 		// from the dialog button push. 
 		if ( typeof(uid) === 'undefined') {
 
-			alerter.entryBox("Please enter your sunet ID:",
+			alerter.entryBox("Please enter your <b>Stanford</b> email (e.g.: cindyl@stanford.edu):",
 			                 "Log in",                   // Button label
 			                 function(uid) {
 								return initLogging(uid); // recursive call, this time
