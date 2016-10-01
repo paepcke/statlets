@@ -88,7 +88,7 @@ var CorrelationViz = function(width, height) {
 		// From: "http://mono.stanford.edu/statlets-public/correlation/correlation.html"
 		// get the part: "/statlets-public/correlation/correlation.html"
 		let localPath = window.location.pathname;
-		if ( localPart.startsWith("/statlets-public") ) {
+		if ( localPath.startsWith("/statlets-public") ) {
 			cookieMonster.setCookie("stats60Uid", "public");
 		}
 		

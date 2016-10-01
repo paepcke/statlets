@@ -189,7 +189,7 @@ var ProbabilityViz = function(width, height) {
 		// From: "http://mono.stanford.edu/statlets-public/probability/probability.html"
 		// get the part: "/statlets-public/probability/probability.html"
 		let localPath = window.location.pathname;
-		if ( localPart.startsWith("/statlets-public") ) {
+		if ( localPath.startsWith("/statlets-public") ) {
 			cookieMonster.setCookie("stats60Uid", "public");
 		}
 		

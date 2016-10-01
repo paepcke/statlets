@@ -55,7 +55,7 @@ h1          { text-align : center;  }
 		   opacity : 0;
          }
 
-.corrDiv.visible { opacity = 1; 
+.corrDiv.visible { opacity : 1; 
 				   background-color : #F6F6F6;
 				 }
 
@@ -86,7 +86,7 @@ h1          { text-align : center;  }
 
 /* #svgBackground { fill : #F6F6F6; } */
 
-.legend {font-size, 12px;
+.legend {font-size : 12px;
 		}
 
 #tableDiv    { padding-top : 30px;
