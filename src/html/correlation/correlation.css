@@ -42,7 +42,7 @@ h1          { text-align : center;  }
            /* border : 1px solid orange; */
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex : 1 1;
-           flex-base : 40%;
+           flex-basis : 40%;
            background-color : #F6F6F6;
          }
 
@@ -50,7 +50,7 @@ h1          { text-align : center;  }
            /* border : 1px solid orange; */
            /* flex   : 2 1 40%; */              /* 2 units of free space for grow, 1 unit for shrinking. */
            flex   : 1 1;
-           flex-base : 40%;
+           flex-basis : 40%;
            background-color : #F6F6F6;
 		   opacity : 0;
          }
