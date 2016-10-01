@@ -9,7 +9,8 @@ import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
 
 /*
- * TODO: 
+ * TODO:
+ *      o CORRELATION NOT LOGGING YET!!!!! 
  * 		o Ganged modules don't have their history updated
  * 		o Remove empty top lines in slot window
  * 		o Indicate when mods close enough for coupling
@@ -185,6 +186,10 @@ var ProbabilityViz = function(width, height) {
 		// The button handler will have set a cookie:
 		
 		cookieMonster  = CookieMonster();
+		
+		//*******
+		cookieMonster.setCookie("stats60Uid", "preflight");
+		//*******
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
