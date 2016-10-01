@@ -280,7 +280,12 @@ var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 				if (this.status >= 200 && this.status < 300) {
 					resolve(xhr.response);
 				} else {
-					let resJson = `{status: "${this.status}", statusText: "${xhr.statusText}"}`;
+					try {
+						let statusTxt = xhr.statusText;
+					} catch (err) {
+						statusTxt = 'Error getting statusTxt: ' + err;
+					}
+					let resJson   = `{status: "${this.status}", statusText: "${statusText}"}`;
 					reject(resJson);
 				}
 			};

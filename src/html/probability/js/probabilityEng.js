@@ -180,16 +180,27 @@ var ProbabilityViz = function(width, height) {
 		// For non-modal alerts:
 		alerter     = SoftAlert();
 		
-		// If this access to the page is just
-		// the result of user clicking the New Sample
-		// button, then don't ask for login again.
-		// The button handler will have set a cookie:
-		
 		cookieMonster  = CookieMonster();
+		
+		// If this script runs in a public_html
+		// subdirectory, then don't ask for login,
+		// but make uid be 'public' for logging:
+		
+		// From: "http://mono.stanford.edu/statlets-public/probability/probability.html"
+		// get the part: "/statlets-public/probability/probability.html"
+		let localPath = window.location.pathname;
+		if ( localPart.startsWith("/statlets-public") ) {
+			cookieMonster.setCookie("stats60Uid", "public");
+		}
 		
 		//*******
 		cookieMonster.setCookie("stats60Uid", "preflight");
 		//*******
+		
+		// If this access to the page is just
+		// the result of user clicking the New Sample
+		// button, then don't ask for login again.
+		// The button handler will have set a cookie:
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {

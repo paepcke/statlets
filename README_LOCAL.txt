@@ -1,13 +1,9 @@
+
 - To make public:
-    o cp -r lib/html lib/public_html
-    o In each js file:
 
-         lib/public_html/correlation/js/correlation.js
-         lib/public_html/confidence/js/confidence.js
-         lib/public_html/probability/js/probability.js
+    o Make sure that /var/www/html/statlets-public
+      is symlinked to /home/paepcke/EclipseWorkspaces/statlets/lib/public_html
 
-      Search for 'CookieMonster()' and add after it:
 
-        	//*******
-		cookieMonster.setCookie("stats60Uid", "public");
-		//*******
+    o Whenever you babel a new git-pull over to lib, do this:
+       cp -r lib/html lib/public_html

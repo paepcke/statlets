@@ -127,6 +127,17 @@ var ConfidenceViz = function(width, height) {
 		
 		cookieMonster = CookieMonster();
 		
+		// If this script runs in a public_html
+		// subdirectory, then don't ask for login,
+		// but make uid be 'public' for logging:
+		
+		// From: "http://mono.stanford.edu/statlets-public/confidence/confidence.html"
+		// get the part: "/statlets-public/confidence/confidence.html"
+		let localPath = window.location.pathname;
+		if ( localPart.startsWith("/statlets-public") ) {
+			cookieMonster.setCookie("stats60Uid", "public");
+		}
+		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
 			logger = Logger('confidence', alerter, uid, false);    // false: dont' authenticate 
