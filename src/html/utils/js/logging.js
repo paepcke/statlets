@@ -285,7 +285,7 @@ var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 					} catch (err) {
 						statusTxt = 'Error getting statusTxt: ' + err;
 					}
-					let resJson   = `{status: "${this.status}", statusText: "${statusText}"}`;
+					let resJson   = `{status: "${this.status}", statusText: "${statusTxt}"}`;
 					reject(resJson);
 				}
 			};
