@@ -6,4 +6,5 @@
 
 
     o Whenever you babel a new git-pull over to lib, do this:
+       rm -rf lib/public_html
        cp -r lib/html lib/public_html
