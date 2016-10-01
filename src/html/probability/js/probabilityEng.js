@@ -109,10 +109,10 @@ var ProbabilityViz = function(width, height) {
 
 	// Speed at which text in slot window
 	// fades and appears with only one slot change:
-	var SLOT_TXT_TRANSITION_SPEED_1   = 500; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_1   = 400; // msecs
 	// Delays between runs of 10:
-	var SLOT_TXT_TRANSITION_SPEED_10  = 1000; // msecs
-	var SLOT_TXT_TRANSITION_SPEED_100 = 100; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_10  = 10; // msecs
+	var SLOT_TXT_TRANSITION_SPEED_100 = 10; // msecs
 	
 	// Probability below which bars in the distribution
 	// chart need a handle for dragging:
@@ -340,37 +340,41 @@ var ProbabilityViz = function(width, height) {
 						   			deathCause, 
 						   			SLOT_TXT_TRANSITION_SPEED_1, 
 						   			updateHistogram);
-			   });
+		});
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 				    // Pick 10 random death causes:
 					let txtInfo = [];
 					for ( let i=0; i<10; i++ ) {
-						txtInfo.push(eventGenerator.next());
-					}
-				    // Update this slot module's cause counts:
-					for ( let deathCause of txtInfo ) {
+						let deathCause = eventGenerator.next();
+						txtInfo.push(deathCause);
+						// Add this cause to the count that shows
+						// up in the bar chart inside each slot
+						// module:
 						addDeathCauseCount(slotModBodySel, deathCause);
-						setSlotWindowTxt(slotModBodySel,
-										 txtInfo, 
-										 SLOT_TXT_TRANSITION_SPEED_10, 
-										 updateHistogram);
-				    } 
-			   });
+					}
+					setSlotWindowTxt(slotModBodySel,
+							txtInfo, 
+							SLOT_TXT_TRANSITION_SPEED_10, 
+							updateHistogram);
+		});
+						
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 				    // Pick 100 random death causes:			
 					let txtInfo = [];
 					for ( let i=0; i<100; i++ ) {
-						txtInfo.push(eventGenerator.next());
-					}
-				    // Update this slot module's cause counts:
-					for ( let deathCause of txtInfo ) {
+						let deathCause = eventGenerator.next();
+						txtInfo.push(deathCause);
+						// Add this cause to the count that shows
+						// up in the bar chart inside each slot
+						// module:
 						addDeathCauseCount(slotModBodySel, deathCause);
-						setSlotWindowTxt(slotModBodySel,
-										 txtInfo, 
-										 SLOT_TXT_TRANSITION_SPEED_100, 
-										 updateHistogram);
-				    } 
-			   });
+					}
+					
+					setSlotWindowTxt(slotModBodySel,
+							txtInfo, 
+							SLOT_TXT_TRANSITION_SPEED_100, 
+							updateHistogram);
+		});
 		
 		// Add small death cause occurrences histogram
 		// at bottom of chassis:
@@ -475,6 +479,8 @@ var ProbabilityViz = function(width, height) {
 		let andOrSel = slotModBodySel
 			.append("select")
 			.attr("class", "andOrSelector")
+			.style("opacity", 0)
+			.classed("unselectable", true)
 			.attr("id", function() {
 				return slotModBodySel.attr("id") + "_andOrSel";
 			})
@@ -536,6 +542,9 @@ var ProbabilityViz = function(width, height) {
 				return; // already visible
 			}
 			
+			// Make the and/or selector usable:
+			andOrSel.classed("disabled", false);
+			
 			// Distances are relative to left edge of slot module:
 			andOrTargetLeft    = slotModDimRect.right - slotModDimRect.left - andOrDimRect.width/3.;
 			andOrTargetOpacity = 1;
@@ -545,7 +554,12 @@ var ProbabilityViz = function(width, height) {
 			if ( ! isAndOrSelShowing(slotModBodySel) ) {
 				return; // Already hidden
 			}
-
+			
+			// Prevent the and/or selector from popping
+			// up though the body of slot modules while
+			// hidden behind the bodies:
+			andOrSel.classed("disabled", true);
+			
 			andOrTargetLeft = 0; // relative to left edge of the slot module.
 			andOrTargetOpacity = 0;
 
@@ -1226,8 +1240,7 @@ var ProbabilityViz = function(width, height) {
 				slotTxtMan.hotSel().style("opacity", 0);
 				slotTxtMan.coldSel().style("opacity", 1);
 				slotTxtMan.makeNxtHot();
-				let timer = d3.timer(function() {
-					timer.stop();
+				d3.timeout(function() {
 					// The callback for after each change of window text:
 					callback();
 					// Recursive call:
@@ -1751,13 +1764,13 @@ var ProbabilityViz = function(width, height) {
 				if ( elementMouseIsOverSel.classed(theClass) ) {
 					return elementMouseIsOverSel.node();
 				}
-				elementMouseIsOverSel.classed("noPointerEvents", true);
+				elementMouseIsOverSel.classed("disabled", true);
 				elementMouseIsOverSel = d3.select(document.elementFromPoint(x, y));
 			}
 		} finally {
 			/* Now clean it up */
-			d3.select(".noPointerEvents")
-			.classed("noPointerEvents", false);
+			d3.select(".disabled")
+			.classed("disabled", false);
 		}
 	}
 	

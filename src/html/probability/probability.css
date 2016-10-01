@@ -79,7 +79,7 @@ h1          { text-align : center;  }
            /* ******* */
          }
  
-.noPointerEvents {
+.disabled {
 	pointer-events : none;
 }
 
