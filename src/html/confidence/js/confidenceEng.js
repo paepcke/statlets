@@ -129,11 +129,11 @@ var ConfidenceViz = function(width, height) {
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
+			logger = Logger('confidence', alerter, uid, false);    // false: dont' authenticate 
 			logger.setUserId(uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			logger = Logger(alerter);
+			logger = Logger('confidence', alerter);
 		}
 		browserType = logger.browserType();
 		
@@ -427,9 +427,12 @@ var ConfidenceViz = function(width, height) {
 					dispatch.call("drag", this, barSel);
 				})
 				.on ('end', function(d) {
-					d3.select(this).classed("dragging", false);
+					let barSel = d3.select(this); 
+					barSel.classed("dragging", false);
 					d3.drag.currBar = undefined;
-					log("dragState")
+					let value  = yScale.invert(this.y.baseVal.value - Y_AXIS_TOP_PADDING).toFixed(2);
+					let state  = barSel.attr("state"); 
+					upLog(`drag_${state}_to_${value}`);
 				})
 	      	)
 	}
@@ -744,7 +747,7 @@ var ConfidenceViz = function(width, height) {
 		
 		if (remainingStates.length === 0) {
 			alert("No additional states: sample is entire population.");
-			log("sampledAll");
+			upLog("sampledAll");
 			return(null);
 		}
 		
@@ -1107,7 +1110,7 @@ var ConfidenceViz = function(width, height) {
 			  .on("click", function() {
 				  let newState = newSample();
 				  blankDataStateLabels(newState);
-				  log("addState");
+				  upLog(`addState_${newState}`);
 				  })
 			// .append('br');
 			
@@ -1122,7 +1125,7 @@ var ConfidenceViz = function(width, height) {
 				  // following reload:
 				  cookieMonster.setCookie("stats60Uid", logger.userId());
 				  location.reload();
-				  log("newSample");
+				  upLog("newSample");
 				  })
 			//.append('br');
 	}
@@ -1285,7 +1288,7 @@ var ConfidenceViz = function(width, height) {
 			d3.select('#' + stepName + 'Txt').classed('visible', true);
 		}
 
-		log(stepName);
+		upLog(stepName);
 		
 		switch (stepName) {
 		case 'home':
@@ -1336,10 +1339,10 @@ var ConfidenceViz = function(width, height) {
 	} 
 	
 	/*---------------------------
-	| log 
+	| upLog 
 	-----------------*/
 	
-	var log = function log( txt ) {
+	var upLog = function( txt ) {
 		// Convenience method for logging:
 		logger.log(txt);
 	}

@@ -83,11 +83,11 @@ var CorrelationViz = function(width, height) {
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
+			logger = Logger('correlation', alerter, uid, false);    // false: dont' authenticate 
 			logger.setUserId(uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			logger = Logger(alerter);
+			logger = Logger('correlation', alerter);
 			// Disable login:
 			//****logger = Logger(alerter, null, false); // REMOVE AFTER DEBUGGING TO RESTORE LOGIN!!!
 		}
@@ -728,8 +728,13 @@ var CorrelationViz = function(width, height) {
 					dispatch.call("drag", this, circleSel);
 				})
 				.on ('end', function(d) {
-					d3.select(this).classed("dragging", false);
+					let circleSel = d3.select(this); 
+					circleSel.classed("dragging", false);
 					d3.drag.currCircle = undefined;
+					let state  = circleSel.attr("state");
+					let value  = yScale.invert(d3.event.y - Y_AXIS_TOP_PADDING).toFixed(2);
+					
+					upLog(`drag${state}_to_${value}`);
 				})
 	}
 	
@@ -1219,6 +1224,8 @@ var CorrelationViz = function(width, height) {
 			d3.select('#' + stepName + 'Txt').classed('visible', true);
 		}
 
+		upLog(stepName);
+		
 		switch (stepName) {
 		case 'home':
 			d3.select('#corrDiv')
@@ -1259,10 +1266,10 @@ var CorrelationViz = function(width, height) {
 	
 	
 	/*---------------------------
-	| log 
+	| upLog 
 	-----------------*/
 	
-	var log = function log( txt ) {
+	var upLog = function( txt ) {
 		// Convenience method for logging:
 		logger.log(txt);
 	}

@@ -2,7 +2,7 @@
 		
 import * as log4javascript from "./log4javascript.min";
 
-var Logger = function( theAlerter, uid, seekAuthentication ) {
+var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 
 	var alerter	   	   		 = null;
 	var myBrowser            = null;
@@ -10,6 +10,8 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 	var logServerURL         = null;
 	   	   
 	var alerter	      	     = null;
+	// "confidence", "correlation", etc.:
+	var context				 = null;
 	   	   
 	var sentServerDwnMail    = false;
 	var doAuthentication     = true;
@@ -34,7 +36,7 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 	| constructor 
 	-----------------*/
 	
-	var constructor = function( theAlerter, uid, seekAuthentication ) {
+	var constructor = function(theContext, theAlerter, uid, seekAuthentication ) {
 		
 		alerter	= theAlerter;
 		if ( (typeof(seekAuthentication) === 'undefined') || seekAuthentication ) {
@@ -43,6 +45,7 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 			doAuthentication = false;
 		}
 
+		context = theContext;
 		initLogging(uid);
 		
 		return {
@@ -73,7 +76,7 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 		}
 		contactLogServer(
 				{"reqType" : "log",
-					"context" : "confidence",
+					"context" : context,       // "confidence", "correlation", etc.
 					"uid"     : myUid,
 					"action"  : txtJsonValue,
 				},
@@ -253,7 +256,7 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 		
 		return contactLogServer(
 				{"reqType" : "login",
-				 "context" : "confidence",
+				 "context" : context,   // "confidence", "correlation", etc.
 				 "uid"     : uid,
 				 "action"  : `{ "loginBrowser" : "${browserType()}" }`,
 				},
@@ -327,7 +330,7 @@ var Logger = function( theAlerter, uid, seekAuthentication ) {
 		}
 	}
 	
-	return constructor( theAlerter, uid, seekAuthentication );
+	return constructor( theContext, theAlerter, uid, seekAuthentication );
 }
 
 export {Logger};

@@ -193,11 +193,11 @@ var ProbabilityViz = function(width, height) {
 		
 		let uid = cookieMonster.getCookie("stats60Uid");
 		if ( uid !== null ) {
-			logger = Logger(alerter, uid, false);    // false: dont' authenticate 
+			logger = Logger('probability', alerter, uid, false);    // false: dont' authenticate 
 			logger.setUserId(uid);
 			cookieMonster.delCookie("stats60Uid");
 		} else {
-			logger = Logger(alerter);
+			logger = Logger('probability', alerter);
 		}
 		browserType = logger.browserType();
 		
@@ -1758,9 +1758,9 @@ var ProbabilityViz = function(width, height) {
 			}
 				
 			//************
-			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
-			1+1; // just a statement to attach a breakpoint to
-			console.log(`Sum = ${sum}`);
+			//let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
+			//1+1; // just a statement to attach a breakpoint to
+			// console.log(`Sum = ${sum}`);
 			//************
 
 		}
