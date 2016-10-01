@@ -271,7 +271,8 @@ var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 	
 	var contactLogServer = function(reqJson, theUrl) {
 
-		let xhr     = new XMLHttpRequest();
+		let xhr        = new XMLHttpRequest();
+		let statusTxt  = null;
 		xhr.timeout = LOG_SERVER_TIMEOUT;
 		
 		return new Promise(function (resolve, reject) {
@@ -281,7 +282,7 @@ var Logger = function( theContext, theAlerter, uid, seekAuthentication ) {
 					resolve(xhr.response);
 				} else {
 					try {
-						let statusTxt = xhr.statusText;
+						statusTxt = xhr.statusText;
 					} catch (err) {
 						statusTxt = 'Error getting statusTxt: ' + err;
 					}
