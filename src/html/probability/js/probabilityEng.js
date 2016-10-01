@@ -8,6 +8,19 @@ import { CoordinateSystem } from "./../../utils/js/coordinateSystem";
 import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
 
+/*
+ * TODO: 
+ * 		o Ganged modules don't have their history updated
+ * 		o Remove empty top lines in slot window
+ * 		o Indicate when mods close enough for coupling
+ * 		o Win counter
+ * 		o Win flash
+ * 		o Try bootstrap
+ * 		o Write text
+ * 		o Lucas-matrix
+ * 		o Firefox compatibility
+ */
+
 var ProbabilityViz = function(width, height) {
 
 	// Instance variables:
@@ -333,51 +346,25 @@ var ProbabilityViz = function(width, height) {
 		let updateHistogram = partial(updateSlotModHistogram, slotModBodySel);
 		
 		addButton(slotModSvgSel, "Go", function(evt) {
-				   let deathCause = eventGenerator.next();
-				   // Update this slot module's cause counts:
-				   addDeathCauseCount(slotModBodySel, deathCause);
-				   setSlotWindowTxt(slotModBodySel, 
-						   			deathCause, 
-						   			SLOT_TXT_TRANSITION_SPEED_1, 
-						   			updateHistogram);
+
+			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
+			spinSlot(slotModBodySel, 1, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
 		});
+		
 		addButton(slotModSvgSel, "Go x10", function(evt) {
-				    // Pick 10 random death causes:
-					let txtInfo = [];
-					for ( let i=0; i<10; i++ ) {
-						let deathCause = eventGenerator.next();
-						txtInfo.push(deathCause);
-						// Add this cause to the count that shows
-						// up in the bar chart inside each slot
-						// module:
-						addDeathCauseCount(slotModBodySel, deathCause);
-					}
-					setSlotWindowTxt(slotModBodySel,
-							txtInfo, 
-							SLOT_TXT_TRANSITION_SPEED_10, 
-							updateHistogram);
+			
+			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
+			spinSlot(slotModBodySel, 10, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
 		});
-						
+		
 		addButton(slotModSvgSel, "Go x100", function(evt) {
-				    // Pick 100 random death causes:			
-					let txtInfo = [];
-					for ( let i=0; i<100; i++ ) {
-						let deathCause = eventGenerator.next();
-						txtInfo.push(deathCause);
-						// Add this cause to the count that shows
-						// up in the bar chart inside each slot
-						// module:
-						addDeathCauseCount(slotModBodySel, deathCause);
-					}
-					
-					setSlotWindowTxt(slotModBodySel,
-							txtInfo, 
-							SLOT_TXT_TRANSITION_SPEED_100, 
-							updateHistogram);
+			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
+			spinSlot(slotModBodySel, 100, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
 		});
 		
 		// Add small death cause occurrences histogram
 		// at bottom of chassis:
+
 		addSlotModFrequencyChart(slotModSvgSel);
 		addBettingSelection(slotModBodySel);
 		addAndOrSelection(slotModBodySel);
@@ -385,6 +372,35 @@ var ProbabilityViz = function(width, height) {
 		addSlotModuleDragging(slotModBodySel);
 		
 		return slotModSvgSel;
+	}
+	
+	/*---------------------------
+	| spinSlot 
+	-----------------*/
+	
+	var spinSlot = function(slotModBodySel, numSpins, speed, callback) {
+
+		// Pick numSpins random death causes:
+
+		let txtInfo   = [];
+		let chainGang = getChainGangMembers(slotModBodySel);
+		// Add the module itself:
+		chainGang.push(slotModBodySel);
+
+		for ( let thisSlotModBodySel of chainGang ) {
+			for ( let i=0; i<numSpins; i++ ) {
+				let deathCause = eventGenerator.next();
+				txtInfo.push(deathCause);
+				// Add this cause to the count that shows
+				// up in the bar chart inside each slot
+				// module:
+				addDeathCauseCount(thisSlotModBodySel, deathCause);
+			}
+			setSlotWindowTxt(thisSlotModBodySel,
+					txtInfo, 
+					speed,
+					callback);
+		}			
 	}
 	
 	/*---------------------------
@@ -1983,11 +1999,39 @@ var ProbabilityViz = function(width, height) {
 		 * 
 		 */
 		
-		let chainGang = [];
+		// 'This' is bound to the d3-sel of the 
+		// affected slot module:
+		let chainGang = getChainGangMembers(this)
 		
-		let movedSlotModSel  = this;
-		let connectedSlotMod = this;
+		// Now drag all the chain gang members as
+		// the given module was just dragged:
+		for ( let slotMod of chainGang ) {
+			dragHandler.dragmove(slotMod);
+		}
+	}
+	
+	/*---------------------------
+	| getChainGangMembers 
+	-----------------*/
+	
+	var getChainGangMembers = function(slotModBodySel) {
+
+		/*
+		 * Given the d3 selection of a slot module, 
+		 * return an array of d3 selections of all slot
+		 * modules that are directly or indirectly docked
+		 * to the given module on the right and left.
+		 * 
+		 * NOTE: the resulting array does not include 
+		 *       the given slot module body. This omission
+		 *       is useful, for instance, when moving
+		 *       a chain gang given that one of the modules
+		 *       has moved.
+		 */
+		
+		let chainGang 		 = [];
 		let nextGangMember   = null;
+		let connectedSlotMod = slotModBodySel;
 		
 		// First, find all the modules to the left of the
 		// just-moved module:
@@ -1997,17 +2041,12 @@ var ProbabilityViz = function(width, height) {
 		}
 		
 		// Now everyone on the right:
-		connectedSlotMod     = this;
+		connectedSlotMod     = slotModBodySel;
 		while (( nextGangMember = dockedWith(connectedSlotMod, "right")) !== undefined ) {
 			chainGang.push(nextGangMember);
 			connectedSlotMod = nextGangMember;
 		}
-		
-		// Now drag all the chain gang members as
-		// the given module was just dragged:
-		for ( let slotMod of chainGang ) {
-			dragHandler.dragmove(slotMod);
-		}
+		return chainGang;
 	}
 	
 	/*---------------------------
