@@ -2139,7 +2139,11 @@ var ProbabilityViz = function(width, height) {
 		 * Given d3 selections of two slot modules, dock them.
 		 */
 		
-		let leftDimRect  = leftModBodySel.node().getBoundingClientRect();
+		// Top and right edges of left module
+		// as strings: e.g. "88.654px":
+		let leftTopEdge    = leftModBodySel.style("top");
+		let leftRightEdge  = leftModBodySel.style("right");
+		let rightLeftEdge  = `{parseFloat(leftRightEdge) + DOCKING_DISTANCE}px`;
 		
 		// Move the partner into docking position
 		// next to the left module:
@@ -2147,10 +2151,10 @@ var ProbabilityViz = function(width, height) {
 			.transition()
 			.duration(1000)
 				.style("top", function() {
-					return `${leftDimRect.top}px`;
+					return leftTopEdge;
 				})
 				.style("left", function() {
-					return `${leftDimRect.right + DOCKING_DISTANCE}px`;
+					return rightLeftEdge;
 				})
 			.on("end", function() {
 				// Check whether user moved a participating
