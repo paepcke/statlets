@@ -10,7 +10,6 @@ import * as d3 from "./../../utils/js/d3.min";
 
 /*
  * TODO:
- *      o CORRELATION NOT LOGGING YET!!!!! 
  * 		o Ganged modules don't have their history updated
  * 		o Remove empty top lines in slot window
  * 		o Indicate when mods close enough for coupling
@@ -365,17 +364,26 @@ var ProbabilityViz = function(width, height) {
 
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 1, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
+			if ( didWin(slotModBodySel) ) {
+				console.log("won");
+			}
 		});
 		
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 			
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 10, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
+			if ( didWin(slotModBodySel) ) {
+				console.log("won");				
+			}
 		});
 		
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 100, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
+			if ( didWin(slotModBodySel) ) {
+				console.log("won");				
+			}
 		});
 		
 		// Add small death cause occurrences histogram
@@ -487,12 +495,19 @@ var ProbabilityViz = function(width, height) {
 				}
 			})
 			.on("blur", function() {
+				// Remember the index of the death cause in this
+				// slot module's betting selector. Then replace
+				// the death cause shown in the betting selector
+				// by an abbreviation (first 13 chars followed
+				// by ellipses) to that bet id not wider than
+				// slot module body:
 				let deathCause = this.value;
 				let abbrev = deathCause.slice(0,13) + '...';
 				let oldSelIndx = this.selectedIndex;
 				setBettingEntries(d3.select(this), [abbrev])
 					.attr("selectedIndex", 0)
-					.attr("savedIndx", oldSelIndx);
+					.attr("savedIndx", oldSelIndx)
+					.attr("fullDeathCause", deathCause);
 			})
 			
 		setBettingEntries(bettingSel, ["Place your bet"]);
@@ -973,17 +988,34 @@ var ProbabilityViz = function(width, height) {
 	| updateSlotModHistogram 
 	-----------------*/
 	
-	var updateSlotModHistogram = function(slotModBodySel) {
+	var updateSlotModHistogram = function(slotModBodySel, otherModsToUpdate) {
 			//deathCauseCounts, coordSys) {
 		/*
-		 * Given an object containing the number of times each 
-		 * cause of death has appeared, and the coordinate system
-		 * instance of a slot module, update the module's histogram.
+		 * Given the d3 selecton of a slot module body, update the modules
+		 * death cause histogram. The method uses the coordinate system and
+		 * counts that are stored inside each slot module.
+		 * 
+		 * If otherModsToUpdate is given, it is expected to be an array
+		 * of other d3 slot module body selections on which this same
+		 * method is to be called. That is whose own histograms are also
+		 * to be updated. If this parameter is omitted, all members in
+		 * the chain gang with the given module will be updated. This method
+		 * is called recursively to accomplish this task.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module whose histogram
+		 * 		is to be updated.
+		 * :type slotModBodySel: d3-sel
+		 * :param otherModsToUpdate: option array of more d3 slot mod body selections
+		 * 		to update as well.
 		 */
 		
 		let coordSys = getCoordSys(slotModBodySel);
 		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		let counts = Object.values(deathCauseCounts)
+		
+		if ( typeof(otherModsToUpdate) === 'undefined' ) {
+			otherModsToUpdate = getChainGangMembers(slotModBodySel);
+		}
 		
 		// If the largest of the latest counts exceeds the
 		// histogram's y-axis, then rescale the axis:
@@ -1025,7 +1057,33 @@ var ProbabilityViz = function(width, height) {
 	      		.attr("height", function(deathCause) { 
 	      			return (height - coordSys.xAxisBottomPad) - yScale(deathCauseCounts[deathCause]);
 	      		});
+		
+		// Now update any chain gang members as well:
+		if ( otherModsToUpdate.length > 0 ) {
+			let chainGangMemberSel = otherModsToUpdate.pop();
+			updateSlotModHistogram(chainGangMemberSel, otherModsToUpdate);
+		}
 	}
+	
+	/*---------------------------
+	| didWin 
+	-----------------*/
+	
+	var didWin = function(slotModBodySel) {
+		
+		// Get bet placed in given slot module:
+		let bettingSelectorSel = slotModBodySel.select(".bettingSelector");
+		let domBettingEl = bettingSelectorSel.node();
+		let currBetOptionIndx = domBettingEl.selectedIndex;
+		// Get the non-abbreviated cause of death:
+		let currBetTxt  = bettingSelectorSel.attr("fullDeathCause");
+		
+		// Get death cause currently displayed in slot window:
+		let currSlotWinTxt = slotBodies[slotModBodySel.attr("id")].textManager.getCurrTxt();
+		
+		return currSlotWinTxt === currBetTxt;
+	}
+	
 	
 	/*---------------------------
 	| barPulled
@@ -1686,16 +1744,24 @@ var ProbabilityViz = function(width, height) {
 				// Add one word to a word-array:
 				line.push(word);
 				// Turn it into text:
-				tspan.text(line.join(" ").trim());
+				tspan.text(line.join(" "));
 				if (tspan.node().getComputedTextLength() > width) {
 					// Yep, this word is one too many for this line;
-					// omit the word from the line being built,...
-					line.pop();
-					// ... and create txt from the array
+					// omit the word from the line being built,
+					// unless it's the only word; in that case we
+					// have no choice:
+					if ( line.length > 1) {
+						line.pop();
+						tspan.text(line.join(" "));
+						// The word we couldn't fit is the first on the nxt line:
+						line = [word];
+					} else {
+						tspan.text(line[0]);
+						line = [];
+					}
+					// ... and create a tspan from the array of words
 					// that do fit:
-					tspan.text(line.join(" ").trim());
-					// The word we couldn't fit is the first on the nxt line:
-					line = [word];
+					
 					tspan = text
 							 .append("tspan")
 								.attr("text-anchor", "middle")
@@ -2282,11 +2348,59 @@ var TextManager = function(txtElements) {
 			}
 		}
 
-		return { hotSel        : hotSel,
+		return { 
+			getCurrTxt    : getCurrTxt,
+			getPrevTxt    : getPrevTxt,
+			hotSel        : hotSel,
 			coldSel       : coldSel,
 			makeNxtHot    : makeNxtHot,
 			addTxtElement : addTxtElement
 		}
+	}
+	
+	/*---------------------------
+	| getCurrTxt 
+	-----------------*/
+	
+	var getCurrTxt = function() {
+		
+		// The slot window text is a NodeList object
+		// that contains tspan elements. Each of those
+		// contains one line. Get those tspans and convert
+		// the NodeList to an array for easier handling.
+		
+		let tspans = Array.from(hotSel().node().childNodes);
+		// First line without a leading space:
+		let txt = tspans[0].textContent;
+		
+		// Append rest of lines:
+		for ( let tspan of tspans.slice(1) ) {
+			txt += ' ' + tspan.textContent;
+		}
+		return txt;
+	}
+	
+	/*---------------------------
+	| getPrevTxt 
+	-----------------*/
+	
+	var getPrevTxt = function() {
+		
+		// The slot window text is a NodeList object
+		// that contains tspan elements. Each of those
+		// contains one line. Get those tspans and convert
+		// the NodeList to an array for easier handling.
+
+		let tspans = Array.from(coldSel().node().childNodes);
+		
+		// First line without a leading space:
+		let txt = tspans[0].textContent;
+		
+		// Append rest of lines:
+		for ( let tspan of tspans.slice(1) ) {
+			txt += ' ' + tspan.textContent;
+		}
+		return txt;
 	}
 	
 	/*---------------------------
