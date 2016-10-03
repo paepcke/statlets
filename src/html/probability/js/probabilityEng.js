@@ -225,8 +225,6 @@ var ProbabilityViz = function(width, height) {
 
 		addControlButtons();
 
-		// Create one slot module that will serve as
-		// the source of others; it will be semi-transparent:
 		let urSlotSel = createSlotModuleWell('urSlotModule');
 		createCauseDistrib();
 		createTooltip() 
@@ -389,9 +387,9 @@ var ProbabilityViz = function(width, height) {
 		// Add small death cause occurrences histogram
 		// at bottom of chassis:
 
-		addSlotModFrequencyChart(slotModSvgSel);
-		addBettingSelection(slotModBodySel);
-		addAndOrSelection(slotModBodySel);
+		addSlotModFrequencyChart(slotModSvgSel); // Histogram of hits.
+		addBettingSelection(slotModBodySel);     // Betting selector element at bottom
+		addAndOrSelection(slotModBodySel);       // Docking and/or/Undock selector
 		
 		addSlotModuleDragging(slotModBodySel);
 		
