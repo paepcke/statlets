@@ -2150,9 +2150,8 @@ var ProbabilityViz = function(width, height) {
 		rightModBodySel
 			.transition()
 			.duration(1000)
-				.style("top", function() {
-					return leftTopEdge;
-				})
+				// Bring left edge of right module into
+				// docking distance:
 				.style("left", function() {
 					return rightLeftEdge;
 				})
@@ -2173,6 +2172,13 @@ var ProbabilityViz = function(width, height) {
 		
 		// Pull out the and/or selector:
 		leftModBodySel.call( showAndOrSel, leftModBodySel, true );
+		
+		// Bring all chaingang members to height of left module:
+		let gangMemberSel = d3.selectAll(getChainGangMembers(leftModBodySel));
+		gangMemberSel.each(function() {
+			this.style("top", leftTopEdge);
+		})
+		
 		upLog("dock");
 		
 	}
