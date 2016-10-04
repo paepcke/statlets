@@ -2415,13 +2415,9 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var visualizeWinners = function(slotModBodySel) {
-		
-		// Check all members of chain gang, include 
-		// the given slot module itself (the 'true' in loop clause):
-		for ( let slotBod of getChainGangMembers(slotModBodySel, true) ) {
-			if ( didWin(slotBod) ) {
-				visualizeSuccess(slotBod);
-			}
+
+		if ( didWin(slotModBodySel) ) {
+			visualizeSuccess(slotModBodySel);
 		}
 	}
 	
