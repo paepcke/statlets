@@ -127,6 +127,9 @@ var ProbabilityViz = function(width, height) {
 	var SLOT_TXT_TRANSITION_SPEED_10  = 10; // msecs
 	var SLOT_TXT_TRANSITION_SPEED_100 = 10; // msecs
 	
+	// Amound of time a slot module stays red after success:
+	var SUCCESS_COLOR_DURATION = 2000; // msec
+	
 	// Probability below which bars in the distribution
 	// chart need a handle for dragging:
 	var ADD_DISTRIB_BAR_HANDLE_THRESHOLED = 0.005; // probability
@@ -275,7 +278,12 @@ var ProbabilityViz = function(width, height) {
 				.style("left", `${machinesDivDimRect.left + SLOT_MODULE_TOP_PADDING}px`)
 				.style("top", `${machinesDivDimRect.top   + SLOT_MODULE_LEFT_PADDING}px`)
 				.attr("id", moduleId)
-				.attr("class", "machinesBody")
+				.attr("class", "machinesBody");
+				
+		// Remember the current background gradient
+		// so that visualizeSuccess() can reliable
+		// that the background to this default:
+		slotModBodySel.attr("defaultBackgroundDeco", slotModBodySel.style("background"));
 				
 		// Remember this slot module chassis:
 		slotBodies[slotModBodySel.attr("id")] = {};
@@ -362,26 +370,22 @@ var ProbabilityViz = function(width, height) {
 
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 1, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
-			if ( didWin(slotModBodySel) ) {
-				console.log("won");
-			}
+			visualizeWinners(slotModBodySel);
 		});
 		
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 			
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 10, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
-			if ( didWin(slotModBodySel) ) {
-				console.log("won");				
-			}
+			d3.timeout(function() {
+				visualizeWinners(slotModBodySel);				
+			}, SLOT_TXT_TRANSITION_SPEED_10)
 		});
 		
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 100, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
-			if ( didWin(slotModBodySel) ) {
-				console.log("won");				
-			}
+			visualizeWinners(slotModBodySel);
 		});
 		
 		// Add small death cause occurrences histogram
@@ -424,7 +428,7 @@ var ProbabilityViz = function(width, height) {
 					callback);
 		}			
 	}
-	
+
 	/*---------------------------
 	| addSlotModFrequencyChart
 	-----------------*/
@@ -1068,6 +1072,17 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var didWin = function(slotModBodySel) {
+		/*
+		 * Return true if the given slot module body's bet
+		 * selector shows the same cause of death as the
+		 * slot window.
+		 * 
+		 * In addition, all gang members, if any exist, are
+		 * checked as well. The final result is the and/or
+		 * combination of all chain gang members. Whether 
+		 * results are and'ed or or'ed depends on the dock
+		 * selectors.
+		 */
 		
 		// Get bet placed in given slot module:
 		let bettingSelectorSel = slotModBodySel.select(".bettingSelector");
@@ -2095,24 +2110,48 @@ var ProbabilityViz = function(width, height) {
 	| getChainGangMembers 
 	-----------------*/
 	
-	var getChainGangMembers = function(slotModBodySel) {
+	var getChainGangMembers = function(slotModBodySel, includeSelf) {
 
 		/*
 		 * Given the d3 selection of a slot module, 
 		 * return an array of d3 selections of all slot
 		 * modules that are directly or indirectly docked
 		 * to the given module on the right and left.
+		 * Groups of slot modules that are connected are
+		 * called 'chain gangs.' The given slotModBodySel
+		 * is called the reference slot module.
 		 * 
 		 * NOTE: the resulting array does not include 
-		 *       the given slot module body. This omission
+		 *       the given slot module body unless 
+		 *       includeSelf is passed as true. This omission
 		 *       is useful, for instance, when moving
 		 *       a chain gang given that one of the modules
 		 *       has moved.
+		 *
+		 * :param slotModBodySel: d3 selection of slot module whose
+		 * 		chain gang is to be found.
+		 * :type slotModBodySel: d3-selection
+		 * :param includeSelf: whether to include the given 
+		 * 		slot module in the list of gang members.
+		 * 		Default: false.
+		 * :type includeSelf: { bool | undefined }
+		 * :returns array contains slot module selections of
+		 *   	the chain gang members in the same order as
+		 *   	the slots show on the screen:
+		 *   		[leftmostSlot, ... ,<would-be-position of ref slot>, nextSlot, ... lastSlot]
+		 *   	The returned array will have property "refModBodyIndx".
+		 *   	This integer indicates the index into the result
+		 *   	array at which the reference module would reside if
+		 *   	it was included. 
 		 */
 		
 		let chainGang 		 = [];
 		let nextGangMember   = null;
 		let connectedSlotMod = slotModBodySel;
+		
+		if (typeof(includeSelf) === 'undefined') {
+			includeSelf = false;
+		}
 		
 		// First, find all the modules to the left of the
 		// just-moved module:
@@ -2120,6 +2159,19 @@ var ProbabilityViz = function(width, height) {
 			chainGang.push(nextGangMember);
 			connectedSlotMod = nextGangMember;
 		}
+		
+		// Make the order of the left-side members the same
+		// as what user sees on screen:
+		chainGang.reverse();
+
+		if ( includeSelf ) {
+			chainGang.push(slotModBodySel);
+			// Point to the given slot:
+			chainGang.refModBodyIndx = chainGang.length - 1;			
+		} else {
+			chainGang.refModBodyIndx = chainGang.length;
+		}
+		
 		
 		// Now everyone on the right:
 		connectedSlotMod     = slotModBodySel;
@@ -2132,6 +2184,52 @@ var ProbabilityViz = function(width, height) {
 	
 	/*---------------------------
 	| dock 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	-----------------*/
 	
 	var dock = function(leftModBodySel, rightModBodySel) {
@@ -2264,6 +2362,44 @@ var ProbabilityViz = function(width, height) {
 		}
 		
 		return d3.select("#" + dockedPartnerId);
+	}
+	
+	
+	/*---------------------------
+	| visualizeWinners 
+	-----------------*/
+	
+	var visualizeWinners = function(slotModBodySel) {
+		
+		// Check all members of chain gang, include 
+		// the given slot module itself (the 'true' in loop clause):
+		for ( let slotBod of getChainGangMembers(slotModBodySel, true) ) {
+			if ( didWin(slotBod) ) {
+				visualizeSuccess(slotBod);
+			}
+		}
+	}
+	
+	/*---------------------------
+	| visualizeSuccess 
+	-----------------*/
+	
+	var visualizeSuccess = function(slotModBodySel) {
+		/*
+		 * Modifies the given slot module's visual presentation
+		 * temporarily to indicate that it won a bet. Return
+		 * to normal visualization is scheduled. Caller need
+		 * not worry about it.
+		 */
+		
+		slotModBodySel
+			// Change background to red gradient:
+			.style("background", "linear-gradient(rgb(255,48,25), rgb(207,4,4)");
+
+		// And schedule return to default background:
+		d3.timeout(function() {
+			slotModBodySel.style("background", slotModBodySel.attr("defaultBackgroundDeco")) 
+		}, SUCCESS_COLOR_DURATION);
 	}
 	
 	/*---------------------------
