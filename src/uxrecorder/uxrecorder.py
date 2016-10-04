@@ -206,9 +206,11 @@ class UxRecorder(tornado.web.RequestHandler):
         #        or  judyl
         
         try:
-            loginId = loginId[0 : loginId.index("@")]
+            # Does login name have '@stanford.edu'?
+            loginId.index("@stanford.edu")
         except ValueError:
-            pass
+            # No: add that:
+            loginId = loginId + "@stanford.edu"
         try:
             UxRecorder.uidDict[loginId]
             return True

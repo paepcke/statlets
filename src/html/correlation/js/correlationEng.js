@@ -82,7 +82,7 @@ var CorrelationViz = function(width, height) {
 		alerter     = SoftAlert();
 		
 		if ( BrowserIdentifier().isFirefox ) {
-			alerter.note("Sorry: Firefox isn't working right now. Please use Chrome or Safari.");
+			alerter.note("Sorry: this Statlet isn't working with Firefox right now. Please use Chrome or Safari.");
 			return;
 		}
 		
