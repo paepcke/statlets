@@ -407,9 +407,10 @@ var ProbabilityViz = function(width, height) {
 		// Pick numSpins random death causes:
 
 		let txtInfo   = [];
-		let chainGang = getChainGangMembers(slotModBodySel);
-		// Add the module itself:
-		chainGang.push(slotModBodySel);
+		// Get the members of the given module's gang, incl.
+		// the module itself (the 'true'):
+		let chainGang = getChainGangMembers(slotModBodySel, true);
+		let gangSize  = chainGang.length; 
 
 		for ( let thisSlotModBodySel of chainGang ) {
 			for ( let i=0; i<numSpins; i++ ) {
@@ -432,10 +433,15 @@ var ProbabilityViz = function(width, height) {
 		// whose text changed:
 		dispatchSpinDone.on("oneSpinDone", function(nth) {
 			if ( nth >= numSpins-1 ) {
+				// One slot module is done spinning.
 				// Pass the slot body selection both, bound to 'this'
 				// and as a parameter for clarity at the destination
 				// function:
 				dispatchSpinDone.call("allSpinsDoneOneModule", this, this);
+				gangSize--;
+				if ( gangSize <= 0 ) {
+					dispatchSpinDone.call("allSpinsDoneAllModules", this, this);
+				}
 			}
 		});
 	}
@@ -959,8 +965,21 @@ var ProbabilityViz = function(width, height) {
 		dispatchMoveChainGang.on("moved", moveDockedMods);
 		
 		// Allow action after spinning the slots:
-		dispatchSpinDone = d3.dispatch("oneSpinDone", "allSpinsDone");
-		dispatchSpinDone.on("allSpinsDoneOneModule", visualizeWinners);
+		dispatchSpinDone = d3.dispatch("oneSpinDone", 
+									   "allSpinsDoneOneModule",
+									   "allSpinsDoneAllModules");
+		// ****dispatchSpinDone.on("allSpinsDoneOneModule", visualizeWinners);
+		dispatchSpinDone.on("allSpinsDoneOneModule", function(slotModBodySel) {
+			if ( didWin(slotModBodySel) ) {
+				visualizeSuccess(slotModBodySel);
+			}
+		});
+		
+		dispatchSpinDone.on("allSpinsDoneAllModules", function(slotModBodySel) {
+			if ( checkOverallWin(getChainGangMembers(slotModBodySel, true)[0]) ) {
+				visualizeOverallSuccess();
+			}
+		});
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
@@ -2391,25 +2410,6 @@ var ProbabilityViz = function(width, height) {
 	
 	
 	/*---------------------------
-	| visualizeWinners 
-	-----------------*/
-	
-	var visualizeWinners = function(slotModBodySel) {
-
-		if ( didWin(slotModBodySel) ) {
-			visualizeSuccess(slotModBodySel);
-		}
-		// Check whether it's an overall win, given
-		// the and/or connections in a chain. Start
-		// the checkOverallWin() method out with the
-		// left-mose member of the gang. The 'true' includes
-		// the given slot module:
-		if ( checkOverallWin(getChainGangMembers(slotModBodySel, true)[0]) ) {
-			visualizeOverallSuccess();
-		}
-	}
-	
-	/*---------------------------
 	| visualizeSuccess 
 	-----------------*/
 	
@@ -2450,7 +2450,6 @@ var ProbabilityViz = function(width, height) {
 		// sequence as user sees the slots left to right.
 		let gang = getChainGangMembers(slotModBodySel, true);
 		
-		let rightPartner;
 		let thisWon;
 		let dockBool;
 		
@@ -2476,7 +2475,7 @@ var ProbabilityViz = function(width, height) {
 				// Curr slot is in an AND sequence, and it won.
 				// Check whether the next module also won:
 				slotModBodySel = dockedWith(slotModBodySel, "right");
-				if ( typeof(rightPartner) === 'undefined' ) {
+				if ( typeof(slotModBodySel) === 'undefined' ) {
 					return true; // checked all gang members.
 				}
 			} else {
@@ -2639,7 +2638,14 @@ var TextManager = function(txtElements) {
 		// contains one line. Get those tspans and convert
 		// the NodeList to an array for easier handling.
 		
-		let tspans = Array.from(hotSel().node().childNodes);
+		let currVisible = null;
+		if ( hotSel().style("opacity") === "1" ) {
+			currVisible = hotSel();
+		} else {
+			currVisible = coldSel();
+		}
+		
+		let tspans = Array.from(currVisible.node().childNodes);
 		// First line without a leading space:
 		let txt = tspans[0].textContent;
 		
@@ -2661,16 +2667,16 @@ var TextManager = function(txtElements) {
 		// contains one line. Get those tspans and convert
 		// the NodeList to an array for easier handling.
 
-		let tspans = Array.from(coldSel().node().childNodes);
-		
-		// First line without a leading space:
-		let txt = tspans[0].textContent;
-		
-		// Append rest of lines:
-		for ( let tspan of tspans.slice(1) ) {
-			txt += ' ' + tspan.textContent;
-		}
-		return txt;
+//		let tspans = Array.from(coldSel().node().childNodes);
+//		
+//		// First line without a leading space:
+//		let txt = tspans[0].textContent;
+//		
+//		// Append rest of lines:
+//		for ( let tspan of tspans.slice(1) ) {
+//			txt += ' ' + tspan.textContent;
+//		}
+//		return txt;
 	}
 	
 	/*---------------------------
