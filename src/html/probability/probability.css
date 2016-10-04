@@ -271,3 +271,14 @@ div.tooltip.state.visible    {
     }
 .button.newSlotModule:focus { outline : 0 !important; }    
     
+.scoreFrame {
+	width  : 4em;
+	height : 1.5em;
+	stroke-width : 2px;
+	fill : white;
+	stroke : DarkGray;
+}
+
+.scoreText {
+	font-size : 12pt;
+}

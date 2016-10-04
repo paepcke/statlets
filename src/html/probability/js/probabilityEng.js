@@ -233,7 +233,8 @@ var ProbabilityViz = function(width, height) {
 
 		let urSlotSel = createSlotModuleWell('urSlotModule');
 		createCauseDistrib();
-		createTooltip() 
+		createTooltip();
+		createScoreBoard();
 		
 		return {}
 	}
@@ -1653,6 +1654,36 @@ var ProbabilityViz = function(width, height) {
 		// according to the new distribution:
 		eventGenerator = EventGenerator(DEATH_CAUSES);
 
+	}
+	
+	/*---------------------------
+	| createScoreBoard 
+	-----------------*/
+	
+	var createScoreBoard = function() {
+
+		let scoreBoardSel = d3.select("#machinesDiv")
+			.append("svg")
+				.attr("id", "scoreBoardSvg")
+				.attr("width", 70)
+				.attr("height", 50);
+
+		scoreBoardSel
+			.append("rect")
+				.attr("class", "scoreFrame")
+				.attr("id", "scoreRect")
+				.attr("x", "0px")
+				.attr("y", "0px");
+
+		scoreBoardSel
+			.append("text")
+				.attr("class", "scoreTxt")
+				.attr("id", "scoreTxt")
+				.attr("x", "2em")
+				.attr("y", "1.2em")
+				.text("100");
+		
+		scoreBoardSel.attr("transform", "translate(80,100)");
 	}
 
 	/*---------------------------
