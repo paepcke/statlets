@@ -200,6 +200,15 @@ class UxRecorder(tornado.web.RequestHandler):
     #----------------*/
             
     def isRegistered(self, loginId):
+        # Allow either students' sunetID,
+        # or their email address. Ex.:
+        #    Either  judyl@stanford.edu
+        #        or  judyl
+        
+        try:
+            loginId = loginId[0 : loginId.index("@")]
+        except ValueError:
+            pass
         try:
             UxRecorder.uidDict[loginId]
             return True
