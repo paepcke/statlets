@@ -69,6 +69,9 @@ var ProbabilityViz = function(width, height) {
 	var dispatchSlotModMoveEnd  = null;
 	var dispatchMoveChainGang   = null;
 	
+	// Event for spinning done:
+	var dispatchSpinDone = null;
+	
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
 	
@@ -377,9 +380,7 @@ var ProbabilityViz = function(width, height) {
 			
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 10, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
-			d3.timeout(function() {
-				visualizeWinners(slotModBodySel);				
-			}, SLOT_TXT_TRANSITION_SPEED_10)
+			//***** when spin done visualizeWinners called
 		});
 		
 		addButton(slotModSvgSel, "Go x100", function(evt) {
@@ -426,7 +427,13 @@ var ProbabilityViz = function(width, height) {
 					txtInfo, 
 					speed,
 					callback);
-		}			
+		}
+		// Wait for the last spin to be done,
+		// then send the spinDone event to all
+		// interested parties:
+		d3.timeout(function() {
+			spinDoneDispatch.call("spinDone", slotModBodySel, slotModBodySel);
+		}, speed);
 	}
 
 	/*---------------------------
@@ -920,6 +927,10 @@ var ProbabilityViz = function(width, height) {
 		
 		// Enable docked modules to be moved as a unit:
 		dispatchMoveChainGang.on("moved", moveDockedMods);
+		
+		// Allow action after spinning the slots:
+		dispatchSpinDone = d3.dispatch("spinDone");
+		dispatchSpinDone.on("spinDone", visualizeWinners);
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
