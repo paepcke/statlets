@@ -430,10 +430,17 @@ var ProbabilityViz = function(width, height) {
 		}
 		// Wait for the last spin to be done,
 		// then send the spinDone event to all
-		// interested parties:
-		d3.timeout(function() {
-			spinDoneDispatch.call("spinDone", slotModBodySel, slotModBodySel);
-		}, speed);
+		// interested parties. In the functions, 'this'
+		// will be bound to the d3 slot module body selection
+		// whose text changed:
+		dispatchSpinDone.on("oneSpinDone", function(nth) {
+			if ( nth >= numSpins-1 ) {
+				// Pass the slot body selection both, bound to 'this'
+				// and as a parameter for clarity at the destination
+				// function:
+				dispatchSpinDone.call("allSpinsDone", this, this);
+			}
+		});
 	}
 
 	/*---------------------------
@@ -929,8 +936,8 @@ var ProbabilityViz = function(width, height) {
 		dispatchMoveChainGang.on("moved", moveDockedMods);
 		
 		// Allow action after spinning the slots:
-		dispatchSpinDone = d3.dispatch("spinDone");
-		dispatchSpinDone.on("spinDone", visualizeWinners);
+		dispatchSpinDone = d3.dispatch("oneSpinDone", "allSpinsDone");
+		dispatchSpinDone.on("allSpinsDone", visualizeWinners);
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
@@ -1304,14 +1311,26 @@ var ProbabilityViz = function(width, height) {
 		if ( txtInfo.length > 1 ) {
 			doFade = false;
 		}
-		setSlotWindowTxtWorker(txtInfo, transitionSpeed, callback, slotTxtMan, doFade);
+		setSlotWindowTxtWorker(txtInfo, 
+							   transitionSpeed, 
+							   callback, 
+							   slotTxtMan, 
+							   doFade, 
+							   0,      // nth (recursive) call
+							   slotModBodySel);
 	}
 	
 	/*---------------------------
 	| 
 	-----------------*/
 	
-	var setSlotWindowTxtWorker = function (txtInfo, transitionSpeed, callback, slotTxtMan, doFade) {
+	var setSlotWindowTxtWorker = function (txtInfo, 
+										   transitionSpeed, 
+										   callback, 
+										   slotTxtMan, 
+										   doFade,
+										   nth,
+										   slotModBodySel) {
 		
 			let txt = txtInfo.pop();
 				
@@ -1348,6 +1367,11 @@ var ProbabilityViz = function(width, height) {
 							if ( typeof(callback) === 'function') {
 								callback();
 							}
+							// Signal one spin done, passing the
+							// index into the arr of texts to display
+							// one after another. The slotModBodySel will
+							// be bound to 'this' in listener functions:
+							dispatchSpinDone.call("oneSpinDone", slotModBodySel, nth);
 						});
 				slotTxtMan.makeNxtHot();
 			} else {
@@ -1355,10 +1379,20 @@ var ProbabilityViz = function(width, height) {
 				slotTxtMan.coldSel().style("opacity", 1);
 				slotTxtMan.makeNxtHot();
 				d3.timeout(function() {
-					// The callback for after each change of window text:
+					// The custom callback for after each change of window text:
 					callback();
+					// Routine event when a new text has appeared.
+					// The slotModBodySel be bound to 'this' in destination
+					// listeners:
+					dispatchSpinDone.call("oneSpinDone", slotModBodySel, nth);
 					// Recursive call:
-					setSlotWindowTxtWorker(txtInfo, transitionSpeed, callback, slotTxtMan);
+					setSlotWindowTxtWorker(txtInfo, 
+										   transitionSpeed, 
+										   callback, 
+										   slotTxtMan, 
+										   doFade, 
+										   nth+1,
+										   slotModBodySel);
 				}, transitionSpeed);
 			}
 		}
