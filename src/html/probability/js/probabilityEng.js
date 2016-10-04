@@ -373,20 +373,17 @@ var ProbabilityViz = function(width, height) {
 
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 1, SLOT_TXT_TRANSITION_SPEED_1, updateHistogram);
-			visualizeWinners(slotModBodySel);
 		});
 		
 		addButton(slotModSvgSel, "Go x10", function(evt) {
 			
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 10, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
-			//***** when spin done visualizeWinners called
 		});
 		
 		addButton(slotModSvgSel, "Go x100", function(evt) {
 			let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
 			spinSlot(slotModBodySel, 100, SLOT_TXT_TRANSITION_SPEED_10, updateHistogram);
-			visualizeWinners(slotModBodySel);
 		});
 		
 		// Add small death cause occurrences histogram
@@ -438,7 +435,7 @@ var ProbabilityViz = function(width, height) {
 				// Pass the slot body selection both, bound to 'this'
 				// and as a parameter for clarity at the destination
 				// function:
-				dispatchSpinDone.call("allSpinsDone", this, this);
+				dispatchSpinDone.call("allSpinsDoneOneModule", this, this);
 			}
 		});
 	}
@@ -649,7 +646,33 @@ var ProbabilityViz = function(width, height) {
 			undock(slotModBodySel);
 			selectorDomEl.selectedIndex = 0;
 		}
-	}	
+	}
+	
+	/*---------------------------
+	| getAndOrValue
+	-----------------*/
+	
+	var getAndOrValue = function(slotModBodySel) {
+		/*
+		 * Examines the selected module's right-side docking connector.
+		 * Returns "AND", "OR", or undefined. Note the upper case.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module whose
+		 * 		right-side docking connector is to be investigated.
+		 * :type slotModBodySel: d3-selection
+		 * :return undefined if nobody is docked to the given
+		 * 		module's right. Else return "AND" if the dock
+		 * 		connector is set to AND, or "OR" if not.  
+		 * :rtype { "AND" | "OR" | undefined }
+		 */
+
+		if ( ! isAndOrSelShowing(slotModBodySel) ) {
+			return undefined;
+		}
+		let andOrSelNode = slotModBodySel.select(".andOrSelector").node();
+		return andOrSelNode.value.toUpperCase();
+		
+	}
 	
 	/*---------------------------
 	| shovelZOrder 
@@ -937,7 +960,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Allow action after spinning the slots:
 		dispatchSpinDone = d3.dispatch("oneSpinDone", "allSpinsDone");
-		dispatchSpinDone.on("allSpinsDone", visualizeWinners);
+		dispatchSpinDone.on("allSpinsDoneOneModule", visualizeWinners);
 
 		// Generate bar chart for cause of death probabilities:
         updateDistribChart(DEATH_CAUSES, coordSysDistrib);
@@ -2229,58 +2252,15 @@ var ProbabilityViz = function(width, height) {
 	
 	/*---------------------------
 	| dock 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	-----------------*/
 	
 	var dock = function(leftModBodySel, rightModBodySel) {
 		/*
 		 * Given d3 selections of two slot modules, dock them.
 		 */
+		
+		
+		
 		
 		// Top and right edges of left module
 		// as strings: e.g. "88.654px":
@@ -2419,6 +2399,14 @@ var ProbabilityViz = function(width, height) {
 		if ( didWin(slotModBodySel) ) {
 			visualizeSuccess(slotModBodySel);
 		}
+		// Check whether it's an overall win, given
+		// the and/or connections in a chain. Start
+		// the checkOverallWin() method out with the
+		// left-mose member of the gang. The 'true' includes
+		// the given slot module:
+		if ( checkOverallWin(getChainGangMembers(slotModBodySel, true)[0]) ) {
+			visualizeOverallSuccess();
+		}
 	}
 	
 	/*---------------------------
@@ -2442,6 +2430,103 @@ var ProbabilityViz = function(width, height) {
 			slotModBodySel.style("background", slotModBodySel.attr("defaultBackgroundDeco")) 
 		}, SUCCESS_COLOR_DURATION);
 	}
+
+	/*---------------------------
+	| visualizeOverallSuccess 
+	-----------------*/
+	
+	var visualizeOverallSuccess = function() {
+		console.log("overall success");
+	}
+	
+	/*---------------------------
+	| checkOverallWin 
+	-----------------*/
+	
+	var checkOverallWin = function(slotModBodySel) {
+		
+		// Get all members of the chain gang, incl.
+		// the given module itself. All in the proper
+		// sequence as user sees the slots left to right.
+		let gang = getChainGangMembers(slotModBodySel, true);
+		
+		let rightPartner;
+		let thisWon;
+		let dockBool;
+		
+		while ( typeof(slotModBodySel) !== 'undefined' ) {
+			// Did this module win?
+			thisWon  = didWin(slotModBodySel);
+			// Is this module docked to the right 
+			// with and AND? Or with an OR? Note:
+			// if current module is this the last
+			// module in a chain (i.e. dockBool() returns
+			// undefined, we catch it in the 'didWin' IF
+			// below:
+			dockBool = getAndOrValue(slotModBodySel);
+			
+			if ( thisWon && (dockBool === "OR") ) {
+				// The last in an AND-sequence won.
+				// Everything to the right is immaterial.
+				// Overall win:
+				return true;
+			}
+
+			if ( thisWon ) {
+				// Curr slot is in an AND sequence, and it won.
+				// Check whether the next module also won:
+				slotModBodySel = dockedWith(slotModBodySel, "right");
+				if ( typeof(rightPartner) === 'undefined' ) {
+					return true; // checked all gang members.
+				}
+			} else {
+				// Abandon all AND-connected modules on the 
+				// right. Continue with the first OR-connected module:
+				slotModBodySel = skipToOr(slotModBodySel);
+			}
+		}
+		return false;
+	}
+	
+	/*---------------------------
+	| skipToOr 
+	-----------------*/
+	
+	var skipToOr = function(slotModBodySel) {
+		/*
+		 * Assumes given slot module is part of a
+		 * chain gang. Moves along that chain left to
+		 * right, starting with the given module.
+		 * Proceeds until a module is right-connected
+		 * via an OR (rather than an AND). Returns the
+		 * d3 selection of the right-side module. I.e.
+		 * the module that is the first in an OR sequence.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module
+		 * 		whose right-side chain members are to be examined
+		 * 		till an OR-dock is found.
+		 * :type slotModBodySel: d3-selection
+		 * :return first slot module to the right of an OR. Undefined
+		 * 		if none is found.
+		 * :rtype: { d3-sel | undefined }
+		 * :
+		 */
+		
+		let rightPartnerSel = undefined;
+
+		// Get module docked to the right:
+		while ( typeof((rightPartnerSel = dockedWith(slotModBodySel))) !== 'undefined' ) {
+
+			// Is the module docked via an OR?
+			if ( getAndOrValue(slotModBodySel).toUpperCase() === "OR" ) {
+				return rightPartnerSel;  // Found it
+			}
+			// Continue from the right-side-docked module:
+			slotModBodySel = rightPartnerSel;
+		}
+		return undefined;
+	}
+	
 	
 	/*---------------------------
 	| partial 
