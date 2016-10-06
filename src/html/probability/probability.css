@@ -6,6 +6,16 @@ rgb(153, 204, 255)   light blue
 rgb(255, 255, 0)     bright yellow
 */
 
+
+/* LED font face */
+@font-face {
+	font-family: LEDFont14Modern;
+	src: url(../fonts/DSEG_v030/DSEG14/Modern/DSEG14Modern-Regular.ttf)
+		format("truetype"),
+		url(../fonts/DSEG_v030/DSEG14/Modern/DSEG14Modern-Regular.woff)
+		format("woff");
+}
+
 html, body{
 	height : 100%;
 	width  : 100%;
@@ -271,14 +281,25 @@ div.tooltip.state.visible    {
     }
 .button.newSlotModule:focus { outline : 0 !important; }    
     
+.scoreSvg {
+	position : relative;
+	top        : 3px;
+	left       : 80%;
+	width      : 70px;
+	height     : 50px;	
+	background : DarkGray;
+}    
 .scoreFrame {
-	width  : 4em;
-	height : 1.5em;
+	width  : 66px;
+	height : 46px;
 	stroke-width : 2px;
 	fill : white;
 	stroke : DarkGray;
 }
 
-.scoreText {
-	font-size : 12pt;
+.scoreTxt {
+	font-family: LEDFont14Modern;
+	font-size: 21pt;
+	fill: green;
 }
+	

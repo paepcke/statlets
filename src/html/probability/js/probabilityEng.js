@@ -570,8 +570,8 @@ var ProbabilityViz = function(width, height) {
 		let slotModBodDimRect = slotModBodySel.node().getBoundingClientRect();
 		let topSelEdge        = goTxtDimRect.top - slotModBodDimRect.top - goTxtDimRect.height/2;
 		
-		andOrSel.style("left", slotModBodDimRect.width); // right edge of slot mod body		
-		andOrSel.style("top", topSelEdge);
+		andOrSel.style("left", `${slotModBodDimRect.width}px`); // right edge of slot mod body		
+		andOrSel.style("top", `${topSelEdge}px`);
 		
 		// Let the slot module and the selector
 		// know about each other:
@@ -1561,6 +1561,7 @@ var ProbabilityViz = function(width, height) {
 			Object.assign(DEATH_CAUSES, savedDeathCauses);
 			normalizeDeathCauses();
 			updateDistribChart(DEATH_CAUSES, coordSysDistrib);
+			setScore(0);
 			// Set all slot module's histograms to empty:
 			d3.selectAll(".machinesBody")
 				.each(function() {
@@ -1662,28 +1663,53 @@ var ProbabilityViz = function(width, height) {
 	
 	var createScoreBoard = function() {
 
-		let scoreBoardSel = d3.select("#machinesDiv")
+		let machinesDivSel     = d3.select("#machinesDiv");
+		let machinesDivDimRect = machinesDivSel.node().getBoundingClientRect(); 
+		
+		let scoreBoardSel = machinesDivSel 
 			.append("svg")
+				.attr("class", "scoreSvg")
 				.attr("id", "scoreBoardSvg")
-				.attr("width", 70)
-				.attr("height", 50);
-
+				
 		scoreBoardSel
 			.append("rect")
 				.attr("class", "scoreFrame")
 				.attr("id", "scoreRect")
-				.attr("x", "0px")
-				.attr("y", "0px");
+				.attr("x", "2px")
+				.attr("y", "2px")
 
 		scoreBoardSel
 			.append("text")
 				.attr("class", "scoreTxt")
 				.attr("id", "scoreTxt")
-				.attr("x", "2em")
-				.attr("y", "1.2em")
-				.text("100");
+				.attr("text-anchor", "middle")
+				.attr("x", "1em")
+				.attr("y", "1.4em")
+				.text("");
+
+		setScore(0);
+	}
+	
+	/*---------------------------
+	| setScore 
+	-----------------*/
+	
+	var setScore = function(num) {
 		
-		scoreBoardSel.attr("transform", "translate(80,100)");
+		let txtSel = d3.select("#scoreTxt");
+		let svgSel = d3.select("#scoreBoardSvg");
+		let svgDimRect = svgSel.node().getBoundingClientRect();
+		txtSel.text(num);
+		let scoreTxtDimRect      = txtSel.node().getBoundingClientRect();
+		txtSel.attr("x", svgDimRect.width / 2.);
+	}
+	
+	/*---------------------------
+	| getScore 
+	-----------------*/
+	
+	var getScore = function() {
+		return parseInt(d3.select("#scoreTxt").text());
 	}
 
 	/*---------------------------
@@ -2467,7 +2493,7 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var visualizeOverallSuccess = function() {
-		console.log("overall success");
+		setScore(getScore() + 1);
 	}
 	
 	/*---------------------------

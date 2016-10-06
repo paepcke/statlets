@@ -78,10 +78,32 @@ case "${babelEnv}" in
         cp src/html/probability/*.html lib/html/probability
         cp src/html/utils/*.css src/html/utils/*.html lib/html/utils
         cp src/html/utils/js/*.min.* lib/html/utils/js
-        
+
+        echo "Copying fonts..."
+        mkdir -p lib/html/fonts/DSEG_v030/DSEG7
+        cp -r src/html/fonts/DSEG_v030/DSEG14 lib/html/fonts/DSEG_v030/
+
         echo "Running Browserify to make package..."
         node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
                                      -o lib/html/probability/js/probability.js
+        ;;
+
+    scratch)
+
+        #echo "Babelizing statlet ${babelEnv}..."
+        #node_modules/babel-cli/bin/babel.js src/html/ -d lib/html/
+
+        echo "Copying HTML..."
+        cp src/html/scratch.html lib/html/
+        
+        echo "Copying fonts..."
+        mkdir -p lib/html/fonts/DSEG_v030
+        cp -r src/html/fonts/DSEG_v030/DSEG7 lib/html/fonts/DSEG_v030/
+        cp -r src/html/fonts/DSEG_v030/DSEG14 lib/html/fonts/DSEG_v030/
+
+        mkdir -p lib/html/fonts/SVG/LED/LEDFontSVG
+        cp src/html/fonts/SVG/LED/LEDFontSVG/* lib/html/fonts/SVG/LEDFontSVG
+
         ;;
 
     scratch1)
