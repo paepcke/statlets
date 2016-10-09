@@ -75,6 +75,17 @@ var ProbabilityViz = function(width, height) {
 	var selectedSlotModules = [];
 	var slotModPeripherals  = {};
 	
+	// Dict with keys being chain gang leaders
+	// (i.e. left-most slot module in a gang).
+	// Values are arrays of win/lose records. 
+	// A win/lose record is an n-tuple where n
+	// is the number of gang members. When a
+	// gang is spun multiple times, one n-tuple
+	// is created for each spin. Used to record
+	// the results of the asynchronously spinning
+	// slot modules in a gang:
+	var chainGangWinnings   = {};
+	
 	var fadeInTrans  	 = d3.transition("fadeIn");
 	var fadeOutTrans 	 = d3.transition("fadeOut");
 	
@@ -404,15 +415,49 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var spinSlot = function(slotModBodySel, numSpins, speed, callback) {
+		/*
+		 * Finds the chain gang members of which the given slot module
+		 * is a part. Spins each of the member numSpins time at the
+		 * given speed. The spins occur asynchronously. But there are
+		 * numSpins win/lose n-tuples, where n is the number of gang
+		 * members. The method uses the chainGangWinnings dict to record
+		 * for each spin which member lost or won. Assuming n==4, and
+		 * numSpins==2, the resulting data structure might be:
+		 * 
+		 * 		{gangLeader:  [[1,1,0,0],
+		 * 					   [1,1,0,0]
+		 *                    ]
+		 * where gangLeader is the d3 selection of the left-most gang member.
+		 * The structure will be used in after all spins are done to 
+		 * increase the overall win tally on the score board. Note that
+		 * the rows are constructed asynchrously as individual spins
+		 * finish.
+		 * 
+		 * The callback is called whenever any of the slot modules changes
+		 * text. Additionally: two dispatch events are triggered. In 
+		 * each function registered with these events, 'this' will be bound
+		 * to the d3 select of the respective slot module:
+		 *  
+		 *    - allSpinsDoneOneModule         ;; All spins of one module are done.
+		 *    - allSpinsDoneAllModules        ;; All modules are done spinning.
+		 * 
+		 */
 
-		// Pick numSpins random death causes:
 
 		let txtInfo   = [];
 		// Get the members of the given module's gang, incl.
 		// the module itself (the 'true'):
-		let chainGang = getChainGangMembers(slotModBodySel, true);
-		let gangSize  = chainGang.length; 
+		let chainGang  = getChainGangMembers(slotModBodySel, true);
+		let gangSize   = chainGang.length;
+		let gangLeader = chainGang[0];
+		// Initialize the chainGangWinnings structure:
+		let winRecords = []
+		for ( let i=0; i<numSpins; i++ ) {
+			// Provide a gang-wide array of zero (numbers, not strings):
+			winRecords.push(new Array(gangSize+1).join('0').split('').map(parseFloat));
+		}
 
+		// Pick numSpins random death causes:
 		for ( let thisSlotModBodySel of chainGang ) {
 			for ( let i=0; i<numSpins; i++ ) {
 				let deathCause = eventGenerator.next();
@@ -435,6 +480,10 @@ var ProbabilityViz = function(width, height) {
 		dispatchSpinDone.on("oneSpinDone", function(nth) {
 			if ( nth >= numSpins-1 ) {
 				// One slot module is done spinning.
+				// Register its win/lose condition:
+				let gangPos = getChainGangPosition(this, chainGang);
+				chainGangWinnings[gangLeader][gangPos] = didWin(this);
+				
 				// Pass the slot body selection both, bound to 'this'
 				// and as a parameter for clarity at the destination
 				// function:
@@ -679,6 +728,31 @@ var ProbabilityViz = function(width, height) {
 		let andOrSelNode = slotModBodySel.select(".andOrSelector").node();
 		return andOrSelNode.value.toUpperCase();
 		
+	}
+	
+	/*---------------------------
+	| getChainAndOrValues
+	-----------------*/
+	
+	var getChainAndOrValues = function(slotModBodySel) {
+		/*
+		 * 
+		 * Returns an array of "and" and "or" values that
+		 * reflect the current settings of the and/or docks
+		 * between the chain gang of which the given slot module
+		 * is a part. Example: ["and", "or", "or", "and"]
+		 */
+		
+		let operators = [];
+		// Go through each chain gang member, incl.
+		// the given member (the 'true' in the following call):
+		for ( let member of getChainGangMembers(slotModBodySel, true)) {
+			let op = getAndOrValue(member);
+			if ( typeof(op) !== 'undefined' ) {
+				operators.push(op.toLowerCase());
+			}
+		}
+		return operators;
 	}
 	
 	/*---------------------------
@@ -1705,6 +1779,18 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| bumpScore 
+	-----------------*/
+	
+	var bumpScore = function() {
+		/*
+		 * Convenience: increment win-counter by 1:
+		 */
+		
+		setScore(getScore() + 1);
+	}
+	
+	/*---------------------------
 	| getScore 
 	-----------------*/
 	
@@ -2327,6 +2413,41 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| getChainGangPosition 
+	-----------------*/
+	
+	var getChainGangPosition = function(slotModBodySel, chainGang) {
+		/*
+		 * Given the d3 selection of a slot module, return
+		 * the 0-origin position within its chain gang.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module whose
+		 * 		position is to be found.
+		 * :type slotModBodySel: d3-sel
+		 * :param chainGang: optional array of chain gang members.
+		 * 		If omitted, this method will construct the gang.
+		 * 		NOTE: make sure that the given chain gang includes
+		 * 			  the given module. I.e. pass 'true' to 
+		 * 			  getChainGangMembers() when finding chainGang.
+		 * :returns the integer position of the module, or undefined
+		 * 		if chainGang is given, but the given slot module
+		 * 		is not in the gang.
+		 * :rtype: { int | undefined }
+		 */
+		
+		if ( typeof(chainGang) === 'undefined' ) {
+			// Find the gang, including the give module itself:
+			chainGang = getChainGangMembers(slotModBodySel, true);
+		}
+		for ( let i=0; i<chainGang.length; i++ ) {
+			if ( chainGang[i] === slotModBodySel ) {
+				return i;
+			}
+		}
+		return undefined;
+	}
+	
+	/*---------------------------
 	| dock 
 	-----------------*/
 	
@@ -2493,7 +2614,7 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var visualizeOverallSuccess = function() {
-		setScore(getScore() + 1);
+		bumpScore();
 	}
 	
 	/*---------------------------
@@ -2501,8 +2622,15 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var checkOverallWin = function(slotModBodySel) {
+		/*
+		 * Given a d3 slot module selection, determine
+		 * the chain gang of which the module is a part.
+		 * Examine the "and"/"or" values of the gang
+		 * connectors. Return true if the gang as a whole
+		 * is in a winning state. 
+		 */
 		
-		// Get all members of the chain gang, incl.
+		// Get all members of a chain gang, incl.
 		// the given module itself. All in the proper
 		// sequence as user sees the slots left to right.
 		let gang = getChainGangMembers(slotModBodySel, true);
@@ -2515,9 +2643,9 @@ var ProbabilityViz = function(width, height) {
 			thisWon  = didWin(slotModBodySel);
 			// Is this module docked to the right 
 			// with and AND? Or with an OR? Note:
-			// if current module is this the last
+			// if current module is the last
 			// module in a chain (i.e. dockBool() returns
-			// undefined, we catch it in the 'didWin' IF
+			// undefined, we catch it in the 'thisWon' IF
 			// below:
 			dockBool = getAndOrValue(slotModBodySel);
 			
@@ -2583,6 +2711,127 @@ var ProbabilityViz = function(width, height) {
 		return undefined;
 	}
 	
+	
+	/*---------------------------
+	| winSequenceAnalyzer 
+	-----------------*/
+	
+	function* winSequenceAnalyzer(theOperatorArr, theWinSequences) {
+		/*
+		 * Generator that takes a sequence of "and" and "or" operators, and
+		 * a sequence of win/lose arrays coded as 1/0. Combines
+		 * the sequence using the operators.
+		 *   let theOperatorArr  = ["and", "and", "or", "and"];
+		 * will return 0,1,1,0 on successive calls to next()
+		 * if given the following sequences of win/lose: 
+		 * 
+		 *	 let theWinSequences = [ 
+		 *          [1,0,0,1,0],
+		 *	        [1,1,0,1,1],
+		 *			[1,1,1,0,0],
+		 *			[0,1,1,0,0]
+		 *			]
+		 *
+		 * The process for the first sequence would be:
+		 *    1 AND 0 AND 0 OR 1 AND 0 
+		 *
+		 * Given instead the operator sequence: ["and", "and", "or", "and"]
+		 * the results will be 1,1,1,1
+		 * 
+		 * Usage example:
+		 * 	  let theOperatorArr  = ["and", "and", "or", "and"]; // -> 0,1,1,0
+		 *	  let theWinSequences = [ 
+		 *	                          [1,0,0,1,0],
+		 *	  	                    [1,1,0,1,1],
+		 *	  						[1,1,1,0,0],
+		 *	  						[0,1,1,0,0]
+		 *	  						]
+		 *	  let it = null;
+		 *	  
+		 *	  it = winSequenceAnalyzer(theOperatorArr, theWinSequences);
+		 *	  while ( true ) {
+		 *	  	let win = it.next();
+		 *	  	if (win.done) {
+		 *	  		break;
+		 *	  	}
+		 *	  	console.log(win.value);
+		 *	  }
+		 *	  
+		 * 
+		 * :param theOperatorArr: array of operators to put between
+		 * 		the successive win/lose pairs.
+		 * :type theOperatorArr: [string]
+		 * :param theWinSequences: sequence of win/lose streaks coded as
+		 * 		1===win, 0===lose
+		 * 
+		 * :returns on each call to next(), returns an object with two
+		 * 		properties: 'value', which will be 1 or 0, representing
+		 * 					    the overall win or lose of one sequence.
+		 * 					'done', which will be true or false, depending
+		 * 					on whether more sequences are left to process.
+		 * :rtype: {'done' : bool,
+		 * 			'value': integer}
+		 */
+
+
+		// Copy the value sequences to not modify them
+		// on the caller:
+		let winSequences = [];
+		for ( let seq of theWinSequences ) {
+			winSequences.push(seq.slice());
+		}
+
+		for ( let winSequence of winSequences ) {
+			// Copy of operator array:
+			let operatorArray    = theOperatorArr.slice();
+			let prevCompositeRes = winSequence.shift();
+
+			while ( operatorArray.length > 0 ) {
+				let operator = operatorArray.shift();		  
+				if ( operator === "or" && prevCompositeRes ) {
+					// End of an AND sequence that's true,
+					// followed by an OR; rest immaterial:
+					operatorArray = [];
+					continue; // gets out of loop
+				};
+
+				if ( operator === "and" ) {
+					prevCompositeRes = prevCompositeRes && winSequence.shift();
+				} else {
+					prevCompositeRes = prevCompositeRes || winSequence.shift();
+					if ( ! prevCompositeRes ) {
+						// Had an OR and failed: move past the OR,
+						// and keep trying:
+						prevCompositeRes = winSequence.shift();
+						continue;
+					}
+				}
+
+				if ( ! prevCompositeRes ) {
+					// AND series failed. Find next OR:
+					while ( operatorArray.length > 0 ) {
+						operator = operatorArray.shift();
+						if ( operator === 'or' ) {
+							break;
+						}
+						winSequence.shift();
+					};
+					// Found an OR, or ran out of operators:
+					if ( operatorArray.length === 0 ) {
+						// Game over:
+						break; // next window sequence.
+					}
+					prevCompositeRes = winSequence.shift();
+					continue;
+				} else {
+					// In an AND series, and still true
+					continue; // while ( operatorArray.length > 0 )
+				}
+			};
+			// Finished applying all operators:
+			yield prevCompositeRes;
+		} // end outer for.
+	}
 	
 	/*---------------------------
 	| partial 

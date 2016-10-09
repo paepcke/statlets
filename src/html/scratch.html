@@ -3,95 +3,57 @@
 <head>
 <title>Scratch</title>
 <!--    <script type="text/javascript" src="./utils/js/d3.min"></script>  -->
-<style>
-@font-face {
-	font-family: LEDFont7Modern;
-	src: url(fonts/DSEG_v030/DSEG7/Modern/DSEG7Modern-Regular.ttf)
-		format("truetype"),
-		url(fonts/DSEG_v030/DSEG7/Modern/DSEG7Modern-Regular.woff)
-		format("woff");
-}
-
-@font-face {
-	font-family: LEDFont14Modern;
-	src: url(fonts/DSEG_v030/DSEG14/Modern/DSEG14Modern-Regular.ttf)
-		format("truetype"),
-		url(fonts/DSEG_v030/DSEG14/Modern/DSEG14Modern-Regular.woff)
-		format("woff");
-}
-
-@font-face {
-	font-family: LEDFont7Classic;
-	src: url(fonts/DSEG_v030/DSEG7/Classic/DSEG7Classic-Regular.ttf)
-		format("truetype"),
-		url(fonts/DSEG_v030/DSEG7/Classic/DSEG7Classic-Regular.woff)
-		format("woff");
-}
-
-@font-face {
-	font-family: LEDFont14Classic;
-	src: url(fonts/DSEG_v030/DSEG14/Classic/DSEG14Classic-Regular.ttf)
-		format("truetype"),
-		url(fonts/DSEG_v030/DSEG14/Classic/DSEG14Classic-Regular.woff)
-		format("woff");
-}
-
-@font-face {
-	font-family: LEDFontSVG;
-	src: url(fonts/SVG/LED/LEDFontSVG/ledfont_new.svg) format("svg");
-}
-
-h1.sevenModern {
-	font-family: "LEDFont7Modern", modern;
-}
-
-h1.fourteenModern {
-	font-family: "LEDFont14Modern", modern;
-	color: green;
-}
-
-h1.sevenClassic {
-	font-family: "LEDFont7Classic", modern;
-}
-
-h1.fourteenClassic {
-	font-family: "LEDFont14Classic", modern;
-}
-
-
-.fourteenModern {
-	font-family: "LEDFont14Modern", modern;
-	fill: green;
-	font-size: 21pt;
-}
-
-
-.ledSvg {
-	font-family: "LEDFontSVG";
-	color: red;
-}
-
-.testSvg {
-	background: white;
-}
-
-</style>
 
 </head>
 <body>
-<h1 class="sevenModern">This is a test</h1>
-<h1 class="fourteenModern">This is a test</h1>
-<h1 class="sevenClasic">This is a test</h1>
-<h1 class="fourteenClassic">This is a test</h1>
 
-<h1 class="fourteenModern">1234567890</h1>
+<script>
 
-<svg class="testSvg">
-	<text class="fourteenModern" x="20" y="30" >1234567890</text>
-	
-</svg>
+function* winSequenceAnalyzer(theOperatorArr, theWinSequences) {
+	/*
+	 *    theOperatorArr :   ["and", "and", "or", "and"]
+	 *    theWinSequences:  [ [1,0,0,1,0],
+	 *                        [1,1,0,1,0],
+	 *                        [...],
+	 *                      ]
+	 *
+	 */
 
 
+  let winSequences = theWinSequences;
+  
+  for ( let winSequence of winSequences ) {
+	  // Copy of operator array:
+  	  let operatorArray    = theOperatorArr.slice();
+	  let prevCompositeRes = winSequence[0].shift();
+	  
+	  while ( operatorArray.length > 0 ) {
+		  let operator = operatorArray.shift();		  
+		  if ( operator === "or" ) {
+			  // End of an AND sequence that's true,
+			  // followed by an OR; rest immaterial:
+			  yield prevCompositeRes;
+		  };
+		  // Next operator is an AND:
+		  prevCompositeRes = prevCompositeRes && winSequence.shift();
+		  if ( ! prevCompositeRes ) {
+			  // AND series failed. Find next OR:
+			  while ( operatorArray.length > 0 ) {
+				  operator = operatorArray.shift();
+				  if ( operator === 'or' ) {
+					  break;
+				  }
+			  };
+		  } else {
+			  // In an AND series, and still true
+			  continue; // while ( operatorArray.length > 0 )
+		  }
+	  };
+	  // Finished applying all operators:
+	  yield prevCompositeRes;
+  } // end outer for.
+}
+</script>
 
 </body>
 </html>
