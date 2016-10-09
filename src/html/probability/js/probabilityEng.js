@@ -25,6 +25,10 @@ var ProbabilityViz = function(width, height) {
 
 	// Instance variables:
 
+	// Simple scenario: only two causes of
+	// death. "complex" scenario: 20 causes:
+	var scenario         = 'simple';
+	
 	var width   	     = width;
 	var height  	     = height;
 	var slotWinWidth  	 = null;
@@ -186,6 +190,16 @@ var ProbabilityViz = function(width, height) {
 	// to use for resetting to initial state:
 	let savedDeathCauses = Object.assign({}, DEATH_CAUSES);
 	
+	// Simplified table for early steps:
+	let DEATH_CAUSES_SIMPLE = {
+			"Heart attack" : 0.0778452,
+			"Stroke" : 0.0778452,       // Pretend equal probabilities
+	};
+	
+	// Keep a copy of the original, i.e. true probabilities
+	// to use for resetting to initial state:
+	let savedDeathCausesSimple = Object.assign({}, DEATH_CAUSES_SIMPLE);
+	
 	
 	/*---------------------------
 	| constructor 
@@ -228,8 +242,6 @@ var ProbabilityViz = function(width, height) {
 		}
 		browserType = logger.browserType();
 		
-		
-		normalizeDeathCauses();
 		let machinesDiv = document.getElementById('machinesDiv');
 			
 		distribSvg = d3.select("#distribDiv").append("svg")
@@ -238,16 +250,34 @@ var ProbabilityViz = function(width, height) {
 		   .attr("id", "distribSvg")
 		   .attr("class", "distribSvg")
 
-		eventGenerator = EventGenerator(DEATH_CAUSES);
+		switchScenarios('simple');
 
 		addControlButtons();
 
 		let urSlotSel = createSlotModuleWell('urSlotModule');
-		createCauseDistrib();
 		createTooltip();
 		createScoreBoard();
 		
 		return {}
+	}
+	
+	/*---------------------------
+	| switchScenarios
+	-----------------*/
+	
+	var switchScenarios = function(newScenario) {
+	
+		scenario = newScenario
+		Object.assign(DEATH_CAUSES, savedDeathCauses);		
+		Object.assign(DEATH_CAUSES_SIMPLE, savedDeathCausesSimple);		
+		
+		if ( newScenario === 'simple' ) {
+			eventGenerator = EventGenerator(DEATH_CAUSES_SIMPLE);
+		} else {
+			eventGenerator = EventGenerator(DEATH_CAUSES);
+		}
+		normalizeDeathCauses();
+		createCauseDistrib("simple");
 	}
 	
 	/*---------------------------
@@ -286,6 +316,14 @@ var ProbabilityViz = function(width, height) {
 		// Get dimensions of the div that holds all slot modules:
 		let machinesDivSel = d3.select("#machinesDiv");
 		let machinesDivDimRect = machinesDivSel.node().getBoundingClientRect();
+
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
 		
 		let slotModBodySel = machinesDivSel
 			.append("rect")
@@ -372,7 +410,7 @@ var ProbabilityViz = function(width, height) {
 		slotBodies[slotModBodySel.attr("id")].deathCauseCounts = {};
 		let deathCauseCounts = slotBodies[slotModBodySel.attr("id")].deathCauseCounts;
 		
-		for ( let cause of Object.keys(DEATH_CAUSES) ) {
+		for ( let cause of Object.keys(deathDistribTbl) ) {
 			deathCauseCounts[cause] = 0;
 		}
 		
@@ -516,7 +554,15 @@ var ProbabilityViz = function(width, height) {
 	
 	var addSlotModFrequencyChart = function(slotModSvgSel) {
 		
-		let histXDomain = Object.keys(DEATH_CAUSES);
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
+		
+		let histXDomain = Object.keys(deathDistribTbl);
 		let histYDomain = [0, 50];
 		
 		let X_AXIS_RIGHT      = X_AXIS_RIGHT_PADDING_HIST;
@@ -552,6 +598,14 @@ var ProbabilityViz = function(width, height) {
             			   },
             			   height        : bodyHeight - 2*INTER_BUTTON_PADDING
         };
+        
+        // For the simple scenario there are only two 
+        // causes. Make the frequency count bars a bit
+        // thinner so they don't run into each other:
+//        if ( scenario === 'simple' ) {
+//        	coordInfo.width = slotModSvgSel.node().parentElement.clientWidth - 10;
+//        }
+        
         // Get selection of slot body chassis:
         let slotModBodySel = d3.select(slotModSvgSel.node().parentNode);
         // And save this slot module's coordinate system there:
@@ -567,11 +621,19 @@ var ProbabilityViz = function(width, height) {
 		 * Add betting selection box at bottom of slot module:
 		 */
 		
+		let deathCauseTbl = null
+		
+		if ( scenario === 'simple' ) {
+			deathCauseTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathCauseTbl = DEATH_CAUSES;
+		}
+		
 		let bettingSel = slotModBodySel
 			.append("select")
 			.attr("class", "bettingSelector")
 			.on("focus", function() {
-				setBettingEntries(d3.select(this), Object.keys(DEATH_CAUSES));
+				setBettingEntries(d3.select(this), Object.keys(deathCauseTbl));
 				let savedIndx = d3.select(this).attr("savedIndx"); 
 				if ( typeof(savedIndx) !== 'undefined') {
 					this.selectedIndex = savedIndx;
@@ -994,8 +1056,22 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var createCauseDistrib = function() {
+		/*
+		 * Create the right-side bar chart containing the 
+		 * death cause distributions.
+		 */
+
+		let deathDistribTbl = null;
 		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
 		let distribDiv = document.getElementById('distribDiv');
+		
+		// Clear out whatever is in the div's SVG:
+		distribSvg.selectAll("*").remove();
 			
 		width  = distribDiv.clientWidth;
 		height = distribDiv.clientHeight;
@@ -1014,8 +1090,12 @@ var ProbabilityViz = function(width, height) {
 					
 		dragClickHandler = StatsBarchartResizeHandler(distribSvg);
 		
-        yDomain      = [0, Math.max.apply(null, Object.values(DEATH_CAUSES))];
-        xDomain      = Object.keys(DEATH_CAUSES);
+		if ( scenario === 'simple' ) {
+			yDomain      = [0, 1];
+		} else {
+			yDomain      = [0, Math.max.apply(null, Object.values(deathDistribTbl))];
+        }
+        xDomain      = Object.keys(deathDistribTbl);
         
         // Remember original samples for resetting (via reset button):
         xDomainSaved = xDomain.map(function(el) { return el });
@@ -1089,10 +1169,6 @@ var ProbabilityViz = function(width, height) {
 			let winAnalyzer = winSequenceAnalyzer(theOperatorArr, theWinSequences);
 			let won = null;
 			while (! (won = winAnalyzer.next()).done ) {
-				//**********
-				console.log(won.value);
-				//**********
-
 				if ( won.value  ) {
 					// Overall win:
 					bumpScore();
@@ -1101,7 +1177,7 @@ var ProbabilityViz = function(width, height) {
 		});
 
 		// Generate bar chart for cause of death probabilities:
-        updateDistribChart(DEATH_CAUSES, coordSysDistrib);
+        updateDistribChart(coordSysDistrib);
         attachBarBehaviors();
 	}
 	
@@ -1109,24 +1185,31 @@ var ProbabilityViz = function(width, height) {
 	| updateDistribChart
 	-----------------*/
 	
-	var updateDistribChart = function(deathCauseObj, coordSysDistrib) {
+	var updateDistribChart = function(coordSysDistrib) {
 		
 		let xScale = coordSysDistrib.xScale;
 		let yScale = coordSysDistrib.yScale;
 		let causesToInclude = coordSysDistrib.xDomain;
 		
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
 				
 		let barsSel = d3.select('#distribSvg').selectAll('.deathCauseBar')
 			// Data are the causes of death:
    		  .data(causesToInclude)
 	      		.attr('y1', function(deathCause) {
-	      			return prob2Px(deathCauseObj[deathCause]);
+	      			return prob2Px(deathDistribTbl[deathCause]);
 	      		})
 	      		.attr("class", "deathCauseBar")
 	      		.style("stroke-linecap", function(deathCause) {
 	      			// Bars long enough to grab with mouse get straight edge top,
 	      			// others get round head:
-	      			if ( deathCauseObj[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
+	      			if ( deathDistribTbl[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
 	      				return "butt";
 	      			} else {
 	      				return "round";
@@ -1138,7 +1221,7 @@ var ProbabilityViz = function(width, height) {
 	      		.style("stroke-linecap", function( deathCause ) {
 	      			// Bars long enough to grab with mouse get straight edge top,
 	      			// others get round head:
-	      			if ( deathCauseObj[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
+	      			if ( deathDistribTbl[deathCause] > ADD_DISTRIB_BAR_HANDLE_THRESHOLED ) {
 	      				return "butt";
 	      			} else {
 	      				return "round";
@@ -1148,7 +1231,7 @@ var ProbabilityViz = function(width, height) {
 	      			return 'distribBar' + deathCause.replace(/ /g, '_').replace(/'/, '');
 	      		})
 	      		.attr("deathCause", function(deathCause) { return deathCause })
-	      		.attr("deathProb", function(deathCause)  { return DEATH_CAUSES[deathCause] })
+	      		.attr("deathProb", function(deathCause)  { return deathDistribTbl[deathCause] })
 	      		.attr("x1", function(deathCause) { 
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
@@ -1156,7 +1239,7 @@ var ProbabilityViz = function(width, height) {
 	      			return xScale(deathCause) + xScale.bandwidth()/2;
 	      		})
 	      		.attr("y1", function(deathCause) { 
-	      			return prob2Px(deathCauseObj[deathCause]);
+	      			return prob2Px(deathDistribTbl[deathCause]);
 
 	      		})
 	      		.attr("y2", function(deathCause) { 
@@ -1302,13 +1385,21 @@ var ProbabilityViz = function(width, height) {
 		 * tooltip-showing on mouseover, and dragging behavior.
 		 */
 		
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
+		
 		d3.selectAll(".deathCauseBar")
 		
 	      	.on("mouseover", function() {
 	      		let evt         = d3.event;
 	      		let deathCause	= d3.select(this).attr("deathCause");
 
-	      		tooltipTxtSel.html(deathCause + ': ' + DEATH_CAUSES[deathCause].toPrecision(3) + 
+	      		tooltipTxtSel.html(deathCause + ': ' + deathDistribTbl[deathCause].toPrecision(3) + 
 	      						   '<p><i>Drag me up or down</i>'
 	      						   
 	      		);
@@ -1409,11 +1500,11 @@ var ProbabilityViz = function(width, height) {
 					// amount it moved (change to "y" for rects):
 					let barSel = d3.select(this);
 					let deathCause = barSel.attr("deathCause");
-					DEATH_CAUSES[deathCause] = px2Prob(d3.event.y);
+					deathDistribTbl[deathCause] = px2Prob(d3.event.y);
 					// If bar was dragged down, y increased. So the
 					// following will be positive:
 					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
-					updateDistribChart(DEATH_CAUSES, coordSysDistrib);
+					updateDistribChart(coordSysDistrib);
 					d3.drag.currBar = undefined;
 					upLog(`drag_${deathCause.replace(' ', '_')}`);
 				})
@@ -1666,19 +1757,18 @@ var ProbabilityViz = function(width, height) {
 			d3.select(".button.newSlotModule")
 				.classed("visible", true);
 			break;
-//		case "step2":
-//			d3.select('#machinesDiv')
-//			colBtnsVisible(true);
-//			break;
+		case "step2":
+			d3.select(".button.newSlotModule")
+				.classed("visible", true);
+			switchScenarios("complex");
+			break;
 //		case "step3":
 //			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
 //			break;
 		case "reset":
 			// Restore true cause-of-death probabilities:
-			Object.assign(DEATH_CAUSES, savedDeathCauses);
-			normalizeDeathCauses();
-			updateDistribChart(DEATH_CAUSES, coordSysDistrib);
+			switchScenarios("simple");
 			setScore(0);
 			// Set all slot module's histograms to empty:
 			d3.selectAll(".machinesBody")
@@ -1737,35 +1827,44 @@ var ProbabilityViz = function(width, height) {
 		 * :type pixelDelta: { undefined | float }
 		 * 
 		 */
+	
+		// Table with counts (or probabilities) of death causes:
+		let deathDistribTbl = null;
+		
+		if ( scenario === 'simple' ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
 		
 		if ( typeof(barSel) === 'undefined') {
 			// Turn death cause percentages to probabilities:
-			let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
-			let causes = Object.keys(DEATH_CAUSES);
+			let normalizedProbs = normalizeProbs(Object.values(deathDistribTbl));
+			let causes = Object.keys(deathDistribTbl);
 			for ( let i=0; i<normalizedProbs.length; i++ ) {
-				DEATH_CAUSES[causes[i]] = normalizedProbs[i];
+				deathDistribTbl[causes[i]] = normalizedProbs[i];
 			}
 		} else {
 			
 			// Update the just-dragged bar with its new probability:
 			let thisBarCause 		   = barSel.attr("deathCause");
-			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
-			let newProb                = DEATH_CAUSES[thisBarCause];
+			deathDistribTbl[thisBarCause] = px2Prob(barSel.attr("y1"));
+			let newProb                = deathDistribTbl[thisBarCause];
 			barSel.attr("deathProb", newProb);
 				
-			let currentProbs = Object.values(DEATH_CAUSES);
+			let currentProbs = Object.values(deathDistribTbl);
 			// Blank out the user-adjusted probability:
-			let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
+			let currCauseIndx = Object.keys(deathDistribTbl).indexOf(thisBarCause);
 			currentProbs[currCauseIndx] = 0;
 			currentProbs = normalizeProbs(currentProbs, 1-newProb);
 			// Put the true current prob back in:
 			currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
 			for ( let i=0; i<currentProbs.length; i++ ) {
-				DEATH_CAUSES[Object.keys(DEATH_CAUSES)[i]] = currentProbs[i];
+				deathDistribTbl[Object.keys(deathDistribTbl)[i]] = currentProbs[i];
 			}
 				
 			//************
-			let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
+			let sum = Object.values(deathDistribTbl).reduce(function(a,b) { return a+b }, 0);
 			//1+1; // just a statement to attach a breakpoint to
 			//console.log(`Sum = ${sum}`);
 			//************
@@ -1774,8 +1873,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Get a new event generator that is biased
 		// according to the new distribution:
-		eventGenerator = EventGenerator(DEATH_CAUSES);
-
+		eventGenerator = EventGenerator(deathDistribTbl);
 	}
 	
 	/*---------------------------
@@ -2068,79 +2166,6 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
-	| normalizeDeathCauses 
-	-----------------*/
-
-	var normalizeDeathCauses = function(barSel, pixelDelta) {
-		/*
-		 * Without the two parameters, normalizes all probabilities
-		 * in DEATH_CAUSES so they add to 1. Modifies DEATH_CAUSES values
-		 * in place.
-		 * 
-		 * If barSel and pixelDelta are provided, the DEATH_CAUSES 
-		 * probability values are assumed to have been normalized 
-		 * already, but that one value was raised or lowered. 
-		 * This method re-normalizes all DEATH_CAUSES probability 
-		 * values, keeping constant the one that is provided. This 
-		 * functionality is needed when users change the height of 
-		 * a bar, changing the corresponding cause of death's probability.
-		 * 
-		 * All probabilities other than the user-adjusted one are adjusted
-		 * to compensate for the given bar's changed height. The compensatory
-		 * action is distributing across all bars other than the
-		 * one given in the parameter.
-		 * 
-		 * :param barSel: optional: a D3 selection of a bar whose value changed
-		 * :type barSel: { undefined | D3-sel }
-		 * :param pixelDelta: optional: the number of pixel by which the bar moved.
-		 * 		If positive, the bar moved down by pixelDelta pixels 
-		 * 		(.i.e. the bar's y increased by pixelDelta).
-		 * :type pixelDelta: { undefined | float }
-		 * 
-		 */
-		
-		if ( typeof(barSel) === 'undefined') {
-			// Turn death cause percentages to probabilities:
-			let normalizedProbs = normalizeProbs(Object.values(DEATH_CAUSES));
-			let causes = Object.keys(DEATH_CAUSES);
-			for ( let i=0; i<normalizedProbs.length; i++ ) {
-				DEATH_CAUSES[causes[i]] = normalizedProbs[i];
-			}
-		} else {
-			
-			// Update the just-dragged bar with its new probability:
-			let thisBarCause 		   = barSel.attr("deathCause");
-			DEATH_CAUSES[thisBarCause] = px2Prob(barSel.attr("y1"));
-			let newProb                = DEATH_CAUSES[thisBarCause];
-			barSel.attr("deathProb", newProb);
-				
-			let currentProbs = Object.values(DEATH_CAUSES);
-			// Blank out the user-adjusted probability:
-			let currCauseIndx = Object.keys(DEATH_CAUSES).indexOf(thisBarCause);
-			currentProbs[currCauseIndx] = 0;
-			currentProbs = normalizeProbs(currentProbs, 1-newProb);
-			// Put the true current prob back in:
-			currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
-			for ( let i=0; i<currentProbs.length; i++ ) {
-				DEATH_CAUSES[Object.keys(DEATH_CAUSES)[i]] = currentProbs[i];
-			}
-				
-			//************
-			//let sum = Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
-			//1+1; // just a statement to attach a breakpoint to
-			// console.log(`Sum = ${sum}`);
-			//************
-
-		}
-		
-		// Get a new event generator that is biased
-		// according to the new distribution:
-		eventGenerator = EventGenerator(DEATH_CAUSES);
-
-	}
-	
-
-	/*---------------------------
 	| getClassedUnderCoords
 	-----------------*/
 	
@@ -2215,7 +2240,15 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var sumDeathCauseProbabilities = function() {
-		return Object.values(DEATH_CAUSES).reduce(function(a,b) { return a+b }, 0);
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
+		
+		return Object.values(deathDistribTbl).reduce(function(a,b) { return a+b }, 0);
 	}
 	
 	/*---------------------------
@@ -2227,8 +2260,16 @@ var ProbabilityViz = function(width, height) {
 		 * Counts and returns the number of death causes that
 		 * are zero. 
 		 */
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
+		
 		let numZeroesSoFar = 0;
-		for ( let prob of Object.values(DEATH_CAUSES) ) {
+		for ( let prob of Object.values(deathDistribTbl) ) {
 			if ( prob === 0 ) {
 				numZeroesSoFar++;
 			}
