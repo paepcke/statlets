@@ -2324,18 +2324,9 @@ var ProbabilityViz = function(width, height) {
 			// See how close the candidate's right edge is to 
 			// every other slot module's left edge:
 			
-			for ( let maybePartnerSlotModId of Object.keys(slotBodies) ) {
-				
-				let maybePartnerSlotModBodySel = d3.select("#" + maybePartnerSlotModId);
-				if ( candidateSlotModBodySel.attr("id") ===  maybePartnerSlotModBodySel.attr("id") ) {
-					// Partner is same as candidate; skip:
-					continue;
-				}
-				let distance = distanceBetween(candidateSlotModBodySel, maybePartnerSlotModBodySel);
-				if ( distance > 0 && distance <= DOCKING_DISTANCE ) {
-					dock(candidateSlotModBodySel, maybePartnerSlotModBodySel);
-					break; // out of inner loop: module now docked.
-				} 
+			let dockPartnerSel = withinDockingDistance(slotModBodySel);
+			if ( typeof(dockPartnerSel) !== 'undefined') {
+				dock(dockPartnerSel, slotModBodySel);
 			}
 		}
 	}
@@ -2345,6 +2336,24 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var withinDockingDistance = function(slotModBodySel) {
+		/*
+		 * Given the d3 selection of a slot module, return
+		 * the d3 selection of another module that is within
+		 * docking distance. Only modules to the left of the
+		 * given module are considered. If slotModBodySel is
+		 * undefined, variable 'this' needs to be bound to
+		 * the (selection of the) slot module being considered.
+		 * 
+		 * :param slotModBodySel: d3 selection to be checked
+		 * 		as within docking distance of any other module.
+		 * 		If undefined, 'this' is used.
+		 * :type slotModBodySel: { d3-sel | undefined }
+		 * :return Either the d3 selection of a module with which
+		 * 		the given module is within docking distance,
+		 * 		else undefined.
+		 * :rtype { d3-sel | undefined }
+		 */
+
 		
 		if ( typeof(slotModBodySel) === 'undefined') {
 			slotModBodySel = this;
@@ -2352,16 +2361,16 @@ var ProbabilityViz = function(width, height) {
 		for ( let maybePartnerSlotModId of Object.keys(slotBodies) ) {
 
 			let maybePartnerSlotModBodySel = d3.select("#" + maybePartnerSlotModId);
-			if ( candidateSlotModBodySel.attr("id") ===  maybePartnerSlotModBodySel.attr("id") ) {
+			if ( slotModBodySel.attr("id") ===  maybePartnerSlotModBodySel.attr("id") ) {
 				// Partner is same as candidate; skip:
 				continue;
 			}
-			let distance = distanceBetween(candidateSlotModBodySel, maybePartnerSlotModBodySel);
+			let distance = distanceBetween(maybePartnerSlotModBodySel, slotModBodySel);
 			if ( distance > 0 && distance <= DOCKING_DISTANCE ) {
-				return true;
+				return maybePartnerSlotModBodySel;
 			} 
 		}
-		return false;
+		return undefined;
 	}
 	
 	/*---------------------------
@@ -2511,9 +2520,6 @@ var ProbabilityViz = function(width, height) {
 		/*
 		 * Given d3 selections of two slot modules, dock them.
 		 */
-		
-		
-		
 		
 		// Top and right edges of left module
 		// as strings: e.g. "88.654px":
