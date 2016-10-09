@@ -217,7 +217,7 @@ div.tooltip 				 {
     						   position: absolute;        
     						   text-align: center;
     						   width: 60px;					
-    						   height: 28px;
+    						   height: 45px;
     						   padding: 5px;
     						   font-size : 12px;
     						   font-family : sans-serif;		
@@ -285,12 +285,12 @@ div.tooltip.state.visible    {
 	position : relative;
 	top        : 3px;
 	left       : 80%;
-	width      : 70px;
+	width      : 100px;
 	height     : 50px;	
 	background : DarkGray;
 }    
 .scoreFrame {
-	width  : 66px;
+	width  : 94px;
 	height : 46px;
 	stroke-width : 2px;
 	fill : white;

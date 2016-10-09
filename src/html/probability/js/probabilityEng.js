@@ -114,7 +114,7 @@ var ProbabilityViz = function(width, height) {
 	const INTER_BUTTON_PADDING        = 3;  // vertical padding between Go buttons
 	const ABOVE_BUTTON_PADDING        = 20;  // vertical padding between slot window and first Go button.
 	
-	const TOOLTIP_SHOW_DURATION       = 2000; // msecs
+	const TOOLTIP_SHOW_DURATION       = 5000; // msecs
 	
 	// Dimensions of one slot module:
 	
@@ -443,12 +443,47 @@ var ProbabilityViz = function(width, height) {
 		 * 
 		 */
 
+		// Needed in the following handler, so declared
+		// here; initialized below, before handler ever 
+		// called:
+		let gangSize = null;
 
+		// Listen for the spin-done event of each module:
+		// Determine when the last spin is done for each
+		// module. Then trigger the allSpinsDoneOneModule 
+		// event. Also detect when all spins of all gang
+		// members are done. Then raise the allSpinsDoneAllModules
+		// event In the handler function, 'this'
+		// will be bound to the d3 slot module body selection
+		// whose text just changed. Parameter nth will
+		// contain the spin count: the how-many-th spin
+		// of the final numSpins the handler call is about:
+		
+		dispatchSpinDone.on("oneSpinDone", function(nth) {
+
+			// One slot module is done spinning.
+			// Register its win/lose condition:
+			let gangPos = getChainGangPosition(this, chainGang);
+			chainGangWinnings[gangLeader][nth][gangPos] = didWin(this);
+			
+			// Done with all its spins?
+			if ( nth >= numSpins-1 ) {
+				// Pass the slot body selection both, bound to 'this',
+				// and as a parameter for clarity at the destination
+				// function:
+				dispatchSpinDone.call("allSpinsDoneOneModule", this, this);
+				gangSize--;
+				if ( gangSize <= 0 ) {
+					dispatchSpinDone.call("allSpinsDoneAllModules", this, this);
+				}
+			}
+		});
+		
 		let txtInfo   = [];
 		// Get the members of the given module's gang, incl.
 		// the module itself (the 'true'):
 		let chainGang  = getChainGangMembers(slotModBodySel, true);
-		let gangSize   = chainGang.length;
+		gangSize   = chainGang.length;
 		let gangLeader = chainGang[0];
 		// Initialize the chainGangWinnings structure:
 		let winRecords = []
@@ -456,6 +491,7 @@ var ProbabilityViz = function(width, height) {
 			// Provide a gang-wide array of zero (numbers, not strings):
 			winRecords.push(new Array(gangSize+1).join('0').split('').map(parseFloat));
 		}
+		chainGangWinnings[gangLeader] = winRecords;
 
 		// Pick numSpins random death causes:
 		for ( let thisSlotModBodySel of chainGang ) {
@@ -472,28 +508,6 @@ var ProbabilityViz = function(width, height) {
 					speed,
 					callback);
 		}
-		// Wait for the last spin to be done,
-		// then send the spinDone event to all
-		// interested parties. In the functions, 'this'
-		// will be bound to the d3 slot module body selection
-		// whose text changed:
-		dispatchSpinDone.on("oneSpinDone", function(nth) {
-			if ( nth >= numSpins-1 ) {
-				// One slot module is done spinning.
-				// Register its win/lose condition:
-				let gangPos = getChainGangPosition(this, chainGang);
-				chainGangWinnings[gangLeader][gangPos] = didWin(this);
-				
-				// Pass the slot body selection both, bound to 'this'
-				// and as a parameter for clarity at the destination
-				// function:
-				dispatchSpinDone.call("allSpinsDoneOneModule", this, this);
-				gangSize--;
-				if ( gangSize <= 0 ) {
-					dispatchSpinDone.call("allSpinsDoneAllModules", this, this);
-				}
-			}
-		});
 	}
 
 	/*---------------------------
@@ -1051,8 +1065,24 @@ var ProbabilityViz = function(width, height) {
 		});
 		
 		dispatchSpinDone.on("allSpinsDoneAllModules", function(slotModBodySel) {
-			if ( checkOverallWin(getChainGangMembers(slotModBodySel, true)[0]) ) {
-				visualizeOverallSuccess();
+			// Get first member of this slot modules gang. The 'true'
+			// includes the module itself in the gang determination:
+			let chainGangLeader = getChainGangMembers(slotModBodySel, true)[0];
+		
+			let theOperatorArr  = getChainAndOrValues(slotModBodySel);
+			let theWinSequences = chainGangWinnings[chainGangLeader]
+		
+			let winAnalyzer = winSequenceAnalyzer(theOperatorArr, theWinSequences);
+			let won = null;
+			while (! (won = winAnalyzer.next()).done ) {
+				//**********
+				console.log(won.value);
+				//**********
+
+				if ( won.value  ) {
+					// Overall win:
+					bumpScore();
+				}
 			}
 		});
 
@@ -2281,6 +2311,8 @@ var ProbabilityViz = function(width, height) {
 				// Check whether partner still in docking distance:
 				if (distanceBetween(candidateSlotModBodySel, currPartner) > DOCKING_DISTANCE ) {
 					// User is dragging module away to undock:
+					// (Not part of UI anymore: now andOr selector
+					// has an explicit undock:
 					undock(candidateSlotModBodySel);
 				}
 				// Consider next module as left docking candidate:
@@ -2306,6 +2338,30 @@ var ProbabilityViz = function(width, height) {
 				} 
 			}
 		}
+	}
+	
+	/*---------------------------
+	| withinDockingDistance 
+	-----------------*/
+	
+	var withinDockingDistance = function(slotModBodySel) {
+		
+		if ( typeof(slotModBodySel) === 'undefined') {
+			slotModBodySel = this;
+		}
+		for ( let maybePartnerSlotModId of Object.keys(slotBodies) ) {
+
+			let maybePartnerSlotModBodySel = d3.select("#" + maybePartnerSlotModId);
+			if ( candidateSlotModBodySel.attr("id") ===  maybePartnerSlotModBodySel.attr("id") ) {
+				// Partner is same as candidate; skip:
+				continue;
+			}
+			let distance = distanceBetween(candidateSlotModBodySel, maybePartnerSlotModBodySel);
+			if ( distance > 0 && distance <= DOCKING_DISTANCE ) {
+				return true;
+			} 
+		}
+		return false;
 	}
 	
 	/*---------------------------
