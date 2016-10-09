@@ -109,6 +109,10 @@ h1          { text-align : center;  }
     /* Gradient Light Blue To Dark Blue: */
     background : linear-gradient(rgb(153, 204, 255), rgb(0, 102, 255));  
     }
+
+.machinesBody.dockReady {
+	background : linear-gradient(darkSeaGreen, darkGreen);  
+}
     
 /*    
 .machinesBody.success {

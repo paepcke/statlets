@@ -966,6 +966,10 @@ var ProbabilityViz = function(width, height) {
 					// The 'modSel' parameter will be bound to 'this' in the called
 					// methods:
 					dispatchMoveChainGang.call("moved", modSel, mouseDx, mouseDy, dragHandler);
+					// announce that a module just moved; used to
+					// change module color if close to potential
+					// dock-partner:
+					dispatchSlotModMoveEnd.call("moved", modSel);					
 				})
 				.on("end", function(d) {
 					let modSel = d3.select(this);
@@ -1043,11 +1047,21 @@ var ProbabilityViz = function(width, height) {
 		dispatchBarHeightChange = d3.dispatch('drag', barPulled);
 		dispatchBarHeightChange.on("drag.deathCauseBar", barPulled);
 		
-		dispatchSlotModMoveEnd  = d3.dispatch("moveEnd");
+		dispatchSlotModMoveEnd  = d3.dispatch("moved", "moveEnd");
 		dispatchMoveChainGang   = d3.dispatch("moved");
 		
 		// Sense whether module should be docked with
 		// neighbor after moving is done (mouse button released):
+		
+		dispatchSlotModMoveEnd.on("moved", function() {
+			if ( withinDockingDistance(this) && ! dockedWith(this, "left") ) {
+				// Being dragged, within docking distance,
+				// and not already docked:
+				this.classed("dockReady", true);
+			} else {
+				this.classed("dockReady", false);
+			}
+		})
 		dispatchSlotModMoveEnd.on("moveEnd", dockIfShould);
 		
 		// Enable docked modules to be moved as a unit:
@@ -2296,6 +2310,11 @@ var ProbabilityViz = function(width, height) {
 		if ( typeof(slotModBodySel) === 'undefined') {
 			slotModBodySel = this;
 		}
+		
+		// No matter what, turn off the 'dock-ready' indicator
+		// of the given module:
+		
+		slotModBodySel.classed("dockReady", false);
 		
 		// Go through every slot module:
 		for ( let candidateSlotModId of Object.keys(slotBodies) ) {
