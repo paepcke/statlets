@@ -1659,13 +1659,13 @@ var ProbabilityViz = function(width, height) {
 		
 		switch (stepName) {
 		case 'home':
-			d3.select("#machinesDiv")
-			colBtnsVisible(false);
+			d3.select(".button.newSlotModule")
+				.classed("visible", false);
 			break;
-//		case "step1":
-//			d3.select('#machinesDiv')
-//			colBtnsVisible(true);
-//			break;
+		case "step1":
+			d3.select(".button.newSlotModule")
+				.classed("visible", true);
+			break;
 //		case "step2":
 //			d3.select('#machinesDiv')
 //			colBtnsVisible(true);
@@ -1690,6 +1690,9 @@ var ProbabilityViz = function(width, height) {
 					coordSys.resetY();
 					updateSlotModHistogram(slotModBodySel);
 				});
+			d3.select(".button.newSlotModule")
+				.classed("visible", false);
+
 			break;
 		}
 	}

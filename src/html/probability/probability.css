@@ -280,10 +280,14 @@ div.tooltip.state.visible    {
 	width		: 100px;
 	border-radius : 25px;
 	margin-bottom : 2px;
+	opacity     : 0;
     /* Gradient Light Blue To Dark Blue: */
     background : linear-gradient( rgb(153, 204, 255), rgb(176,196,222) );
     }
-.button.newSlotModule:focus { outline : 0 !important; }    
+.button.newSlotModule:focus { outline : 0 !important; }
+.button.newSlotModule.visible {
+	opacity : 1;
+}    
     
 .scoreSvg {
 	position : relative;
