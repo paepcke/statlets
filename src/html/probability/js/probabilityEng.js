@@ -311,9 +311,14 @@ var ProbabilityViz = function(width, height) {
 		
 		// Define the div for the tooltip
 		
+		// The div that holds the text of 
+		// tooltips:
 		tooltipDivSel = d3.select("body")
 							.append("div")	
 							   .attr("class", "div tooltip");
+		
+		// Text element in tooltip: modified as needed;
+		// initialized here to empty text:
 		tooltipTxtSel = tooltipDivSel					   
 						.append("text")
 						  .attr("class", "div tooltip state")
@@ -1416,10 +1421,11 @@ var ProbabilityViz = function(width, height) {
 	      		let txtHeight = tooltipTxtSel.node().getBoundingClientRect().height;	      		
 
 	      		let tooltipHeight = tooltipDivSel.node().getBoundingClientRect().height;
-	      		tooltipDivSel.style("left", `${evt.pageX}px`)
-	      		.style("top", `${evt.pageY - tooltipHeight}px`)
-	      		.style("width", txtWidth)
-	      		.style("height", txtHeight);
+	      		tooltipDivSel
+	      			.style("left", `${evt.pageX}px`)
+	      			.style("top", `${evt.pageY - tooltipHeight}px`)
+	      			.style("width", `${txtWidth}px`)
+	      			.style("height", `${txtHeight}px`);
 
 	      		tooltipDivSel.classed("visible", true);
 	      		tooltipTxtSel.classed("visible", true);
