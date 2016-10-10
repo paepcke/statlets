@@ -27,7 +27,7 @@ var ProbabilityViz = function(width, height) {
 
 	// Simple scenario: only two causes of
 	// death. "complex" scenario: 20 causes:
-	var scenario         = 'simple';
+	var scenario         = null;
 	
 	var width   	     = width;
 	var height  	     = height;
@@ -250,11 +250,20 @@ var ProbabilityViz = function(width, height) {
 		   .attr("id", "distribSvg")
 		   .attr("class", "distribSvg")
 
+		// D3 custom event declarations:
+		dispatchSlotModMoveEnd  = d3.dispatch("moved", "moveEnd");
+		dispatchMoveChainGang   = d3.dispatch("moved");
+		// Allow action after spinning the slots:
+		dispatchSpinDone = d3.dispatch("oneSpinDone", 
+									   "allSpinsDoneOneModule",
+									   "allSpinsDoneAllModules");
+		   
+		   
 		switchScenarios('simple');
 
 		addControlButtons();
 
-		let urSlotSel = createSlotModuleWell('urSlotModule');
+//***		let urSlotSel = createSlotModuleWell('urSlotModule');
 		createTooltip();
 		createScoreBoard();
 		
@@ -273,10 +282,14 @@ var ProbabilityViz = function(width, height) {
 		scenario = newScenario
 		
 		// Remove all existing slot modules:
-		for ( let slotModId of d3.select(Object.keys(slotBodies)) ) {
+		for ( let slotModId of Object.keys(slotBodies) ) {
 			d3.select('#' + slotModId).remove();
 		}
 		
+		slotBodies = {};
+		
+		// Return the two probability distributions to their
+		// true values:
 		Object.assign(DEATH_CAUSES, savedDeathCauses);		
 		Object.assign(DEATH_CAUSES_SIMPLE, savedDeathCausesSimple);		
 		
@@ -287,6 +300,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		normalizeDeathCauses();
 		createCauseDistrib("simple");
+		createSlotModuleWell('urSlotModule');
 	}
 	
 	/*---------------------------
@@ -1128,9 +1142,6 @@ var ProbabilityViz = function(width, height) {
 
 		coordSysDistrib = CoordinateSystem(coordInfo);
 
-		dispatchSlotModMoveEnd  = d3.dispatch("moved", "moveEnd");
-		dispatchMoveChainGang   = d3.dispatch("moved");
-		
 		// Sense whether module should be docked with
 		// neighbor after moving is done (mouse button released):
 		
@@ -1148,10 +1159,6 @@ var ProbabilityViz = function(width, height) {
 		// Enable docked modules to be moved as a unit:
 		dispatchMoveChainGang.on("moved", moveDockedMods);
 		
-		// Allow action after spinning the slots:
-		dispatchSpinDone = d3.dispatch("oneSpinDone", 
-									   "allSpinsDoneOneModule",
-									   "allSpinsDoneAllModules");
 		// ****dispatchSpinDone.on("allSpinsDoneOneModule", visualizeWinners);
 		dispatchSpinDone.on("allSpinsDoneOneModule", function(slotModBodySel) {
 			if ( didWin(slotModBodySel) ) {
@@ -1753,10 +1760,12 @@ var ProbabilityViz = function(width, height) {
 		case 'home':
 			d3.select(".button.newSlotModule")
 				.classed("visible", false);
+			switchScenarios("simple");
 			break;
 		case "step1":
 			d3.select(".button.newSlotModule")
 				.classed("visible", true);
+			switchScenarios("simple");			
 			break;
 		case "step2":
 			d3.select(".button.newSlotModule")
