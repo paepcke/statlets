@@ -267,7 +267,16 @@ var ProbabilityViz = function(width, height) {
 	
 	var switchScenarios = function(newScenario) {
 	
+		if ( scenario === newScenario ) {
+			return;
+		}
 		scenario = newScenario
+		
+		// Remove all existing slot modules:
+		for ( let slotModId of d3.select(Object.keys(slotBodies)) ) {
+			d3.select('#' + slotModId).remove();
+		}
+		
 		Object.assign(DEATH_CAUSES, savedDeathCauses);		
 		Object.assign(DEATH_CAUSES_SIMPLE, savedDeathCausesSimple);		
 		
@@ -1119,14 +1128,6 @@ var ProbabilityViz = function(width, height) {
 
 		coordSysDistrib = CoordinateSystem(coordInfo);
 
-		// Get function barPulled() 
-		// a chance to see which bar moved, and to 
-		// adjust other bars to keep the sum of bar
-		// heights equalling 1.
-
-		dispatchBarHeightChange = d3.dispatch('drag', barPulled);
-		dispatchBarHeightChange.on("drag.deathCauseBar", barPulled);
-		
 		dispatchSlotModMoveEnd  = d3.dispatch("moved", "moveEnd");
 		dispatchMoveChainGang   = d3.dispatch("moved");
 		
