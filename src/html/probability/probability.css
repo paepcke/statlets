@@ -242,6 +242,7 @@ div.tooltip.txt.visible      {
 
 .formulaContainer            {
 				  			   display : flex;
+				  			   position : absolute;
 				  			   flex-direction : row;
 				               flex-wrap : nowrap;	
 							 }
@@ -249,7 +250,6 @@ div.tooltip.txt.visible      {
 div.formula,
 div.formula.probability,
 div.formula.operator   		 {	
-    						   /* float: left; */
     						   text-align: center;
     						   width: 60px;	      /* changed in code to a little less than slot mod width */
     						   height: 20px;

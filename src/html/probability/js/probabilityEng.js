@@ -401,9 +401,21 @@ var ProbabilityViz = function(width, height) {
 	| showFormula 
 	-----------------*/
 	
-	var showFormula = function(slotModBodySel, doShow) {
+	var showFormula = function(slotModBodySel, doShow, txt, operator) {
 		
-		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();
+		let probDivSel	   	    = formContainerSel.select(".probability"); 
+		let operatorDivSel      = formContainerSel.select(".operator"); 
+		let probDivDimRect      = probDivSel.node().getBoundingClientRect();
+		let operatorDivDimRect  = operatorDivSel.node().getBoundingClientRect();
+		
+		formContainerSel
+			.style("left", `${slotModDimRect.left + 
+							  slotModDimRect.width/2 -
+							  probDivDimRect.width/2}px`)
+			.style("top", `${slotModDimRect.bottom - slotModDimRect.height/4}px`);
+			
 		formContainerSel.selectAll(".formula")
 			.classed("visible", doShow);
 		formContainerSel.selectAll(".formula.txt")
