@@ -235,10 +235,45 @@ div.tooltip 			 	 {
 							   transition : opacity 2s; 
 							 }   /* Tooltip text: hovered-over state */							 						 
 div.tooltip.visible,
-div.tooltip.state.visible    { 
+div.tooltip.txt.visible      { 
 							   opacity : 1;
 							   transition : opacity 1s;  
 							 }
+
+.formulaContainer            {
+				  			   display : flex;
+				  			   flex-direction : row;
+				               flex-wrap : nowrap;	
+							 }
+
+div.formula,
+div.formula.probability,
+div.formula.operator   		 {	
+    						   /* float: left; */
+    						   text-align: center;
+    						   width: 60px;	      /* changed in code to a little less than slot mod width */
+    						   height: 20px;
+    						   margin-right : 0;  /* changed in code to move operator right. */
+    						   font-size : 12px;
+    						   font-family : sans-serif;		
+    						   background: lightsteelblue;	
+    						   border: 0px;		
+    						   border-radius: 8px;			
+    						   pointer-events: none;
+							 }
+div.formula        	 	     { 
+							   opacity : 0;
+							   transition : opacity 2s; 
+							 }   /* Tooltip text: hovered-over state */							 						 
+.formula.txt                  { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
+                             
+div.formula.visible,
+div.formula.txt.visible     { 
+							   opacity : 1;
+							   transition : opacity 1s;
+							 }
+
+
 
 .bettingSelector {
 	margin-top  : 3px;

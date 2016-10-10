@@ -2,57 +2,34 @@
 <html>
 <head>
 <title>Scratch</title>
-<!--    <script type="text/javascript" src="./utils/js/d3.min"></script>  -->
-
+    <script type="text/javascript" src="./utils/js/d3.min"></script>
+    
 </head>
 <body>
 
 <script>
+	var spanSel = d3.select("body")
+				.append("div")
+					.attr("class", "container")
+					.attr("opacity", 0)
 
-function* winSequenceAnalyzer(theOperatorArr, theWinSequences) {
-	/*
-	 *    theOperatorArr :   ["and", "and", "or", "and"]
-	 *    theWinSequences:  [ [1,0,0,1,0],
-	 *                        [1,1,0,1,0],
-	 *                        [...],
-	 *                      ]
-	 *
-	 */
+	spanSel
+		.append("div")
+			.attr("id", "leftDiv")
+			.style("background", "blue")
+			.style("width", "100px")
+			.style("height", "100px")
+			.style("float", "left")
+			.style("margin-right", "10px")
+	spanSel
+		.append("div")
+			.attr("id", "rightDiv")
+			.style("background", "red")
+	    	.style("width", "100px")
+	    	.style("height", "100px")
+			.style("float", "left")
+			.style("margin-right", "10px")
 
-
-  let winSequences = theWinSequences;
-  
-  for ( let winSequence of winSequences ) {
-	  // Copy of operator array:
-  	  let operatorArray    = theOperatorArr.slice();
-	  let prevCompositeRes = winSequence[0].shift();
-	  
-	  while ( operatorArray.length > 0 ) {
-		  let operator = operatorArray.shift();		  
-		  if ( operator === "or" ) {
-			  // End of an AND sequence that's true,
-			  // followed by an OR; rest immaterial:
-			  yield prevCompositeRes;
-		  };
-		  // Next operator is an AND:
-		  prevCompositeRes = prevCompositeRes && winSequence.shift();
-		  if ( ! prevCompositeRes ) {
-			  // AND series failed. Find next OR:
-			  while ( operatorArray.length > 0 ) {
-				  operator = operatorArray.shift();
-				  if ( operator === 'or' ) {
-					  break;
-				  }
-			  };
-		  } else {
-			  // In an AND series, and still true
-			  continue; // while ( operatorArray.length > 0 )
-		  }
-	  };
-	  // Finished applying all operators:
-	  yield prevCompositeRes;
-  } // end outer for.
-}
 </script>
 
 </body>

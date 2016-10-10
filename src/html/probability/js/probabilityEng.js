@@ -263,7 +263,6 @@ var ProbabilityViz = function(width, height) {
 
 		addControlButtons();
 
-//***		let urSlotSel = createSlotModuleWell('urSlotModule');
 		createTooltip();
 		createScoreBoard();
 		
@@ -283,7 +282,7 @@ var ProbabilityViz = function(width, height) {
 		
 		// Remove all existing slot modules:
 		for ( let slotModId of Object.keys(slotBodies) ) {
-			d3.select('#' + slotModId).remove();
+			destroySlotModule(d3.select('#' + slotModId));
 		}
 		
 		slotBodies = {};
@@ -300,7 +299,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		normalizeDeathCauses();
 		createCauseDistrib("simple");
-		createSlotModuleWell('urSlotModule');
+		createSlotModule('urSlotModule');
 	}
 	
 	/*---------------------------
@@ -308,10 +307,13 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var createTooltip = function() {
+		/* Given a d3 slot body selection, create a 
+		 * popup tooltip consisting of a div and an empty txt
+		 * element. This tooltip is reused for all 
+		 * chart bars. So this method is called only once.
+		 */
 		
-		// Define the div for the tooltip
-		
-		// The div that holds the text of 
+		// Create the div that holds the text of 
 		// tooltips:
 		tooltipDivSel = d3.select("body")
 							.append("div")	
@@ -321,15 +323,113 @@ var ProbabilityViz = function(width, height) {
 		// initialized here to empty text:
 		tooltipTxtSel = tooltipDivSel					   
 						.append("text")
-						  .attr("class", "div tooltip state")
+						  .attr("class", "div tooltip txt")
 						  .text("");
 	}
 	
 	/*---------------------------
-	| createSlotModuleWell 
+	| createFormulaTip
 	-----------------*/
 	
-	var createSlotModuleWell = function(moduleId) {
+	var createFormulaTip = function(slotModBodySel) {
+		/*
+		 * Given a d3 slot body selection, create a 
+		 * popup tooltip consisting of a div and an empty txt
+		 * element. It will hold the probability value in
+		 * popup formulae.
+		 * 
+		 * Also creates a second pair div/txt to hold
+		 * the operator when the module is docked with
+		 * another module.
+		 * 
+		 * Adds the following property to the
+		 * module's entry in slotBodies: 
+		 * 
+		 * 		- 'formulaSel'   : container holding one div
+		 * 						   with probability txt, and
+		 * 						   a second div with an algebraic
+		 * 						   operator. 
+		 * 
+		 * This fomula popup is created and destroyed with
+		 * slot bodies. So this method is called multiple time.
+		 */
+
+		// The following div that holds two inner divs. 
+		// Those inner divs will hold a slot
+		// module's probability and operator,
+		// respectively:
+		
+		let formulaContainerSel = d3.select("body")
+								  .append("div")
+								  	 .attr("id", `${slotModBodySel.attr("id")}_formula`)
+								  	 .attr("class", "formulaContainer");
+
+		// Div holding the slot's betting probability:
+
+        let formulaProbSel = formulaContainerSel
+        	.append("div")
+        		.attr("class", "formula probability")
+				.classed("visible", false);
+		
+		// Text element for the probability;
+		// initialized here to empty text:
+		formulaProbSel
+			.append("text")
+ 			  .attr("class", "formula txt")
+			  .text("foo") //**************
+			  .classed("visible", false);			  
+
+		// Div for the +/- operator that will straddle
+		// over to a docked module:
+        let formulaOpSel = formulaContainerSel
+        	.append("div")
+        		.attr("class", "formula operator")
+				.classed("visible", false);        		
+		
+		// Text element in tooltip: modified as needed;
+		// initialized here to empty text. Will be '*' or '+':
+		formulaOpSel
+			.append("text")
+ 			  .attr("class", "formula txt")
+			  .text("bar") //*************
+			  .classed("visible", false);			  
+		
+		slotBodies[slotModBodySel.attr("id")]['formulaSel'] = formulaContainerSel;
+	}
+	
+	/*---------------------------
+	| showFormula 
+	-----------------*/
+	
+	var showFormula = function(slotModBodySel, doShow) {
+		
+		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		formContainerSel.selectAll(".formula")
+			.classed("visible", doShow);
+		formContainerSel.selectAll(".formula.txt")
+			.classed("visible", doShow);		
+	}
+	
+	/*---------------------------
+	| destroyFormulaTip 
+	-----------------*/
+	
+	var destroyFormulaTip = function(slotModBodySel) {
+		
+		
+		// Retrieve the formula popup's div and text elements,
+		// and remove them.
+		
+		let slotModId = slotModBodySel.attr("id");
+		slotBodies[slotModId]['formulaDivSel'].remove();
+		slotBodies[slotModId]['formulaTxtSel'].remove();
+	}
+	
+	/*---------------------------
+	| createSlotModule 
+	-----------------*/
+	
+	var createSlotModule = function(moduleId) {
 		/*
 		 * Create one slot module. The optional 
 		 * moduleId will be the id of the svg
@@ -470,10 +570,24 @@ var ProbabilityViz = function(width, height) {
 		addSlotModFrequencyChart(slotModSvgSel); // Histogram of hits.
 		addBettingSelection(slotModBodySel);     // Betting selector element at bottom
 		addAndOrSelection(slotModBodySel);       // Docking and/or/Undock selector
+		createFormulaTip(slotModBodySel);
+		//**********
+		showFormula(slotModBodySel, true);
+		//**********		
 		
 		addSlotModuleDragging(slotModBodySel);
 		
 		return slotModSvgSel;
+	}
+	
+	/*---------------------------
+	| destroySlotModule 
+	-----------------*/
+	
+	var destroySlotModule = function(slotModBodySel) {
+		destroyFormulaTip(slotModBodySel);
+		delete slotBodies[slotModBodySel.attr("id")];
+		slotModBodySel.remove();
 	}
 	
 	/*---------------------------
@@ -1711,7 +1825,7 @@ var ProbabilityViz = function(width, height) {
 			  .attr("value", "Add Slot Module")
 			  .attr("class", "button newSlotModule")
 			  .on("click", function() {
-				  createSlotModuleWell("slotMod_" + uniqueNum());
+				  createSlotModule("slotMod_" + uniqueNum());
 				  upLog("createNewSlotMod");
 			  });
 
