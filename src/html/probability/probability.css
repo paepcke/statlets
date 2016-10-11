@@ -246,14 +246,18 @@ div.tooltip.txt.visible      {
 				  			   flex-direction : row;
 				               flex-wrap : nowrap;	
 							 }
+							 
+div.formula        	 	     { 
+							   opacity : 0;
+							   transition : opacity 2s; 
+							 }   /* Tooltip text: hovered-over state */							 						 
 
 div.formula,
 div.formula.probability,
 div.formula.operator   		 {	
     						   text-align: center;
-    						   width: 60px;	      /* changed in code to a little less than slot mod width */
     						   height: 20px;
-    						   margin-right : 0;  /* changed in code to move operator right. */
+    						   margin-right : 5px;
     						   font-size : 12px;
     						   font-family : sans-serif;		
     						   background: lightsteelblue;	
@@ -261,11 +265,14 @@ div.formula.operator   		 {
     						   border-radius: 8px;			
     						   pointer-events: none;
 							 }
-div.formula        	 	     { 
-							   opacity : 0;
-							   transition : opacity 2s; 
-							 }   /* Tooltip text: hovered-over state */							 						 
-.formula.txt                  { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
+
+.formula.probability		 { width: 60px; }
+.formula.operator		     { width: 20px; }
+
+.formula.txt                 { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
+
+.formula.txt.probability     { font-size : 14px; }							 
+.formula.txt.operator        { font-size : 21px; } /* make operator char bigger than prob number */
                              
 div.formula.visible,
 div.formula.txt.visible     { 

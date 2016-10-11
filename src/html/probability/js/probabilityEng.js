@@ -375,8 +375,8 @@ var ProbabilityViz = function(width, height) {
 		// initialized here to empty text:
 		formulaProbSel
 			.append("text")
- 			  .attr("class", "formula txt")
-			  .text("foo") //**************
+ 			  .attr("class", "formula txt probability")
+			  .text("")
 			  .classed("visible", false);			  
 
 		// Div for the +/- operator that will straddle
@@ -386,12 +386,12 @@ var ProbabilityViz = function(width, height) {
         		.attr("class", "formula operator")
 				.classed("visible", false);        		
 		
-		// Text element in tooltip: modified as needed;
+		// Text element in operator: modified as needed;
 		// initialized here to empty text. Will be '*' or '+':
 		formulaOpSel
 			.append("text")
- 			  .attr("class", "formula txt")
-			  .text("bar") //*************
+ 			  .attr("class", "formula txt operator")
+			  .text("")
 			  .classed("visible", false);			  
 		
 		slotBodies[slotModBodySel.attr("id")]['formulaSel'] = formulaContainerSel;
@@ -403,23 +403,46 @@ var ProbabilityViz = function(width, height) {
 	
 	var showFormula = function(slotModBodySel, doShow, txt, operator) {
 		
+		if ( typeof(txt) === 'undefined' ) {
+			txt = "0.5";
+		}
+		
+		if ( typeof(operator) === 'undefined' ) {
+			operator = "*";
+		}
+
+		
 		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();
 		let probDivSel	   	    = formContainerSel.select(".probability"); 
 		let operatorDivSel      = formContainerSel.select(".operator"); 
 		let probDivDimRect      = probDivSel.node().getBoundingClientRect();
 		let operatorDivDimRect  = operatorDivSel.node().getBoundingClientRect();
+
+		probDivSel.select(".txt").text(txt);
+		operatorDivSel.select(".txt").text(operator);
 		
+		// Move the formula container so that the
+		// probability number is centered over 
+		// the slot module, 3/4 down the module: 
 		formContainerSel
 			.style("left", `${slotModDimRect.left + 
 							  slotModDimRect.width/2 -
 							  probDivDimRect.width/2}px`)
 			.style("top", `${slotModDimRect.bottom - slotModDimRect.height/4}px`);
-			
+
+		// Push the operator div to the right,
+		// so that it straddles the crack between
+		// two docked slot modules:
+		probDivSel
+			.style("margin-right", `10px`);
+									  //operatorDivDimRect.width}px`);
+		
+		// Turn the formula on:
 		formContainerSel.selectAll(".formula")
 			.classed("visible", doShow);
-		formContainerSel.selectAll(".formula.txt")
-			.classed("visible", doShow);		
+		//formContainerSel.selectAll(".formula.txt")
+        //		.classed("visible", doShow);		
 	}
 	
 	/*---------------------------
