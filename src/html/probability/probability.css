@@ -276,7 +276,7 @@ div.formula.operator   		 {
 .formula.probability		 { width: 65px; }
 .formula.operator		     { width: 20px; }
 
-.formula.txt                 { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
+.formula.txt			     { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
 
 .formula.txt.probability     { font-size : 14px; }							 
 .formula.txt.operator        { font-size : 21px; } /* make operator char bigger than prob number */

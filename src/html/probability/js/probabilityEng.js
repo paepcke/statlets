@@ -453,9 +453,12 @@ var ProbabilityViz = function(width, height) {
 
 		let currAndOr = getAndOrValue(slotModBodySel);
 
-		if ( currAndOr === "and" ) {
+		// Right after docking, currAndOr will be
+		// undefined. Since the initial connector will
+		// be an AND by default, treat underfined like AND:
+		if ( currAndOr === "AND" || typeof(currAndOr) === 'undefined') {
 			setFormulaOperator(slotModBodySel, "*");
-		} else if ( currAndOr === "or" ) {
+		} else if ( currAndOr === "OR" ) {
 			setFormulaOperator(slotModBodySel, "+");
 		} else {
 			setFormulaOperator(slotModBodySel, "");
@@ -509,6 +512,9 @@ var ProbabilityViz = function(width, height) {
 		if ( dockedWith(slotModBodySel, "right" )) {
 			formContainerSel.selectAll(".formula.operator")
 				.classed("visible", doShow);
+		} else {
+			formContainerSel.selectAll(".formula.operator")
+				.classed("visible", false);
 		}
 	}
 	
@@ -543,8 +549,8 @@ var ProbabilityViz = function(width, height) {
 	var setFormulaOperator = function(slotModBodySel, txt) {
 
 		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
-		formContainerSel.select(".formula.operator.txt")
-			.text(txt);
+		let formulaOperatorTxtSel = formContainerSel.select(".formula.operator.txt");
+		formulaOperatorTxtSel.text(txt);
 	}
 	
 	/*---------------------------
@@ -2794,6 +2800,7 @@ var ProbabilityViz = function(width, height) {
 		// the given module was just dragged:
 		for ( let slotMod of chainGang ) {
 			dragHandler.dragmove(slotMod);
+			// Same for their formulas:
 			let modId = slotMod.attr("id");
 			let formulaContainer = slotBodies[modId]['formulaSel'];
 			dragHandler.dragmove(formulaContainer);
@@ -2997,6 +3004,8 @@ var ProbabilityViz = function(width, height) {
 		
 		let partnerSel = d3.select("#" + partnerId); 
 		partnerSel.attr("dockedWithLeft", "none");
+		
+		showFormula(leftModBodySel, false);
 		
 		upLog("undock");
 		
