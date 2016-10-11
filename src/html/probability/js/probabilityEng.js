@@ -51,8 +51,8 @@ var ProbabilityViz = function(width, height) {
 
 	// The coordinate systems and hit counts for each slot module.
 	// Maps a slot module body's id to an object that 
-	// holds the module's text manager, hit count, and 
-	// coordinate system instance:
+	// holds the module's text manager, hit count,  
+	// coordinate system instance, and formula container:
 	var slotBodies       = {};   
 
 	var browserType      = null;
@@ -258,7 +258,8 @@ var ProbabilityViz = function(width, height) {
 									   "allSpinsDoneOneModule",
 									   "allSpinsDoneAllModules");
 		   
-		   
+		dispatchBarHeightChange = d3.dispatch("drag");
+		
 		switchScenarios('simple');
 
 		addControlButtons();
@@ -393,8 +394,50 @@ var ProbabilityViz = function(width, height) {
  			  .attr("class", "formula txt operator")
 			  .text("")
 			  .classed("visible", false);			  
-		
+	
+		formulaContainerSel.style("z-index", 3);
 		slotBodies[slotModBodySel.attr("id")]['formulaSel'] = formulaContainerSel;
+	}
+	
+	/*---------------------------
+	| updateFormulaProbIfNeeded 
+	-----------------*/
+	
+	var updateFormulaProbIfNeeded = function(deathDistribTbl) {
+		/*
+		 * Called when a death cause distribution barchart has been
+		 * dragged. The variable "this" is bound to that bar (rect)
+		 * DOM element.
+		 * 
+		 * Looks through all slot modules. When it finds one that
+		 * has a bet on the passed-in death cause, that module's
+		 * formula's probability part is updated.
+		 */
+	
+		// Loop through all death causes and slot modules:
+	
+		let currBet = null;
+		let slotModBodySel = null;
+		let currProb = null;
+		
+		for ( let slotModId of Object.keys(slotBodies) ) {
+
+			slotModBodySel = d3.select("#" + slotModId);
+			currBet = getCurrBet(slotModBodySel);
+			if ( currBet === null ) {
+				// This module's betting selector is not set
+				// to a real death cause:
+				continue; // next module.
+			}
+			try {
+				currProb = parseFloat(deathDistribTbl[currBet]).toPrecision(5);
+			} catch(err) {
+				continue; // This module's bet isn't set to 
+			}             // a death cause; so nothing to update.
+
+			slotBodies[slotModId]['formulaSel'].select(".formula.txt")
+				.text(currProb);
+		}
 	}
 	
 	/*---------------------------
@@ -438,11 +481,14 @@ var ProbabilityViz = function(width, height) {
 			.style("margin-right", `10px`);
 									  //operatorDivDimRect.width}px`);
 		
-		// Turn the formula on:
-		formContainerSel.selectAll(".formula")
+		// Turn the formula on/off:
+		formContainerSel.selectAll(".formula.probability")
 			.classed("visible", doShow);
-		//formContainerSel.selectAll(".formula.txt")
-        //		.classed("visible", doShow);		
+
+		if ( dockedWith(slotModBodySel, "right" )) {
+			formContainerSel.selectAll(".formula.operator")
+				.classed("visible", doShow);
+		}
 	}
 	
 	/*---------------------------
@@ -606,6 +652,12 @@ var ProbabilityViz = function(width, height) {
 		addBettingSelection(slotModBodySel);     // Betting selector element at bottom
 		addAndOrSelection(slotModBodySel);       // Docking and/or/Undock selector
 		createFormulaTip(slotModBodySel);
+		// Make sure the formula is updated when 
+		// death cause probabilities change. 'This'
+		// will be bound to one probability distribution
+		// bar: 
+		dispatchBarHeightChange.on("drag", updateFormulaProbIfNeeded); 
+		
 		//**********
 		showFormula(slotModBodySel, true);
 		//**********		
@@ -1078,6 +1130,33 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| getCurrBet 
+	-----------------*/
+	
+	var getCurrBet = function(slotModBodySel) {
+		/*
+		 * Given a d3 slot module body selection,
+		 * return the text of the current bet. That
+		 * is the module's active bet pulldown menu entry.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module.
+		 * :type slotModBodySel: d3-sel
+		 * :return current bet as read from the module's 
+		 * 		betting selector. Note: this may be null
+		 * 		if the selector is not set on a real cause
+		 * 		of death.
+		 * :rtype: { string | null } 
+		 */
+	
+		let bettingSelectorSel = slotModBodySel.select(".bettingSelector");
+		let domBettingEl = bettingSelectorSel.node();
+		let currBetOptionIndx = domBettingEl.selectedIndex;
+		// Get the non-abbreviated cause of death:
+		let currBetTxt  = bettingSelectorSel.attr("fullDeathCause");
+		return currBetTxt;
+	}
+	
+	/*---------------------------
 	| addButton 
 	-----------------*/
 	
@@ -1512,12 +1591,8 @@ var ProbabilityViz = function(width, height) {
 		 */
 		
 		// Get bet placed in given slot module:
-		let bettingSelectorSel = slotModBodySel.select(".bettingSelector");
-		let domBettingEl = bettingSelectorSel.node();
-		let currBetOptionIndx = domBettingEl.selectedIndex;
-		// Get the non-abbreviated cause of death:
-		let currBetTxt  = bettingSelectorSel.attr("fullDeathCause");
-		
+		let currBetTxt = getCurrBet(slotModBodySel);
+				
 		// Get death cause currently displayed in slot window:
 		let currSlotWinTxt = slotBodies[slotModBodySel.attr("id")].textManager.getCurrTxt();
 		
@@ -1654,9 +1729,6 @@ var ProbabilityViz = function(width, height) {
 					}
 					
 					dragClickHandler.dragmove(barSel, BARS_ARE_LINES);
-					
-					// Let interested parties know that a bar was resized.
-					//*****dispatchBarHeightChange.call("drag", this, barSel);
 				})
 				.on("end", function(d) {
 					d3.select(this).classed("dragging", false);
@@ -1671,6 +1743,13 @@ var ProbabilityViz = function(width, height) {
 					// following will be positive:
 					normalizeDeathCauses(barSel, this.y1.baseVal.value - d3.drag.origY);
 					updateDistribChart(coordSysDistrib);
+					
+					// Let interested parties, such as the formula
+					// tooltips know that a bar was resized.
+					// "this" is bound to the bar; the table lookup
+					// yields the new probability:
+					dispatchBarHeightChange.call("drag", this, deathDistribTbl);
+					
 					d3.drag.currBar = undefined;
 					upLog(`drag_${deathCause.replace(' ', '_')}`);
 				})

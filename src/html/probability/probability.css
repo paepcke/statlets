@@ -252,6 +252,13 @@ div.formula        	 	     {
 							   transition : opacity 2s; 
 							 }   /* Tooltip text: hovered-over state */							 						 
 
+                             
+div.formula.probability.visible,
+div.formula.operator.visible  {
+							   opacity : 1;
+							   transition : opacity 1s;
+ 							 }
+							 
 div.formula,
 div.formula.probability,
 div.formula.operator   		 {	
@@ -273,12 +280,6 @@ div.formula.operator   		 {
 
 .formula.txt.probability     { font-size : 14px; }							 
 .formula.txt.operator        { font-size : 21px; } /* make operator char bigger than prob number */
-                             
-div.formula.visible,
-div.formula.txt.visible     { 
-							   opacity : 1;
-							   transition : opacity 1s;
-							 }
 
 
 
