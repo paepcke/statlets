@@ -377,7 +377,7 @@ var ProbabilityViz = function(width, height) {
 		formulaProbSel
 			.append("text")
  			  .attr("class", "formula txt probability")
-			  .text("")
+			  .text("Place bet")
 			  .classed("visible", false);			  
 
 		// Div for the +/- operator that will straddle
@@ -446,13 +446,7 @@ var ProbabilityViz = function(width, height) {
 	
 	var showFormula = function(slotModBodySel, doShow, txt, operator) {
 		
-//		if ( typeof(txt) === 'undefined' ) {
-//			txt = "0.5";
-//		}
-//		
-//		if ( typeof(operator) === 'undefined' ) {
-//			operator = "*";
-//		}
+		
 		
 		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();
@@ -461,8 +455,14 @@ var ProbabilityViz = function(width, height) {
 		let probDivDimRect      = probDivSel.node().getBoundingClientRect();
 		let operatorDivDimRect  = operatorDivSel.node().getBoundingClientRect();
 
-		probDivSel.select(".txt").text(txt);
-		operatorDivSel.select(".txt").text(operator);
+		
+		if ( typeof(txt) !== 'undefined' ) {
+			probDivSel.select(".txt").text(txt);
+		}
+
+		if ( typeof(operator) !== 'undefined' ) {
+			operatorDivSel.select(".txt").text(operator);
+		}
 		
 		// Move the formula container so that the
 		// probability number is centered over 
@@ -477,7 +477,7 @@ var ProbabilityViz = function(width, height) {
 		// so that it straddles the crack between
 		// two docked slot modules:
 		probDivSel
-			.style("margin-right", `10px`);
+			.style("margin-right", `15px`);
 									  //operatorDivDimRect.width}px`);
 		
 		// Turn the formula on/off:
@@ -502,6 +502,27 @@ var ProbabilityViz = function(width, height) {
 		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		
 		return formContainerSel.select(".formula.probability").classed("visible");
+	}
+	
+	/*---------------------------
+	| setFormulaText 
+	-----------------*/
+	
+	var setFormulaText = function(slotModBodySel, txt) {
+		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		formContainerSel.select(".formula.probability.txt")
+			.text(txt);
+	}
+	
+	/*---------------------------
+	| setFormulaOperator 
+	-----------------*/
+	
+	var setFormulaOperator = function(slotModBodySel, txt) {
+
+		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		formContainerSel.select(".formula.operator.txt")
+			.text(txt);
 	}
 	
 	/*---------------------------
@@ -1015,11 +1036,21 @@ var ProbabilityViz = function(width, height) {
 	var andOrSelChanged = function(selectorDomEl) {
 		
 		let optionStr = selectorDomEl.selectedOptions[0].value;
+		let slotModId = d3.select(selectorDomEl).attr("mySlotMod");
+		let slotModBodySel = d3.select("#" + slotModId);
+
 		if ( optionStr === "Undock" ) {
-			let slotModId = d3.select(selectorDomEl).attr("mySlotMod");
-			let slotModBodySel = d3.select("#" + slotModId);
 			undock(slotModBodySel);
 			selectorDomEl.selectedIndex = 0;
+			return;
+		}
+		if ( optionStr === "or" ) {
+			setFormulaOperator(slotModBodySel, "+");
+			return;
+		}
+		if ( optionStr === "and" ) {
+			setFormulaOperator(slotModBodySel, "*");
+			return;
 		}
 	}
 	
