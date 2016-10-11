@@ -363,7 +363,8 @@ var ProbabilityViz = function(width, height) {
 		let formulaContainerSel = d3.select("body")
 								  .append("div")
 								  	 .attr("id", `${slotModBodySel.attr("id")}_formula`)
-								  	 .attr("class", "formulaContainer");
+								  	 .attr("class", "formulaContainer")
+								  	 .classed("unselectable", true);
 
 		// Div holding the slot's betting probability:
 
@@ -441,6 +442,23 @@ var ProbabilityViz = function(width, height) {
 
 			slotBodies[slotModId]['formulaSel'].select(".formula.txt")
 				.text(currProb);
+		}
+	}
+	
+	/*---------------------------
+	| updateFormulaOperatorIfNeeded 
+	-----------------*/
+	
+	var updateFormulaOperatorIfNeeded = function(slotModBodySel) {
+
+		let currAndOr = getAndOrValue(slotModBodySel);
+
+		if ( currAndOr === "and" ) {
+			setFormulaOperator(slotModBodySel, "*");
+		} else if ( currAndOr === "or" ) {
+			setFormulaOperator(slotModBodySel, "+");
+		} else {
+			setFormulaOperator(slotModBodySel, "");
 		}
 	}
 	
@@ -900,14 +918,16 @@ var ProbabilityViz = function(width, height) {
 		let bettingSel = slotModBodySel
 			.append("select")
 			.attr("class", "bettingSelector")
+			.attr("fullDeathCause", Object.keys(deathCauseTbl)[0])
 			.on("focus", function() {
 				setBettingEntries(d3.select(this), Object.keys(deathCauseTbl));
 				let savedIndx = d3.select(this).attr("savedIndx"); 
-				if ( typeof(savedIndx) !== 'undefined') {
+				if ( typeof(savedIndx) !== 'undefined' &&
+					 savedIndx != null ) {
 					this.selectedIndex = savedIndx;
 				}
+				updateFormulaProbIfNeeded();
 			})
-			//****.on("blur", function() {
 			.on("change", function() {
 				// Remember the index of the death cause in this
 				// slot module's betting selector. Then replace
@@ -922,10 +942,12 @@ var ProbabilityViz = function(width, height) {
 					.attr("selectedIndex", 0)
 					.attr("savedIndx", oldSelIndx)
 					.attr("fullDeathCause", deathCause);
-				updateFormulaProbIfNeeded();
+				this.blur();
 			})
-			//*****.on("change", updateFormulaProbIfNeeded);
-			
+			.on("blur",	
+				updateFormulaProbIfNeeded
+			)
+				
 		setBettingEntries(bettingSel, ["Place your bet"]);
 	}
 	
@@ -958,6 +980,9 @@ var ProbabilityViz = function(width, height) {
 		// Display first choice:
 		andOrSel.attr("selectedIndex", 0);
 		andOrSel.on("change", function() {
+			andOrSelChanged(this);
+		})
+		andOrSel.on("focus", function() {
 			andOrSelChanged(this);
 		})
 		
@@ -1051,14 +1076,7 @@ var ProbabilityViz = function(width, height) {
 			selectorDomEl.selectedIndex = 0;
 			return;
 		}
-		if ( optionStr === "or" ) {
-			setFormulaOperator(slotModBodySel, "+");
-			return;
-		}
-		if ( optionStr === "and" ) {
-			setFormulaOperator(slotModBodySel, "*");
-			return;
-		}
+		updateFormulaOperatorIfNeeded(slotModBodySel);
 	}
 	
 	/*---------------------------
@@ -1178,6 +1196,7 @@ var ProbabilityViz = function(width, height) {
 				.each(function(txt) {
 					this.text = txt;
 				});
+				
 		return selectBoxSel;
 	}
 	
@@ -2940,7 +2959,9 @@ var ProbabilityViz = function(width, height) {
 		gangMemberSel.each(function() {
 			this.style("top", leftTopEdge);
 		})
-				
+
+		updateFormulaOperatorIfNeeded(leftModBodySel);
+		
 		upLog("dock");
 	}
 	

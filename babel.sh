@@ -85,8 +85,8 @@ case "${babelEnv}" in
 
         echo "Running Browserify to make package..."
         node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
-                                     -o lib/html/probability/js/probability.js \
-                                     --debug
+                                     -o lib/html/probability/js/probability.js
+#                                     --debug
         ;;
 
     scratch)

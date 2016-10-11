@@ -273,7 +273,7 @@ div.formula.operator   		 {
     						   pointer-events: none;
 							 }
 
-.formula.probability		 { width: 60px; }
+.formula.probability		 { width: 65px; }
 .formula.operator		     { width: 20px; }
 
 .formula.txt                 { vertical-align : sub; } /* For some reason 'sub' vertically centers txt */     
