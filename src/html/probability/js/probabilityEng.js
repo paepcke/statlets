@@ -492,6 +492,20 @@ var ProbabilityViz = function(width, height) {
 	}
 	
 	/*---------------------------
+	| formulaShowing 
+	-----------------*/
+	
+	var formulaShowing = function(slotModBodySel) {
+		/*
+		 * Return true if the given module is currently
+		 * showing its formula.
+		 */
+		let formContainerSel = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
+		
+		return formContainerSel.select(".formula.probability").classed("visible");
+	}
+	
+	/*---------------------------
 	| destroyFormulaTip 
 	-----------------*/
 	
@@ -659,9 +673,10 @@ var ProbabilityViz = function(width, height) {
 		dispatchBarHeightChange.on("drag", updateFormulaProbIfNeeded); 
 		
 		//**********
-		showFormula(slotModBodySel, true);
+		//showFormula(slotModBodySel, true);
 		//**********		
-		
+
+		attachSlotModHover(slotModBodySel);
 		addSlotModuleDragging(slotModBodySel);
 		
 		return slotModSvgSel;
@@ -1599,21 +1614,6 @@ var ProbabilityViz = function(width, height) {
 		return currSlotWinTxt === currBetTxt;
 	}
 	
-	
-	/*---------------------------
-	| barPulled
-	-----------------*/
-	
-	var barPulled = function(distribBarSel) {
-		/*
-		 * Called when a cause-of-death distribution bar is dragged up or down.
-		 * Updates probability in selected slot module.
-		 * Note: the re-normalization of the other probabilities
-		 *       happens in  
-		 */
-		return;
-	}
-
 	/*---------------------------
 	| attachBarBehaviors
 	-----------------*/
@@ -1754,6 +1754,31 @@ var ProbabilityViz = function(width, height) {
 					upLog(`drag_${deathCause.replace(' ', '_')}`);
 				})
 	      	)
+	}
+
+	/*---------------------------
+	| attachSlotModHover
+	-----------------*/
+	
+	var attachSlotModHover = function(slotModBodySel) {
+		
+		/*
+		 * For the given (d3 selection of) slot module, 
+		 * create the formula-showing mouseover behavior.
+		 */
+		
+		let chainGang = getChainGangMembers(slotModBodySel);
+		
+		for ( let gangMember of chainGang ) {
+			
+			gangMember
+				.on("mouseover", function() {
+		      		showFormula(gangMember, true);
+		      	})
+		      	.on("mouseleave", function() {
+		      		showFormula(gangMember, false);
+		      	})
+		}
 	}
 	
 	/*---------------------------
@@ -2873,9 +2898,8 @@ var ProbabilityViz = function(width, height) {
 		gangMemberSel.each(function() {
 			this.style("top", leftTopEdge);
 		})
-		
+				
 		upLog("dock");
-		
 	}
 	
 	/*---------------------------
