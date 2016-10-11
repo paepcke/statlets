@@ -453,7 +453,6 @@ var ProbabilityViz = function(width, height) {
 		if ( typeof(operator) === 'undefined' ) {
 			operator = "*";
 		}
-
 		
 		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();
@@ -1766,19 +1765,24 @@ var ProbabilityViz = function(width, height) {
 		 * For the given (d3 selection of) slot module, 
 		 * create the formula-showing mouseover behavior.
 		 */
-		
-		let chainGang = getChainGangMembers(slotModBodySel);
-		
-		for ( let gangMember of chainGang ) {
-			
-			gangMember
-				.on("mouseover", function() {
-		      		showFormula(gangMember, true);
-		      	})
-		      	.on("mouseleave", function() {
-		      		showFormula(gangMember, false);
-		      	})
-		}
+		slotModBodySel
+			.on("mouseover", function() {
+				// Gang members, including given module:
+				let slotModBodySel = d3.select(this);
+				let chainGang = getChainGangMembers(slotModBodySel, true);
+				for ( let gangMember of chainGang ) {	
+					showFormula(gangMember, true);
+				}
+		    })
+
+		    .on("mouseleave", function() {
+		    	let slotModBodySel = d3.select(this);		    	
+				// Gang members, including given module:		    	
+		    	let chainGang = getChainGangMembers(slotModBodySel, true);
+		    	for ( let gangMember of chainGang ) {					
+		    		showFormula(gangMember, false);
+		    	}
+		    })
 	}
 	
 	/*---------------------------
