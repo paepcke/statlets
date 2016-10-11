@@ -456,8 +456,8 @@ var ProbabilityViz = function(width, height) {
 		// and remove them.
 		
 		let slotModId = slotModBodySel.attr("id");
-		slotBodies[slotModId]['formulaDivSel'].remove();
-		slotBodies[slotModId]['formulaTxtSel'].remove();
+		slotBodies[slotModId]['formulaSel'].remove();
+		slotBodies[slotModId]['formulaSel'].remove();
 	}
 	
 	/*---------------------------
@@ -1200,6 +1200,10 @@ var ProbabilityViz = function(width, height) {
 					
 					let dragHandler    = slotModPeripherals[slotModId]["dragHandler"];
 					dragHandler.dragmove(slotModBodySel, false); // false: NOT an SVG element; outer body is an HTML5 rect
+					// Also move the module's formula container:
+					let modId = slotModBodySel.attr("id");
+					let formulaContainer = slotBodies[modId]['formulaSel'];
+					dragHandler.dragmove(formulaContainer);
 					
 					// Let interested parties know that a slot module was moved.
 					// The 'modSel' parameter will be bound to 'this' in the called
@@ -1313,7 +1317,6 @@ var ProbabilityViz = function(width, height) {
 		// Enable docked modules to be moved as a unit:
 		dispatchMoveChainGang.on("moved", moveDockedMods);
 		
-		// ****dispatchSpinDone.on("allSpinsDoneOneModule", visualizeWinners);
 		dispatchSpinDone.on("allSpinsDoneOneModule", function(slotModBodySel) {
 			if ( didWin(slotModBodySel) ) {
 				visualizeSuccess(slotModBodySel);
@@ -2626,6 +2629,9 @@ var ProbabilityViz = function(width, height) {
 		// the given module was just dragged:
 		for ( let slotMod of chainGang ) {
 			dragHandler.dragmove(slotMod);
+			let modId = slotMod.attr("id");
+			let formulaContainer = slotBodies[modId]['formulaSel'];
+			dragHandler.dragmove(formulaContainer);
 		}
 	}
 	

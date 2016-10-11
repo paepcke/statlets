@@ -129,6 +129,12 @@ var StatsDragClickHandler = function(svg) {
 	-----------------*/
 
 	var dragmove = function(d3DomElSel, dragVert, dragHor) {
+		/*
+		 * Used to drag d3 selections of arbitrary DOM elements
+		 * to match the current d3 event information.
+		 * If dragVert is false, only horizontal dragging
+		 * is allowed. Analogously for dragHor. 
+		 */
 
 		let evt = d3.event;
 		let x = evt.x;
