@@ -403,7 +403,7 @@ var ProbabilityViz = function(width, height) {
 	| updateFormulaProbIfNeeded 
 	-----------------*/
 	
-	var updateFormulaProbIfNeeded = function(deathDistribTbl) {
+	var updateFormulaProbIfNeeded = function() {
 		/*
 		 * Called when a death cause distribution barchart has been
 		 * dragged. The variable "this" is bound to that bar (rect)
@@ -419,6 +419,14 @@ var ProbabilityViz = function(width, height) {
 		let currBet = null;
 		let slotModBodySel = null;
 		let currProb = null;
+		let deathDistribTbl = null;
+		
+		if ( scenario === "simple" ) {
+			deathDistribTbl = DEATH_CAUSES_SIMPLE;
+		} else {
+			deathDistribTbl = DEATH_CAUSES;
+		}
+		
 		
 		for ( let slotModId of Object.keys(slotBodies) ) {
 
@@ -429,11 +437,7 @@ var ProbabilityViz = function(width, height) {
 				// to a real death cause:
 				continue; // next module.
 			}
-			try {
-				currProb = parseFloat(deathDistribTbl[currBet]).toPrecision(5);
-			} catch(err) {
-				continue; // This module's bet isn't set to 
-			}             // a death cause; so nothing to update.
+			currProb = parseFloat(deathDistribTbl[currBet]).toPrecision(5);
 
 			slotBodies[slotModId]['formulaSel'].select(".formula.txt")
 				.text(currProb);
@@ -903,7 +907,8 @@ var ProbabilityViz = function(width, height) {
 					this.selectedIndex = savedIndx;
 				}
 			})
-			.on("blur", function() {
+			//****.on("blur", function() {
+			.on("change", function() {
 				// Remember the index of the death cause in this
 				// slot module's betting selector. Then replace
 				// the death cause shown in the betting selector
@@ -917,7 +922,9 @@ var ProbabilityViz = function(width, height) {
 					.attr("selectedIndex", 0)
 					.attr("savedIndx", oldSelIndx)
 					.attr("fullDeathCause", deathCause);
+				updateFormulaProbIfNeeded();
 			})
+			//*****.on("change", updateFormulaProbIfNeeded);
 			
 		setBettingEntries(bettingSel, ["Place your bet"]);
 	}
@@ -1778,7 +1785,7 @@ var ProbabilityViz = function(width, height) {
 					// tooltips know that a bar was resized.
 					// "this" is bound to the bar; the table lookup
 					// yields the new probability:
-					dispatchBarHeightChange.call("drag", this, deathDistribTbl);
+					dispatchBarHeightChange.call("drag", this);
 					
 					d3.drag.currBar = undefined;
 					upLog(`drag_${deathCause.replace(' ', '_')}`);
