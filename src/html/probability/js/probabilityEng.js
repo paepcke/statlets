@@ -446,13 +446,13 @@ var ProbabilityViz = function(width, height) {
 	
 	var showFormula = function(slotModBodySel, doShow, txt, operator) {
 		
-		if ( typeof(txt) === 'undefined' ) {
-			txt = "0.5";
-		}
-		
-		if ( typeof(operator) === 'undefined' ) {
-			operator = "*";
-		}
+//		if ( typeof(txt) === 'undefined' ) {
+//			txt = "0.5";
+//		}
+//		
+//		if ( typeof(operator) === 'undefined' ) {
+//			operator = "*";
+//		}
 		
 		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();

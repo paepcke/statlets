@@ -249,14 +249,14 @@ div.tooltip.txt.visible      {
 							 
 div.formula        	 	     { 
 							   opacity : 0;
-							   transition : opacity 2s; 
+							   transition : opacity 1s; 
 							 }   /* Tooltip text: hovered-over state */							 						 
 
                              
 div.formula.probability.visible,
 div.formula.operator.visible  {
 							   opacity : 1;
-							   transition : opacity 1s;
+							   transition : opacity 0.4s;
  							 }
 							 
 div.formula,
