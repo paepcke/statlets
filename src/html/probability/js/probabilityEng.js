@@ -1785,6 +1785,11 @@ var ProbabilityViz = function(width, height) {
 						} 
 					}
 					
+					// Cant' run a bar higher than 1.0:
+					if ( px2Prob(barY) > 1.0 ) {
+						return;
+					}
+					
 					if (! barSel.classed("dragging")) {
 						// Not over something being dragged:
 						return;
