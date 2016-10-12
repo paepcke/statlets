@@ -10,11 +10,10 @@ import * as d3 from "./../../utils/js/d3.min";
 
 /*
  * TODO:
- * 		o Ganged modules don't have their history updated
- * 		o Remove empty top lines in slot window
- * 		o Indicate when mods close enough for coupling
- * 		o Win counter
- * 		o Win flash
+ * 		o Dragging distrib bar updates slot formula prob
+ * 			even if no bet placed on that prob.
+ *      o When bar is at zero, it no longer rises
+ *      	when other bar is lowered.
  * 		o Try bootstrap
  * 		o Write text
  * 		o Lucas-matrix
@@ -195,6 +194,10 @@ var ProbabilityViz = function(width, height) {
 			"Heart attack" : 0.0778452,
 			"Stroke" : 0.0778452,       // Pretend equal probabilities
 	};
+	
+	// Betting selector entry when no bet has been
+	// placed yet:
+	let NO_BET_TXT = "Place your bet";
 	
 	// Keep a copy of the original, i.e. true probabilities
 	// to use for resetting to initial state:
@@ -470,8 +473,44 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var showFormula = function(slotModBodySel, doShow, txt, operator) {
+		/*
+		 * Either show or don't show the formula superimposed
+		 * on the given slot module. This action is controlled
+		 * by parameter doShow. Optionally, the text of the probability
+		 * part can be provided, as well as an operator ('*", or '-', or '').
+		 * 
+		 * Slot module formulas have two parts: a probability, and an operator.
+		 * The probability is the probability of the currently placed bet.
+		 * The operator is only relevant if the given module is docked on
+		 * the right. If it is not, then the operator won't be shown.
+		 * 
+		 * No matter the doShow value: if no bet has been placed in the
+		 * module's pull-down list, the formula will not be shown.
+		 * 
+		 * :param slotModBodySel: d3 selection of slot module whose formula
+		 * 		is to be shown.
+		 * :type slotModBodySel: d3-selection
+		 * :param doShow: whether or not to make the slot module's formula
+		 * 		overlay visible.
+		 * :type doShow: bool
+		 * :param txt: optionally the text to place in the probability portion
+		 * 		of the formula.
+		 * :type txt: { string | undefined }
+		 * :param operator: the text to place in the operator part of the 
+		 * 		formula.
+		 * :type operator: { string | undefined }
+		 */
 		
+
+		// If the given slot modules bet isn't set to
+		// a death cause, we always hide, no matter what
+		// doShow asks for:
 		
+		//if ( Object.keys(DEATH_CAUSES).indexOf(getCurrBet(slotModBodySel)) === -1 ) {
+		// No bet placed yet?
+		if ( getCurrBet(slotModBodySel) === null ) {
+			return;
+		}
 		
 		let formContainerSel    = slotBodies[slotModBodySel.attr("id")]['formulaSel'];
 		let slotModDimRect      = slotModBodySel.node().getBoundingClientRect();
@@ -954,7 +993,7 @@ var ProbabilityViz = function(width, height) {
 				updateFormulaProbIfNeeded
 			)
 				
-		setBettingEntries(bettingSel, ["Place your bet"]);
+		setBettingEntries(bettingSel, [NO_BET_TXT]);
 	}
 	
 
@@ -1226,11 +1265,16 @@ var ProbabilityViz = function(width, height) {
 		 */
 	
 		let bettingSelectorSel = slotModBodySel.select(".bettingSelector");
+		if ( bettingSelectorSel.select("option").text() === NO_BET_TXT ) {
+			return null;
+		}
 		let domBettingEl = bettingSelectorSel.node();
 		let currBetOptionIndx = domBettingEl.selectedIndex;
 		// Get the non-abbreviated cause of death:
 		let currBetTxt  = bettingSelectorSel.attr("fullDeathCause");
 		return currBetTxt;
+		
+		
 	}
 	
 	/*---------------------------
@@ -1770,9 +1814,9 @@ var ProbabilityViz = function(width, height) {
 					// For rect as bars, replace y1/y2 with y:
 					let barY = null
 					if ( BARS_ARE_LINES ) {
-						barY = barSel.attr('y');
+						barY = barSel.attr('y1');
 					} else {
-						barY    = barSel.attr('y1');
+						barY    = barSel.attr('y');
 					}
 					
 					if (mouseY < barY || mouseY > height - X_AXIS_BOTTOM_PADDING) {
@@ -1785,8 +1829,9 @@ var ProbabilityViz = function(width, height) {
 						} 
 					}
 					
-					// Cant' run a bar higher than 1.0:
-					if ( px2Prob(barY) > 1.0 ) {
+					// Cant' run a bar higher than 1.0. So
+					// stop up-motion, but allow down-motion:
+					if ( px2Prob(barY) >= 1.0 && d3.event.dy < 0 ) {
 						return;
 					}
 					
