@@ -10,8 +10,6 @@ import * as d3 from "./../../utils/js/d3.min";
 
 /*
  * TODO:
- * 		o Dragging distrib bar updates slot formula prob
- * 			even if no bet placed on that prob.
  *      o When bar is at zero, it no longer rises
  *      	when other bar is lowered.
  * 		o Try bootstrap
@@ -1829,11 +1827,18 @@ var ProbabilityViz = function(width, height) {
 						} 
 					}
 					
-					// Cant' run a bar higher than 1.0. So
+					// Can't run a bar higher than 1.0. So
 					// stop up-motion, but allow down-motion:
-					if ( px2Prob(barY) >= 1.0 && d3.event.dy < 0 ) {
+					let wouldBeProb = px2Prob(barY); 
+					if ( wouldBeProb >= 1.0 && d3.event.dy < 0 ) {
 						return;
 					}
+					
+					// Similarly for probs below zero:
+					if ( wouldBeProb < 0.0 && d3.event.dy > 0 ) {
+						return;
+					}
+					
 					
 					if (! barSel.classed("dragging")) {
 						// Not over something being dragged:
@@ -2245,7 +2250,9 @@ var ProbabilityViz = function(width, height) {
 			// Blank out the user-adjusted probability:
 			let currCauseIndx = Object.keys(deathDistribTbl).indexOf(thisBarCause);
 			currentProbs[currCauseIndx] = 0;
-			currentProbs = normalizeProbs(currentProbs, 1-newProb);
+			// Normalize all probabilities, holding the
+			// one just hand-adjusted fixed:
+			currentProbs = normalizeProbs(currentProbs, 1-newProb, currCauseIndx);
 			// Put the true current prob back in:
 			currentProbs[currCauseIndx] = parseFloat(barSel.attr("deathProb"));
 			for ( let i=0; i<currentProbs.length; i++ ) {
@@ -2412,18 +2419,35 @@ var ProbabilityViz = function(width, height) {
 	| normalizeProbs 
 	-----------------*/
 	
-	var normalizeProbs = function(probArr, normTarget) {
+	var normalizeProbs = function(probArr, normTarget, fixedIndex) {
 		/*
 		 * Takes an array and returns an array
 		 * in which the elements add to 1. So
 		 * all elements are scaled to retain their
 		 * proportions, but they add to normTarget.
 		 * 
+		 * This method is useful when one element in
+		 * probArr is set to 0, and at least one others 
+		 * is >0. A scale factor is computed, and each
+		 * element is multiplied by this factor. So the
+		 * element that is set to 0 will be unchanged. But
+		 * the others will add to 1.
+		 * 
+		 * Special case: 
+
+		 * However, if ALL elements are zero, then the caller
+		 * should set fixedIndex to the index into probArr that
+		 * holds the element to remain unchanged. In this case
+		 * one normTarget is distributed across the array members 
+		 * other than fixedIndex.
+		 * 
 		 * :param probArr: array of numbers to processd
 		 * :type probArr: [number]
 		 * :param normTarget: number to which all elements are to sum.
 		 *     default is 1
 		 * :type normTarget: number
+		 * :param fixedIndex: optionally: index into probArr that is
+		 * 	   to remain unchanged.
 		 * :returns array of normalized elements.
 		 * :rType: [number]
 		 */
@@ -2436,8 +2460,24 @@ var ProbabilityViz = function(width, height) {
 		}, 0);
 
 		if ( sum === 0 ) {
-			// Return an array of 0.0: 
-			return new Array(1+probArr.length).join('0').split('').map(parseFloat);
+			if ( typeof(fixedIndex) === 'number' ) {
+				// The fraction of probability to go to 
+				// each element (excepted the fixed one):
+				let probMassPortions = normTarget / (probArr.length - 1);
+				for ( let arrIndx=0; arrIndx < probArr.length; arrIndx++ ) {
+					if (arrIndx == fixedIndex) {
+						continue;
+					}
+					probArr[arrIndx] = probMassPortions;
+				}
+				// Recompute the sum over all elements:
+				sum = probArr.reduce(function(a,b) {
+					return a+b;
+				}, 0);
+			} else {
+				// Return an array of 0.0: 
+				return new Array(1+probArr.length).join('0').split('').map(parseFloat);
+			}
 		}
 		let normFactor = normTarget/sum;
 		return probArr.map(function(el) {
@@ -2601,7 +2641,9 @@ var ProbabilityViz = function(width, height) {
 		let trueY = pixelYVal
 		// Don't return a negative probability
 		let prob  = Math.max(coordSysDistrib.yScale.invert(trueY), 0);
-		return prob;
+		
+		// ... nor one greater than 1:
+		return Math.min(1.0, prob);
 	}
 	
 	/*---------------------------

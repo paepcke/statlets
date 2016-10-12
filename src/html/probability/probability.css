@@ -153,6 +153,7 @@ h1          { text-align : center;  }
 
 .slotModHistRect {
 	fill    : blue;
+	stroke  : white;
 }
 
 .goButton {

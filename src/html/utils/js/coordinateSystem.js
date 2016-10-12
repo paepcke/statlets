@@ -375,8 +375,10 @@ var CoordinateSystem = function(coordInfo) {
 			xScale = d3.scaleBand()
 							 .domain(xDomain)
 							 .rangeRound([Y_AXIS_LEFT, width - X_AXIS_RIGHT])
-							 	.paddingInner(0.4)  // space betw. bars as fraction of bar width
-								.paddingOuter(0.2);
+							 	//*****.paddingInner(0.4)  // space betw. bars as fraction of bar width
+							 	//*****.paddingInner(0.001)  // space betw. bars as fraction of bar width
+								//*****.paddingOuter(0.2);
+							 	.padding(0.1);
 							 
 			// Width between two ticks is (for instance) pixel-pos
 			// at first domain value minus pixel pos at zeroeth domain
