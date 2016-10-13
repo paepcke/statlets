@@ -158,7 +158,7 @@ var ProbabilityViz = function(width, height) {
 	
 	// Distance of callout lines from their
 	// origin in the element they are explaining:
-	var CALLOUT_DISTANCE_X = 100;
+	var CALLOUT_DISTANCE_X = 50;
 	var CALLOUT_DISTANCE_Y = 50;
 	
 	// Percentages of total deaths in 2013. This is an
@@ -272,7 +272,7 @@ var ProbabilityViz = function(width, height) {
 
 		createTooltip();
 		createScoreBoard();
-		addExplanationCallouts(slotModBodySel);
+		//addExplanationCallouts(slotModBodySel);
 		
 		return {}
 	}
@@ -670,8 +670,9 @@ var ProbabilityViz = function(width, height) {
 //				.attr("y2", Math.max(calloutSvgDimRect.top, slotWinDimRect.top + CALLOUT_DISTANCE_Y + slotBodyYOffset))
 //				.attr("class", "calloutLine")
 //				.classed("visible", true);
-				
-		calloutSvgSel
+
+		// Callout for slot window:
+		let lineSel = calloutSvgSel
 			.append("line")
 				.attr("id", "slotWinCalloutLine")
 				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
@@ -680,8 +681,71 @@ var ProbabilityViz = function(width, height) {
 				.attr("y2", 5 + CALLOUT_DISTANCE_Y)
 				.attr("class", "calloutLine")
 				.classed("visible", true);
-				
 		
+		calloutSvgSel
+			.append("text")
+				.attr("id", "slotWinCalloutTxt")
+				.attr("x", lineSel.attr("x2") + 15)
+				.attr("y", lineSel.attr("y2"))
+				.attr("class", "calloutTxt")
+				.text("Outcome of spin(s)")
+
+		// Callout for Go buttons
+		lineSel = calloutSvgSel
+			.append("line")
+				.attr("id", "goBtnsCalloutLine")
+				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
+				.attr("y1", 80)
+				.attr("x2", slotWinDimRect.right + CALLOUT_DISTANCE_X + slotBodyXOffset)
+				.attr("y2", 80 + CALLOUT_DISTANCE_Y)
+				.attr("class", "calloutLine")
+				.classed("visible", true);
+		
+		calloutSvgSel
+			.append("text")
+				.attr("id", "slotWinCalloutTxt")
+				.attr("x", lineSel.attr("x2") + 15)
+				.attr("y", lineSel.attr("y2"))
+				.attr("class", "calloutTxt")
+				.text("Spin slot machine. Each spin is one draw.")
+				
+		// Callout for histogram
+		lineSel = calloutSvgSel
+			.append("line")
+				.attr("id", "goBtnsCalloutLine")
+				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
+				.attr("y1", 210)
+				.attr("x2", slotWinDimRect.right + CALLOUT_DISTANCE_X + slotBodyXOffset)
+				.attr("y2", 210 + CALLOUT_DISTANCE_Y)
+				.attr("class", "calloutLine")
+				.classed("visible", true);
+		
+		calloutSvgSel
+			.append("text")
+				.attr("id", "slotWinCalloutTxt")
+				.attr("x", lineSel.attr("x2") + 15)
+				.attr("y", lineSel.attr("y2"))
+				.attr("class", "calloutTxt")
+				.text("Histogram of spin outcomes.")
+				
+		// Callout for bet pulldown
+		lineSel = calloutSvgSel
+			.append("line")
+				.attr("id", "goBtnsCalloutLine")
+				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
+				.attr("y1", 295)
+				.attr("x2", slotWinDimRect.right + CALLOUT_DISTANCE_X + slotBodyXOffset)
+				.attr("y2", 295 + CALLOUT_DISTANCE_Y)
+				.attr("class", "calloutLine")
+				.classed("visible", true);
+		
+		calloutSvgSel
+			.append("text")
+				.attr("id", "slotWinCalloutTxt")
+				.attr("x", lineSel.attr("x2") + 15)
+				.attr("y", lineSel.attr("y2"))
+				.attr("class", "calloutTxt")
+				.text("Bet on a spin outcome.")
 	}
 	
 	/*---------------------------

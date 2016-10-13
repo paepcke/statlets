@@ -33,13 +33,60 @@
 	<div class="flexWrapper" id="flexWrapper">
 		<div class="instructionsDiv" id="instructions">
 			<div class="instrTxt" id="homeTxt">
-				This statlet covers probability. The goal is to gain intuition 
-				about probabilities, probability distributions, and how probabilities
-				combine into joint probabilities. The dataset is an excerpt from the
-				2013 causes-of-death counts across all US States (Center for Disease Control).
-				<p>
-				Toward the end of this statlet you will build a slot machine that allows you to 
-				bet on one or more causes of death.
+The goal: develop intuitions about probabilities, their distributions,
+and how probabilities combine into joint probabilities. This statlet's
+underlying dataset is an excerpt from the 2013 causes-of-death counts
+across all US States (CDC: Center for Disease Control).
+<p>
+You will build a slot machine that allows you to bet on the cause
+of one or more upcoming US deaths. Each slot module of your machine
+comprises four components:
+<ul>
+  <li>A white spin-outcome window.</li>
+  <li>A set of buttons that spin the module once, 10, or 100 times in
+    a row. Each spin is one draw from the cause-of-death
+    probabilities.</li>
+  <li>A histogram of spin outcomes, and</li>
+  <li>A pulldown menu to place a bet on the next outcome.</li>
+</ul>
+The green number counts your number of wins.
+<p>
+The chart on the far right shows the probability of a heart attack
+compared to a stroke. This initial value of 0.5 for both does not
+reflect the true data. We'll get to the truth in future steps. This
+part is just to get you started. The chart shows a <i>probability
+distribution</i>: the bars show how probabilities are distributed
+across the causes of death. For now, let's assume there are only two
+ways to die. 
+<p>
+Things to do:
+<ul>
+  <li>Hit the Go buttons.</li>
+  <li>Place a bet; then spin again.</li>
+  <li>Be the casino owner (or God): lower/raise the probability bars.
+      then spin again a bunch of times.
+  </li>
+</ul>
+Things to wonder about:
+<ul>
+  <li>Add the probabilities in the distribution. What's the sum? What
+  is the range of values this sum can take?
+  <li>Observing how the histogram changes as you spin, compare its
+     shape with the shape of the cause-of-death distribution.
+  </li>
+  <li>Spin a few times, observing the histogram. Then change one of
+    the two probability bars and spin a few more times. How are
+    the changes in the histogram different before and after that
+    manipulation of the probability?
+  </li>
+  <li>When you change one of the probabilities in the distribution
+  you'll notice the other bar going the opposite direction. Why is
+  that? 
+    </li>
+</ul>
+By the way: you can drag the slot module to a convenient
+location. You'll find that you want to in a bit.
+
 			</div>
 		</div>
 		<div class="machinesDiv" id="machinesDiv"></div>

@@ -362,7 +362,11 @@ div.formula.operator   		 {
 	
 .calloutLine {
 	position : absolute;
-	stroke-width : 5px;
+	stroke-width : 2px;
 	stroke : black;
 	opacity : 1;
+}
+
+.calloutTxt {
+	font-size: 12pt;
 }
