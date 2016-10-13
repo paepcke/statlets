@@ -156,6 +156,11 @@ var ProbabilityViz = function(width, height) {
 	// Final distance between docked slot modules:
 	var DOCKING_DISTANCE = 20;
 	
+	// Distance of callout lines from their
+	// origin in the element they are explaining:
+	var CALLOUT_DISTANCE_X = 100;
+	var CALLOUT_DISTANCE_Y = 50;
+	
 	// Percentages of total deaths in 2013. This is an
 	// excerpt of all death causes. The numbers are converted
 	// to normalized probabilities in the constructor:
@@ -261,12 +266,13 @@ var ProbabilityViz = function(width, height) {
 		   
 		dispatchBarHeightChange = d3.dispatch("drag");
 		
-		switchScenarios('simple');
+		let slotModBodySel = switchScenarios('simple');
 
 		addControlButtons();
 
 		createTooltip();
 		createScoreBoard();
+		addExplanationCallouts(slotModBodySel);
 		
 		return {}
 	}
@@ -276,6 +282,11 @@ var ProbabilityViz = function(width, height) {
 	-----------------*/
 	
 	var switchScenarios = function(newScenario) {
+		/*
+		 * :return d3 selection of newly created
+		 * 		slot module.
+		 */
+
 	
 		if ( scenario === newScenario ) {
 			return;
@@ -301,7 +312,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		normalizeDeathCauses();
 		createCauseDistrib("simple");
-		createSlotModule('urSlotModule');
+		return createSlotModule('urSlotModule');
 	}
 	
 	/*---------------------------
@@ -603,6 +614,74 @@ var ProbabilityViz = function(width, height) {
 		let slotModId = slotModBodySel.attr("id");
 		slotBodies[slotModId]['formulaSel'].remove();
 		slotBodies[slotModId]['formulaSel'].remove();
+	}
+	
+	
+	/*---------------------------
+	| addExplanationCallouts
+	-----------------*/
+	
+	var addExplanationCallouts = function(slotModBodySel) {
+		
+		// Move the slot to the top left of the 
+		// machine div:
+		
+		let machinesDivDimRect = d3.select("#machinesDiv").node().getBoundingClientRect();
+		let calloutSvgSel = d3.select("#machinesDiv")
+			.append("svg")
+				.attr("id", "calloutSvg")
+				.attr("width", machinesDivDimRect.width)
+				.attr("height", machinesDivDimRect.width)
+				//.attr("transform", `translate(${dimRect.left},${dimRect.top})`);
+				//.attr("transform", "translate(0, -500)");
+				//.attr("top", 0)
+				//.attr("left", 0)
+				//.style("z-index", 4);
+
+		let slotBodyDimRect = slotModBodySel.node().getBoundingClientRect();
+		let calloutSvgDimRect = calloutSvgSel.node().getBoundingClientRect();
+//		slotModBodySel
+//			//.attr("transform", `translate(${- (slotDimRect.left - svgDimRect.left)}, ${svgDimRect.top - slotDimRect.top})`);
+//			.style("transform", "translate(100,100)")
+//			//.style("left", svgDimRect.left)
+//			//.style("top", svgDimRect.top);
+		
+		
+		let slotWinSel = slotModBodySel.select('.slotWindowRect');
+		let slotWinDimRect    = slotWinSel.node().getBoundingClientRect();
+		
+		let scoreBoardDimRect = d3.select("#scoreBoardSvg").node().getBoundingClientRect();
+		// Gap between top of score board and its div-top:
+		let scoreBoardYOffset = scoreBoardDimRect.top - machinesDivDimRect.top;
+		
+		let slotBodyXOffset = slotBodyDimRect.left - 2*machinesDivDimRect.left;
+		// Gap between top of slot module and top of machines div:
+		let slotBodyYOffset  = - machinesDivDimRect.top - (machinesDivDimRect.top - slotBodyDimRect.top);
+		// Subtract score board height plus gap between
+		// scoreboard top and top of div:
+		slotBodyYOffset = slotBodyYOffset - (scoreBoardDimRect.height + scoreBoardYOffset);
+		
+//		calloutSvgSel
+//			.append("line")
+//				.attr("id", "slotWinCalloutLine")
+//				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
+//				.attr("y1", Math.max(calloutSvgDimRect.top, slotWinDimRect.top + 2*slotWinDimRect.height / 3 + slotBodyYOffset))
+//				.attr("x2", slotWinDimRect.right + CALLOUT_DISTANCE_X + slotBodyXOffset)
+//				.attr("y2", Math.max(calloutSvgDimRect.top, slotWinDimRect.top + CALLOUT_DISTANCE_Y + slotBodyYOffset))
+//				.attr("class", "calloutLine")
+//				.classed("visible", true);
+				
+		calloutSvgSel
+			.append("line")
+				.attr("id", "slotWinCalloutLine")
+				.attr("x1", slotWinDimRect.right - slotWinDimRect.width / 4 + slotBodyXOffset)
+				.attr("y1", 5)
+				.attr("x2", slotWinDimRect.right + CALLOUT_DISTANCE_X + slotBodyXOffset)
+				.attr("y2", 5 + CALLOUT_DISTANCE_Y)
+				.attr("class", "calloutLine")
+				.classed("visible", true);
+				
+		
 	}
 	
 	/*---------------------------
@@ -1484,7 +1563,7 @@ var ProbabilityViz = function(width, height) {
         let coordInfo  = {svgSel         : distribSvg, 
         				   x: {scaleType : 'ordinal',
         					   domain    : xDomain,
-        					   axisLabel : 'Cause of Death Probabilities',
+        					   axisLabel : 'Causes of Death',
         				   bottomPadding : X_AXIS_BOTTOM_PADDING,
         				   },
             			   y: {scaleType : 'linear',

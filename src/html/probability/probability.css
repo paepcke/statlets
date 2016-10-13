@@ -241,6 +241,11 @@ div.tooltip.txt.visible      {
 							   transition : opacity 1s;  
 							 }
 
+.visible					 { 
+							   opacity : 1;
+							   transition : opacity 1s;  
+							 }							 
+
 .formulaContainer            {
 				  			   display : flex;
 				  			   position : absolute;
@@ -355,3 +360,9 @@ div.formula.operator   		 {
 	fill: green;
 }
 	
+.calloutLine {
+	position : absolute;
+	stroke-width : 5px;
+	stroke : black;
+	opacity : 1;
+}
