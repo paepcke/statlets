@@ -85,7 +85,7 @@ case "${babelEnv}" in
 
         echo "Copying images..."
         mkdir -p lib/html/images
-        cp src/html/images/skullAloneSmall.png lib/html/images
+        cp src/html/Images/skullAloneSmall.png lib/html/images
         
         echo "Running Browserify to make package..."
         node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
