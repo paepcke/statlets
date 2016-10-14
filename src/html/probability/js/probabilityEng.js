@@ -310,7 +310,7 @@ var ProbabilityViz = function(width, height) {
 			eventGenerator = EventGenerator(DEATH_CAUSES);
 		}
 		normalizeDeathCauses();
-		createCauseDistrib("simple");
+		createCauseDistrib(newScenario);
 		return createSlotModule('urSlotModule');
 	}
 	
@@ -2305,14 +2305,18 @@ var ProbabilityViz = function(width, height) {
 			break;
 		case "reset":
 			// Restore true cause-of-death probabilities:
-			switchScenarios("simple");
+			Object.assign(DEATH_CAUSES, savedDeathCauses);		
+			Object.assign(DEATH_CAUSES_SIMPLE, savedDeathCausesSimple);
+			normalizeDeathCauses();
+			updateDistribChart(coordSysDistrib);
+		
+			/* switchScenarios("simple"); */
 			setScore(0);
 			// Set all slot module's histograms to empty:
 			d3.selectAll(".machinesBody")
 				.each(function() {
 					let slotModBodySel = d3.select(this);
 					let coordSys = getCoordSys(slotModBodySel);
-					// Select the outer-body rectangle:
 					clearDeathCauseCount(slotModBodySel);
 					coordSys.resetY();
 					updateSlotModHistogram(slotModBodySel);
