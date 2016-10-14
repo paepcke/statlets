@@ -83,6 +83,10 @@ case "${babelEnv}" in
         mkdir -p lib/html/fonts/DSEG_v030/DSEG7
         cp -r src/html/fonts/DSEG_v030/DSEG14 lib/html/fonts/DSEG_v030/
 
+        echo "Copying images..."
+        mkdir -p lib/html/images
+        cp src/html/images/skullAloneSmall.png lib/html/images
+        
         echo "Running Browserify to make package..."
         node_modules/.bin/browserify lib/html/probability/js/probabilityEng.js \
                                      -o lib/html/probability/js/probability.js

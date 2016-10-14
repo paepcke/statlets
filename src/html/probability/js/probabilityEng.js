@@ -7,7 +7,6 @@ import { Logger } from "./../../utils/js/logging";
 import { CoordinateSystem } from "./../../utils/js/coordinateSystem";
 import * as ss from "./../../utils/js/simple-statistics.min";
 import * as d3 from "./../../utils/js/d3.min";
-
 /*
  * TODO:
  *      o When bar is at zero, it no longer rises
@@ -2299,10 +2298,11 @@ var ProbabilityViz = function(width, height) {
 				.classed("visible", true);
 			switchScenarios("complex");
 			break;
-//		case "step3":
-//			d3.select('#machinesDiv')
-//			colBtnsVisible(true);
-//			break;
+		case "step3":
+			d3.select(".button.newSlotModule")
+				.classed("visible", true);
+			switchScenarios("complex");
+			break;
 		case "reset":
 			// Restore true cause-of-death probabilities:
 			switchScenarios("simple");

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 
-<link rel="stylesheet" type="text/css" href="probability.css">
-<link rel="stylesheet" type="text/css" href="../utils/softAlerts.css">
-
+	<link rel="stylesheet" type="text/css" href="probability.css">
+	<link rel="stylesheet" type="text/css" href="../utils/softAlerts.css">
+	<script type="text/javascript" src="../utils/js/w3dataHtmlIncludes.js"></script>
 
 	<!-- LaTex Math (easiest to get from their site) : -->
 	<script type="text/javascript" async
@@ -33,61 +33,133 @@
 	<div class="flexWrapper" id="flexWrapper">
 		<div class="instructionsDiv" id="instructions">
 			<div class="instrTxt" id="homeTxt">
-The goal: develop intuitions about probabilities, their distributions,
-and how probabilities combine into joint probabilities. This statlet's
-underlying dataset is an excerpt from the 2013 causes-of-death counts
-across all US States (CDC: Center for Disease Control).
-<p>
-You will build a slot machine that allows you to bet on the cause
-of one or more upcoming US deaths. Each slot module of your machine
-comprises four components:
-<ul>
-  <li>A white spin-outcome window.</li>
-  <li>A set of buttons that spin the module once, 10, or 100 times in
-    a row. Each spin is one draw from the cause-of-death
-    probabilities.</li>
-  <li>A histogram of spin outcomes, and</li>
-  <li>A pulldown menu to place a bet on the next outcome.</li>
-</ul>
-The green number counts your number of wins.
-<p>
-The chart on the far right shows the probability of a heart attack
-compared to a stroke. This initial value of 0.5 for both does not
-reflect the true data. We'll get to the truth in future steps. This
-part is just to get you started. The chart shows a <i>probability
-distribution</i>: the bars show how probabilities are distributed
-across the causes of death. For now, let's assume there are only two
-ways to die. 
-<p>
-Things to do:
-<ul>
-  <li>Hit the Go buttons.</li>
-  <li>Place a bet; then spin again.</li>
-  <li>Be the casino owner (or God): lower/raise the probability bars.
-      then spin again a bunch of times.
-  </li>
-</ul>
-Things to wonder about:
-<ul>
-  <li>Add the probabilities in the distribution. What's the sum? What
-  is the range of values this sum can take?
-  <li>Observing how the histogram changes as you spin, compare its
-     shape with the shape of the cause-of-death distribution.
-  </li>
-  <li>Spin a few times, observing the histogram. Then change one of
-    the two probability bars and spin a few more times. How are
-    the changes in the histogram different before and after that
-    manipulation of the probability?
-  </li>
-  <li>When you change one of the probabilities in the distribution
-  you'll notice the other bar going the opposite direction. Why is
-  that? 
-    </li>
-</ul>
-By the way: you can drag the slot module to a convenient
-location. You'll find that you want to in a bit.
-
+				The goal: develop intuitions about probabilities, their distributions,
+				and how probabilities combine into joint probabilities. This statlet's
+				underlying dataset is an excerpt from the 2013 causes-of-death counts
+				across all US States (CDC: Center for Disease Control).
+				<p>
+				You will build a slot machine that allows you to bet on the cause
+				of one or more upcoming US deaths. Each slot module of your machine
+				comprises four components:
+				<ul>
+				  <li>A white spin-outcome window.</li>
+				  <li>A set of buttons that spin the module once, 10, or 100 times in
+				    a row. Each spin is one draw from the cause-of-death
+				    probabilities.</li>
+				  <li>A histogram of spin outcomes, and</li>
+				  <li>A pulldown menu to place a bet on the next outcome.</li>
+				</ul>
+				The green number counts your number of wins.
+				<p>
+				The chart on the far right shows the probability of a heart attack
+				compared to a stroke. This initial value of 0.5 for both does not
+				reflect the true data. We'll get to the truth in future steps. This
+				part is just to get you started. The chart shows a <i>probability
+				distribution</i>: the bars show how probabilities are distributed
+				across the causes of death. For now, let's assume there are only two
+				ways to die. 
+				<p>
+				Things to do:
+				<ul>
+				  <li>Hit the Go buttons.</li>
+				  <li>Place a bet; then spin again.</li>
+				  <li>Be the casino owner (or God): lower/raise the probability bars.
+				      then spin again a bunch of times.
+				  </li>
+				</ul>
+				Things to wonder about:
+				<ul>
+				  <li>Add the probabilities in the distribution. What's the sum? What
+				  is the range of values this sum can take?
+				  <li>Observing how the histogram changes as you spin, compare its
+				     shape with the shape of the cause-of-death distribution.
+				  </li>
+				  <li>Spin a few times, observing the histogram. Then change one of
+				    the two probability bars and spin a few more times. How are
+				    the changes in the histogram different before and after that
+				    manipulation of the probability?
+				  </li>
+				  <li>When you change one of the probabilities in the distribution
+				  you'll notice the other bar going the opposite direction. Why is
+				  that? 
+				    </li>
+				</ul>
+				By the way: you can drag the slot module to a convenient
+				location. You'll find that you want to in a bit.
+			</div>				
+			<div class="instrTxt" id="step1Txt">
+				Let's make the machine more interesting. You now see a new button:
+				<i>Add Slot Module</i>. Click it. You want to, don't you? The result
+				will be a second slot module. If you didn't move the one you already
+				have, the new and old will be on top of each other. No worries.
+				
+				Drag the new module to the right of the original module until the new
+				module turns green. Let go of the mouse, and the two modules dock. You
+				now have a two-module slot machine. You can drag it around. Note that
+				you can place different bets in each module. Better than Vegas!
+				<p>
+				Notice the dock connector labeled <i>and</i>. It tells you that to
+				win <b>both</b> of your bets must be winners. Try it: make a bet on
+				both modules. Spin a bunch. You will see the score board change only
+				when both slots win.
+				<p>
+				You've doubtlessly noticed that a formula now appears when you slide
+				the mouse over one of the slots. You recognize that formula: it
+				computes the joint probability across the slot modules.
+				<p>
+				To wonder about (and to satisfy your boundless curiosity about
+				statistics):
+				<ul>
+				  <li>What would happen if the <i>and</i> in the dock connector were
+				    an <i>or</i>? Specifically: How would the rate of winning change?
+				  </li>
+				  <li>Enough wonder: select the dock connector, choose <i>or</i>, and
+				    try it out.
+				  </li>
+				</ul>  
 			</div>
+			
+			<div class="instrTxt" id="step2Txt">
+				Let's play with a fuller death deck. These 21 selected causes of death
+				are a sample of the 5904 that the CDC lists as options for us to
+				go from. One that I left out: 
+				<i>Cardiovascular devices associated with adverse incidents,
+				  prosthetic and other implants, materials and accessory devices</i>
+				(two 2013 cases in the US).
+				<p>
+				The probability distribution is more complex, but nothing else
+				changes. Same principles. Adding the probabilities would sum
+				to...what? Adjusting a probability upwards would cause the other bars
+				to do...what? Yep, same thing as in Step 1. Build as complex a slot
+				machine as you wish, place your bets, and watch the win rate.
+				<p>
+				Now, casino patrons don't get to modify whether slots in one-armed
+				bandits are coupled with <i>and</i>s versus <i>or</i>s. But casino
+				owners can do anything they like, subject to gambling regulations.
+				<p>
+				  To wonder about:
+				  <ul>
+				    <li>Say you are a casino owner. Your goal is to make money
+				    (i.e. to have patrons lose a lot). But you also want to ensure
+				    that patrons are not discouraged. They should win some of the
+				    time. Just qualitatively, how would you combine manipulating death
+				    cause probabilities with dock the connector settings to achieve
+				      one or the other of these goals?</li>
+				    <li>
+				    In a 2015 article, Healthline.com reported:
+				    <blockquote>
+				        New research finds that chronic obstructive pulmonary disease (COPD)
+				        increases the risk for sudden cardiac death, even among patients
+				        without major heart problems.
+				    </blockquote>
+				    That finding is bad news for this statlet. How does this finding
+				    indict the application's work with statistics?
+				    </li>
+				  </ul>
+			</div>
+			<div class="instrTxt" id="step3Txt">
+				<img src="../images/skullAloneSmall.png">
+			</div>			
 		</div>
 		<div class="machinesDiv" id="machinesDiv"></div>
 		<div class="distribDiv"  id="distribDiv"></div>
@@ -96,11 +168,11 @@ location. You'll find that you want to in a bit.
 
 
 	<!-- Until going hot: suppress login requirement -->
-		<script>
+	<script>
 		document.cookie = "stats60Uid = preFlight*";
 	</script>
-
-		<!-- Main:  -->
-		<script src="js/probability.js"></script>
+	<script>w3IncludeHTML();</script> 
+	<!-- Main:  -->
+	<script src="js/probability.js"></script>
 </body>
 </html>	
