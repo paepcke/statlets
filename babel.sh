@@ -82,6 +82,8 @@ case "${babelEnv}" in
         echo "Copying fonts..."
         mkdir -p lib/html/fonts/DSEG_v030/DSEG7
         cp -r src/html/fonts/DSEG_v030/DSEG14 lib/html/fonts/DSEG_v030/
+        mkdir -p lib/html/fonts/Nosifer
+        cp src/html/fonts/Nosifer/nosifer.js lib/html/fonts/Nosifer/
 
         echo "Copying images..."
         mkdir -p lib/html/images

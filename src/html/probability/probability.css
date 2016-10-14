@@ -70,6 +70,14 @@ h1          { text-align : center;  }
 .instrTxt          { display : none; }
 .instrTxt.visible  { display : inline; }
 
+.instrTxt.caption  {
+					 font-family: nosifer;    /* Skull caption */
+					 font-size  : 16pt;
+					 color	: Crimson;
+					 margin-left : auto;
+					 margin-right : auto;
+				   }
+
 .machinesDiv {
            background-color : #F6F6F6;          /* off-white */
            width  : 30%;
