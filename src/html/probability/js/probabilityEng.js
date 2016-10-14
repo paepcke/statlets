@@ -229,7 +229,7 @@ var ProbabilityViz = function(width, height) {
 		}
 		
 		//*******
-		cookieMonster.setCookie("stats60Uid", "preflight");
+		// cookieMonster.setCookie("stats60Uid", "preflight");
 		//*******
 		
 		// If this access to the page is just
@@ -2321,8 +2321,12 @@ var ProbabilityViz = function(width, height) {
 					coordSys.resetY();
 					updateSlotModHistogram(slotModBodySel);
 				});
-			d3.select(".button.newSlotModule")
-				.classed("visible", false);
+			/*
+			if ( currBtn.id === 'home' ) {
+				d3.select(".button.newSlotModule")
+					.classed("visible", false);
+			}
+			*/
 
 			break;
 		}
